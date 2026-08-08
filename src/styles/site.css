@@ -119,9 +119,15 @@ body[data-theme="site"] ::selection {
 
 [data-reveal] {
   opacity: 0;
-  transform: translateY(22px);
-  transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
+  transform: translateY(26px);
+  transition: opacity 0.9s var(--ease), transform 0.9s var(--ease);
 }
+
+/* דירוג עדין לאלמנטים אחים */
+[data-reveal]:nth-child(2) { transition-delay: 0.06s; }
+[data-reveal]:nth-child(3) { transition-delay: 0.12s; }
+[data-reveal]:nth-child(4) { transition-delay: 0.18s; }
+[data-reveal]:nth-child(5) { transition-delay: 0.24s; }
 
 [data-reveal].revealed {
   opacity: 1;
@@ -758,6 +764,22 @@ body[data-theme="site"] ::selection {
   color: #fff;
 }
 
+/* ---------- סקשן שואוריל ---------- */
+
+.showreel {
+  border-radius: var(--r-big);
+  overflow: hidden;
+  box-shadow: var(--shadow-orbix);
+  background: var(--ink);
+}
+
+.showreel video,
+.showreel img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
 /* ---------- הצהרה ממורכזת (statement) ---------- */
 
 .statement {
@@ -795,11 +817,10 @@ body[data-theme="site"] ::selection {
   align-items: center;
   justify-content: center;
   text-align: center;
-  min-height: 116px;
-  padding: 24px 20px;
+  min-height: 120px;
+  padding: 26px 22px;
   background: var(--white);
   border-radius: var(--r-med);
-  box-shadow: var(--shadow-card);
   color: var(--ink);
   text-decoration: none;
   font-size: 1.05rem;
@@ -1124,38 +1145,46 @@ a.case-photo:hover {
 .stats-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  border-top: 1px solid var(--w-line);
-  border-inline-start: 1px solid var(--w-line);
 }
 
 .stat-cell {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: space-between;
-  gap: 20px;
-  padding: clamp(24px, 3.5vw, 44px) clamp(18px, 2.5vw, 36px);
-  border-bottom: 1px solid var(--w-line);
-  border-inline-end: 1px solid var(--w-line);
+  gap: clamp(36px, 6vw, 84px);
+  padding: clamp(28px, 4vw, 52px) clamp(20px, 3vw, 44px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.stat-cell:nth-child(odd) {
+  border-inline-end: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.stat-cell:nth-last-child(-n+2) {
+  border-bottom: none;
 }
 
 .stat-label {
-  font-size: 0.92rem;
+  font-size: 0.95rem;
   color: var(--w-muted);
-  max-width: 240px;
+  max-width: 300px;
+  line-height: 1.55;
 }
 
 .stat-num {
-  font-size: clamp(2.6rem, 6vw, 4.6rem);
+  font-size: clamp(3.4rem, 8vw, 6.8rem);
   font-weight: 500;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
-  line-height: 1;
-  white-space: nowrap;
+  line-height: 0.95;
+  align-self: flex-end;
 }
 
 .stat-num i {
   font-style: normal;
   color: var(--brand-pink);
+  font-size: 0.5em;
+  vertical-align: super;
 }
 
 @media (max-width: 640px) {
@@ -1163,10 +1192,17 @@ a.case-photo:hover {
     grid-template-columns: 1fr;
   }
 
+  .stat-cell:nth-child(odd) {
+    border-inline-end: none;
+  }
+
   .stat-cell {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    gap: 28px;
+  }
+
+  .stat-cell:last-child {
+    border-bottom: none;
   }
 }
 

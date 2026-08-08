@@ -19,6 +19,9 @@ import studentsLoop from "../assets/courses/students.mp4";
 import businessLoop from "../assets/courses/business.mp4";
 import landingLoop from "../assets/courses/landing.mp4";
 import bannerLoop from "../assets/courses/banner.mp4";
+import showreel from "../assets/courses/showreel.mp4";
+import showreelW from "../assets/courses/showreel.webm";
+import showreelPoster from "../assets/courses/showreel.webp";
 
 export const COURSE_ART: Record<string, string> = {
   "social-media-ai": social,
@@ -43,6 +46,10 @@ export const COURSE_LOOPS_WEBM: Record<string, string> = {
   "ai-business-systems": businessLoopW,
   "ai-landing-page": landingLoopW,
 };
+
+export const SHOWREEL = showreel;
+export const SHOWREEL_WEBM = showreelW;
+export const SHOWREEL_POSTER = showreelPoster;
 
 export const WIDE_BANNER = banner;
 export const WIDE_BANNER_LOOP = bannerLoop;

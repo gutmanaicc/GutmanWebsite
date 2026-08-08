@@ -10,7 +10,7 @@ import ChatFinder from "../components/ChatFinder";
 import LeadForm from "../components/LeadForm";
 import Marquee from "../components/Marquee";
 import TestimonialPlaceholder from "../components/TestimonialPlaceholder";
-import { COURSE_ART, COURSE_LOOPS, COURSE_LOOPS_WEBM, WIDE_BANNER, WIDE_BANNER_LOOP, WIDE_BANNER_LOOP_WEBM } from "../data/courseArt";
+import { COURSE_ART, COURSE_LOOPS, COURSE_LOOPS_WEBM, SHOWREEL, SHOWREEL_POSTER, SHOWREEL_WEBM, WIDE_BANNER, WIDE_BANNER_LOOP, WIDE_BANNER_LOOP_WEBM } from "../data/courseArt";
 import AmbientMedia from "../components/AmbientMedia";
 import { CrmWindow, StoryboardWindow } from "../components/MockWindows";
 
@@ -159,23 +159,36 @@ const Home = () => {
           <div className="stats-grid" data-reveal>
             <div className="stat-cell">
               <span className="stat-label">מסלולים וסדנאות פרונטליים, לכל מקצוע ומטרה</span>
-              <span className="stat-num"><i>(</i>{pad2(CATALOG.length)}<i>)</i></span>
+              <span className="stat-num">{CATALOG.length}<i>+</i></span>
             </div>
             <div className="stat-cell">
               <span className="stat-label">מסלולי דגל עם סילבוס מלא ופתוח באתר</span>
-              <span className="stat-num"><i>(</i>{pad2(FLAGSHIP.length)}<i>)</i></span>
+              <span className="stat-num">{FLAGSHIP.length}</span>
             </div>
             <div className="stat-cell">
               <span className="stat-label">הקלטות ווובינרים. הכול חי, פנים מול פנים</span>
-              <span className="stat-num"><i>(</i>00<i>)</i></span>
+              <span className="stat-num">0</span>
             </div>
             <div className="stat-cell">
               <span className="stat-label">תוצר אמיתי שיוצאים איתו בסוף כל מסלול</span>
-              <span className="stat-num"><i>(</i>01<i>)</i></span>
+              <span className="stat-num">1</span>
             </div>
           </div>
         </div>
-        <Marquee />
+      </section>
+
+      {/* שואוריל: חמשת העולמות בשוט אחד */}
+      <section className="section band-soft">
+        <div className="container">
+          <SectionHeader
+            center
+            kicker="בשוט אחד"
+            title={<>חמישה עולמות. קו עבודה <Accent>אחד</Accent>.</>}
+          />
+          <div className="showreel" data-reveal>
+            <AmbientMedia video={SHOWREEL} videoWebm={SHOWREEL_WEBM} poster={SHOWREEL_POSTER} alt="חמשת עולמות המסלולים של האקדמיה בשוט רציף אחד" />
+          </div>
+        </div>
       </section>
 
       {/* למה פרונטלי: גריד פיצ'רים */}
@@ -255,6 +268,11 @@ const Home = () => {
           </div>
           <FAQAccordion items={HOME_FAQ} />
         </div>
+      </section>
+
+      {/* פס המסלולים הנע, על דיו, כמו Present on Top Creative Platforms */}
+      <section className="band-ink" style={{ paddingBlock: "clamp(28px, 4vw, 48px)" }}>
+        <Marquee />
       </section>
 
       {/* טופס: כרטיס כהה + שדות קו-תחתון, כמו Book a Free Discovery Call */}
