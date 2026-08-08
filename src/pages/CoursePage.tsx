@@ -9,6 +9,7 @@ import FAQAccordion from "../components/FAQAccordion";
 import LeadForm from "../components/LeadForm";
 import { CheckIcon, XIcon } from "../components/icons";
 import { GENERAL_FAQ } from "../data/site";
+import { COURSE_ART } from "../data/courseArt";
 
 const pad2 = (n: number) => String(n).padStart(2, "0");
 
@@ -81,6 +82,11 @@ const CoursePage = () => {
               </Link>
             )}
           </div>
+          {COURSE_ART[entry.slug] && (
+            <div className="case-photo" style={{ maxWidth: 880, marginInline: "auto", marginTop: "clamp(32px, 5vw, 56px)" }} data-reveal>
+              <img src={COURSE_ART[entry.slug]} alt="" loading="lazy" />
+            </div>
+          )}
         </div>
       </section>
 

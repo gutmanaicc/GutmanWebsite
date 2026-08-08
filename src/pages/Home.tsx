@@ -10,13 +10,8 @@ import ChatFinder from "../components/ChatFinder";
 import LeadForm from "../components/LeadForm";
 import Marquee from "../components/Marquee";
 import TestimonialPlaceholder from "../components/TestimonialPlaceholder";
-import {
-  AiWorkerWindow,
-  CrmWindow,
-  LandingWindow,
-  StoryboardWindow,
-  StudyWindow,
-} from "../components/MockWindows";
+import { COURSE_ART, WIDE_BANNER } from "../data/courseArt";
+import { CrmWindow, StoryboardWindow } from "../components/MockWindows";
 
 const pad2 = (n: number) => String(n).padStart(2, "0");
 const FLAGSHIP = CATALOG.filter((c) => c.full);
@@ -81,6 +76,9 @@ const Home = () => {
             {pad2(CATALOG.length)} מסלולים וסדנאות פרונטליים, לכל מקצוע ולכל מטרה.
             {" "}בלי הרצאות תאורטיות, בלי ספריית הקלטות. <Accent>עובדים, בונים, יוצאים עם תוצר.</Accent>
           </p>
+          <div className="wide-banner" style={{ marginTop: "clamp(32px, 4.5vw, 56px)" }} data-reveal>
+            <img src={WIDE_BANNER} alt="" loading="lazy" />
+          </div>
           <div style={{ marginTop: "clamp(36px, 5vw, 60px)" }} data-reveal>
             <p className="cells-note">המסלולים והסדנאות של האקדמיה · לחיצה על תא פותחת את המסלול</p>
             <div className="cells-grid">
@@ -120,36 +118,30 @@ const Home = () => {
         })}
       </div>
 
-      {/* מה בונים: כרטיסי מדיה עם כיתוב */}
+      {/* מה בונים: כרטיסי תמונה עם כיתוב, כמו Featured Case Studies */}
       <section className="section band-soft">
         <div className="container">
           <SectionHeader
             center
             kicker="מה בונים באקדמיה"
-            title={<>תוצרים שבנו במסלולים, <Accent>לא הבטחות</Accent>.</>}
-            sub="כל מסלול דגל מסתיים בתוצר עובד. ככה הם נראים מבפנים."
+            title={<>עולמות שבונים בהם, <Accent>לא מקשיבים</Accent>.</>}
+            sub="כל מסלול דגל בנוי סביב עולם עבודה אחד ומסתיים בתוצר עובד."
           />
           <div className="case-grid">
-            <div className="case-item wide" data-reveal>
-              <AiWorkerWindow />
-              <div className="case-caption"><b>עובד AI שמכיר את הלקוח</b><span>מסלול מנהלי סושיאל</span></div>
-            </div>
-            <div className="case-item" data-reveal>
-              <CrmWindow />
-              <div className="case-caption"><b>CRM ומעקב תשלומים</b><span>מסלול בעלי עסקים</span></div>
-            </div>
-            <div className="case-item" data-reveal>
-              <StoryboardWindow />
-              <div className="case-caption"><b>מרעיון לסרטון גמור</b><span>מסלול וידאו ותוכן</span></div>
-            </div>
-            <div className="case-item" data-reveal>
-              <StudyWindow />
-              <div className="case-caption"><b>סביבת לימודים אישית</b><span>מסלול סטודנטים</span></div>
-            </div>
-            <div className="case-item" data-reveal>
-              <LandingWindow />
-              <div className="case-caption"><b>דף נחיתה שבונים לבד</b><span>סדנת דפי נחיתה</span></div>
-            </div>
+            {[
+              { slug: "social-media-ai", label: "עובד AI שמכיר את הלקוח", cat: "מסלול מנהלי סושיאל", wide: true },
+              { slug: "ai-video-content", label: "מרעיון לסרטון גמור", cat: "מסלול וידאו ותוכן" },
+              { slug: "ai-business-systems", label: "CRM ומעקב תשלומים", cat: "מסלול בעלי עסקים" },
+              { slug: "ai-for-students", label: "סביבת לימודים אישית", cat: "מסלול סטודנטים" },
+              { slug: "ai-landing-page", label: "דף נחיתה שבונים לבד", cat: "סדנת דפי נחיתה" },
+            ].map((it) => (
+              <div className={`case-item${it.wide ? " wide" : ""}`} key={it.slug} data-reveal>
+                <Link to={`/courses/${it.slug}`} className="case-photo">
+                  <img src={COURSE_ART[it.slug]} alt={it.label} loading="lazy" />
+                </Link>
+                <div className="case-caption"><b>{it.label}</b><span>{it.cat}</span></div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
