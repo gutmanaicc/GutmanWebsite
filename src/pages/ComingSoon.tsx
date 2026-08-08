@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import logo from "../assets/academy-logo.png";
+import logo from "../assets/logo-white.png";
 import { CONSENT_KEY, loadPixel, track } from "../pixel";
 import AccessibilityWidget from "../AccessibilityWidget";
 
