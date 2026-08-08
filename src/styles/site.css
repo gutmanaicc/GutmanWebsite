@@ -884,7 +884,8 @@ body[data-theme="site"] ::selection {
   transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
 }
 
-.case-photo img {
+.case-photo img,
+.case-photo video {
   display: block;
   width: 100%;
   height: auto;
@@ -902,7 +903,8 @@ a.case-photo:hover {
   box-shadow: var(--shadow-card);
 }
 
-.wide-banner img {
+.wide-banner img,
+.wide-banner video {
   display: block;
   width: 100%;
   height: auto;

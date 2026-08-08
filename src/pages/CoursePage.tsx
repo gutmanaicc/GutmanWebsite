@@ -9,7 +9,8 @@ import FAQAccordion from "../components/FAQAccordion";
 import LeadForm from "../components/LeadForm";
 import { CheckIcon, XIcon } from "../components/icons";
 import { GENERAL_FAQ } from "../data/site";
-import { COURSE_ART } from "../data/courseArt";
+import { COURSE_ART, COURSE_LOOPS, COURSE_LOOPS_WEBM } from "../data/courseArt";
+import AmbientMedia from "../components/AmbientMedia";
 
 const pad2 = (n: number) => String(n).padStart(2, "0");
 
@@ -84,7 +85,7 @@ const CoursePage = () => {
           </div>
           {COURSE_ART[entry.slug] && (
             <div className="case-photo" style={{ maxWidth: 880, marginInline: "auto", marginTop: "clamp(32px, 5vw, 56px)" }} data-reveal>
-              <img src={COURSE_ART[entry.slug]} alt="" loading="lazy" />
+              <AmbientMedia video={COURSE_LOOPS[entry.slug]} videoWebm={COURSE_LOOPS_WEBM[entry.slug]} poster={COURSE_ART[entry.slug]} />
             </div>
           )}
         </div>

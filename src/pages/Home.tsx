@@ -10,7 +10,8 @@ import ChatFinder from "../components/ChatFinder";
 import LeadForm from "../components/LeadForm";
 import Marquee from "../components/Marquee";
 import TestimonialPlaceholder from "../components/TestimonialPlaceholder";
-import { COURSE_ART, WIDE_BANNER } from "../data/courseArt";
+import { COURSE_ART, COURSE_LOOPS, COURSE_LOOPS_WEBM, WIDE_BANNER, WIDE_BANNER_LOOP, WIDE_BANNER_LOOP_WEBM } from "../data/courseArt";
+import AmbientMedia from "../components/AmbientMedia";
 import { CrmWindow, StoryboardWindow } from "../components/MockWindows";
 
 const pad2 = (n: number) => String(n).padStart(2, "0");
@@ -77,7 +78,7 @@ const Home = () => {
             {" "}בלי הרצאות תאורטיות, בלי ספריית הקלטות. <Accent>עובדים, בונים, יוצאים עם תוצר.</Accent>
           </p>
           <div className="wide-banner" style={{ marginTop: "clamp(32px, 4.5vw, 56px)" }} data-reveal>
-            <img src={WIDE_BANNER} alt="" loading="lazy" />
+            <AmbientMedia video={WIDE_BANNER_LOOP} videoWebm={WIDE_BANNER_LOOP_WEBM} poster={WIDE_BANNER} />
           </div>
           <div style={{ marginTop: "clamp(36px, 5vw, 60px)" }} data-reveal>
             <p className="cells-note">המסלולים והסדנאות של האקדמיה · לחיצה על תא פותחת את המסלול</p>
@@ -137,7 +138,7 @@ const Home = () => {
             ].map((it) => (
               <div className={`case-item${it.wide ? " wide" : ""}`} key={it.slug} data-reveal>
                 <Link to={`/courses/${it.slug}`} className="case-photo">
-                  <img src={COURSE_ART[it.slug]} alt={it.label} loading="lazy" />
+                  <AmbientMedia video={COURSE_LOOPS[it.slug]} videoWebm={COURSE_LOOPS_WEBM[it.slug]} poster={COURSE_ART[it.slug]} alt={it.label} />
                 </Link>
                 <div className="case-caption"><b>{it.label}</b><span>{it.cat}</span></div>
               </div>
