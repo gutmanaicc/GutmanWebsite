@@ -7,22 +7,25 @@
    ============================================================ */
 
 :root {
-  --ink: #191919;
+  /* טוקנים אחד-לאחד מ-orbix.studio (מהקוד שלהם), מותאמים למותג Gutman */
+  --ink: #010101;
   --brand-pink: #ff5f9e;
-  --paper: #f7f7f5;
-  --paper-card: #efefec;
+  --paper: #f3f4f6;
+  --paper-card: #f1f1f1;
   --white: #ffffff;
-  --line: rgba(25, 25, 25, 0.12);
-  --line-soft: rgba(25, 25, 25, 0.07);
-  --muted: rgba(25, 25, 25, 0.55);
-  --muted-strong: rgba(25, 25, 25, 0.74);
+  --line: #e6e6e6;
+  --line-soft: rgba(1, 1, 1, 0.06);
+  --muted: rgba(1, 1, 1, 0.5);
+  --muted-strong: rgba(1, 1, 1, 0.75);
   --w-line: rgba(255, 255, 255, 0.16);
-  --w-muted: rgba(255, 255, 255, 0.62);
-  --r-big: 26px;
-  --r-med: 18px;
-  --r-sm: 12px;
-  --shadow-card: 0 1px 2px rgba(25, 25, 25, 0.04), 0 16px 40px -24px rgba(25, 25, 25, 0.18);
-  --shadow-float: 0 14px 30px -12px rgba(25, 25, 25, 0.35);
+  --w-muted: rgba(255, 255, 255, 0.65);
+  --r-big: 32px;
+  --r-med: 16px;
+  --r-sm: 10px;
+  --shadow-card: 0 1px 5px rgba(0, 0, 0, 0.1);
+  /* צל השכבות החתום של orbix: כתם מוזח למטה-שמאלה */
+  --shadow-orbix: -1px 2px 4px rgba(0, 0, 0, 0.16), -4px 7px 8px rgba(0, 0, 0, 0.14), -9px 15px 11px rgba(0, 0, 0, 0.08), -16px 27px 12px rgba(0, 0, 0, 0.02);
+  --shadow-float: var(--shadow-orbix);
   --ease: cubic-bezier(0.22, 0.68, 0.2, 1);
   --pad-x: clamp(20px, 4.5vw, 56px);
 }
@@ -32,7 +35,7 @@ html {
 }
 
 body[data-theme="site"] {
-  background: var(--white);
+  background: var(--paper);
   color: var(--ink);
   font-family: "Heebo", sans-serif;
   font-weight: 400;
@@ -67,8 +70,8 @@ body[data-theme="site"] ::selection {
 .site h1,
 .site h2,
 .site h3 {
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-weight: 550;
+  letter-spacing: -0.015em;
   line-height: 1.14;
   text-wrap: balance;
 }
@@ -140,13 +143,15 @@ body[data-theme="site"] ::selection {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  min-height: 46px;
-  padding: 11px 22px;
-  border-radius: 999px;
+  min-height: 52px;
+  padding: 8px 8px 8px 26px;
+  padding-inline-start: 26px;
+  padding-inline-end: 10px;
+  border-radius: 99px;
   border: 1px solid transparent;
   font-family: inherit;
-  font-size: 0.94rem;
-  font-weight: 600;
+  font-size: 1.05rem;
+  font-weight: 500;
   text-decoration: none;
   cursor: pointer;
   transition: transform 0.18s var(--ease), box-shadow 0.25s var(--ease), background 0.2s, color 0.2s, border-color 0.2s;
@@ -156,12 +161,11 @@ body[data-theme="site"] ::selection {
 .btn-primary {
   background: var(--ink);
   color: #fff;
-  box-shadow: -8px 14px 22px -10px rgba(25, 25, 25, 0.5);
+  box-shadow: var(--shadow-orbix);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: -10px 20px 30px -12px rgba(25, 25, 25, 0.55);
 }
 
 .btn:active {
@@ -170,19 +174,23 @@ body[data-theme="site"] ::selection {
 }
 
 .btn-ghost {
-  background: transparent;
+  background: var(--white);
   color: var(--ink);
-  border-color: var(--line);
+  box-shadow: var(--shadow-orbix);
 }
 
 .btn-ghost:hover {
-  border-color: var(--ink);
+  transform: translateY(-2px);
+}
+
+.btn:not(:has(.btn-orb)) {
+  padding-inline-end: 26px;
 }
 
 .btn-small {
-  min-height: 42px;
-  padding: 9px 18px;
-  font-size: 0.88rem;
+  min-height: 44px;
+  padding-block: 8px;
+  font-size: 0.95rem;
 }
 
 .btn-block {
@@ -194,23 +202,22 @@ body[data-theme="site"] ::selection {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background: #fff;
-  color: var(--ink);
+  background: var(--brand-pink);
+  color: #fff;
   flex-shrink: 0;
-  margin-inline-end: -8px;
   transition: transform 0.3s var(--ease);
-}
-
-.btn:hover .btn-orb {
-  transform: translateX(-3px);
 }
 
 .btn-ghost .btn-orb {
   background: var(--ink);
   color: #fff;
+}
+
+.btn:hover .btn-orb {
+  transform: translateX(-3px);
 }
 
 .site :focus-visible {
@@ -445,11 +452,11 @@ body[data-theme="site"] ::selection {
 
 /* סקשן אפרפר עדין לחילופי מקצב */
 .band-soft {
-  background: var(--paper);
+  background: var(--white);
 }
 
 .band-soft .eyebrow {
-  background: var(--white);
+  background: var(--paper);
 }
 
 .sec-head {
@@ -467,10 +474,10 @@ body[data-theme="site"] ::selection {
 }
 
 .sec-title {
-  font-size: clamp(1.9rem, 4vw, 3.1rem);
-  letter-spacing: -0.025em;
-  font-weight: 650;
-  line-height: 1.16;
+  font-size: clamp(1.75rem, 3.4vw + 0.9rem, 3.9rem);
+  letter-spacing: -0.02em;
+  font-weight: 550;
+  line-height: 1.12;
 }
 
 .sec-sub {
@@ -518,7 +525,7 @@ body[data-theme="site"] ::selection {
 /* ---------- Hero ---------- */
 
 .hero {
-  padding-block: clamp(52px, 7vw, 96px) 0;
+  padding-block: clamp(80px, 10vw, 150px) 0;
   text-align: center;
   position: relative;
 }
@@ -543,11 +550,11 @@ body[data-theme="site"] ::selection {
 }
 
 .hero h1 {
-  font-size: clamp(2.5rem, 6vw, 4.6rem);
-  font-weight: 650;
-  letter-spacing: -0.03em;
+  font-size: clamp(2rem, 4.5vw + 0.98rem, 4.875rem);
+  font-weight: 550;
+  letter-spacing: -0.02em;
   line-height: 1.1;
-  max-width: 900px;
+  max-width: 980px;
   margin-inline: auto;
 }
 
@@ -572,10 +579,10 @@ body[data-theme="site"] ::selection {
 
 /* בלוק המדיה הכהה של ההירו: המוצר החי בפנים */
 .hero-media {
-  margin-top: clamp(44px, 6vw, 72px);
-  background: var(--ink);
+  margin-top: clamp(44px, 6vw, 80px);
+  background: linear-gradient(160deg, #ff77ac, var(--brand-pink) 45%, #f04f8e);
   border-radius: var(--r-big);
-  padding: clamp(28px, 5vw, 72px) clamp(18px, 4vw, 64px);
+  padding: clamp(32px, 5vw, 76px) clamp(18px, 4vw, 64px);
   position: relative;
   overflow: hidden;
 }
@@ -583,16 +590,48 @@ body[data-theme="site"] ::selection {
 .hero-media::before {
   content: "";
   position: absolute;
-  inset: -40% -20% auto;
-  height: 90%;
-  background: radial-gradient(ellipse 45% 60% at 50% 0%, rgba(255, 95, 158, 0.22), transparent 70%);
+  inset: 0;
+  background: radial-gradient(ellipse 60% 50% at 50% 110%, rgba(1, 1, 1, 0.25), transparent 70%);
   pointer-events: none;
 }
 
 .hero-media .chat-shell {
   position: relative;
+  z-index: 2;
   margin-inline: auto;
-  box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.6);
+  border: none;
+  box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.45);
+}
+
+/* חלונות צד בקולאז', מוטים קלות כמו המוקאפים בסלאב שלהם */
+.hero-side {
+  position: absolute;
+  top: 50%;
+  width: clamp(240px, 24vw, 340px);
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.94;
+}
+
+.hero-side .mock-window {
+  box-shadow: 0 30px 70px -28px rgba(0, 0, 0, 0.5);
+  border: none;
+}
+
+.hero-side.side-a {
+  inset-inline-start: clamp(-40px, -2vw, -16px);
+  transform: translateY(-50%) rotate(4deg);
+}
+
+.hero-side.side-b {
+  inset-inline-end: clamp(-40px, -2vw, -16px);
+  transform: translateY(-50%) rotate(-4deg);
+}
+
+@media (max-width: 1000px) {
+  .hero-side {
+    display: none;
+  }
 }
 
 .hero-chips {
@@ -747,10 +786,7 @@ body[data-theme="site"] ::selection {
 .cells-grid {
   display: flex;
   flex-wrap: wrap;
-  background: var(--white);
-  border: 1px solid var(--line);
-  border-radius: var(--r-med);
-  overflow: hidden;
+  gap: 14px;
 }
 
 .cell {
@@ -759,20 +795,25 @@ body[data-theme="site"] ::selection {
   align-items: center;
   justify-content: center;
   text-align: center;
-  min-height: 92px;
-  padding: 18px 16px;
+  min-height: 104px;
+  padding: 20px 18px;
   background: var(--white);
-  box-shadow: 0 0 0 0.5px var(--line);
+  border-radius: var(--r-med);
+  box-shadow: var(--shadow-card);
   color: var(--ink);
   text-decoration: none;
-  font-size: 0.95rem;
+  font-size: 0.98rem;
   font-weight: 600;
   letter-spacing: -0.01em;
-  transition: background 0.2s, color 0.2s;
+  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease), color 0.2s;
 }
 
 .cell:hover {
-  background: var(--paper);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-orbix);
+}
+
+.cell:hover .cell-kind {
   color: var(--brand-pink);
 }
 
@@ -843,7 +884,7 @@ body[data-theme="site"] ::selection {
 .mock-window {
   display: flex;
   flex-direction: column;
-  background: var(--paper);
+  background: var(--white);
   border: 1px solid var(--line);
   border-radius: var(--r-big);
   overflow: hidden;
@@ -904,6 +945,7 @@ body[data-theme="site"] ::selection {
   flex: 1;
   font-size: 0.87rem;
   line-height: 1.5;
+  background: var(--paper);
 }
 
 .mw-bubble {

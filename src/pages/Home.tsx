@@ -62,6 +62,8 @@ const Home = () => {
           </div>
 
           <div className="hero-media" data-reveal>
+            <div className="hero-side side-a" aria-hidden="true"><CrmWindow /></div>
+            <div className="hero-side side-b" aria-hidden="true"><StoryboardWindow /></div>
             <div className="hero-chips">
               <span className="hero-chip"><b>({pad2(CATALOG.length)})</b>מסלולים וסדנאות</span>
               <span className="hero-chip"><b>(00)</b>הקלטות. הכול חי</span>
