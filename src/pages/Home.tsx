@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { CATALOG } from "../data/catalog";
+import { getCourse } from "../data/courses";
 import { GENERAL_FAQ, SITE } from "../data/site";
 import { faqSchema, orgSchema, useSeo } from "../lib/seo";
 import { useReveal } from "../lib/useReveal";
@@ -93,6 +94,29 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* עולמות המסלולים: סלאבים במסך מלא שנערמים בגלילה, כמו סקשן השירותים של orbix */}
+      <div className="stack-slides">
+        {FLAGSHIP.map((c, i) => {
+          const course = getCourse(c.slug);
+          const tone = ["tone-ink", "tone-paper", "tone-pink", "tone-graphite", "tone-deep"][i % 5];
+          return (
+            <Link key={c.slug} to={`/courses/${c.slug}`} className={`stack-slide ${tone}`}>
+              <span className="ss-num">({pad2(i + 1)})</span>
+              <span className="ss-explore">
+                לגלות את המסלול
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+              </span>
+              <span className="ss-inner">
+                <span className="ss-title">{c.title}</span>
+                {course && <span className="ss-sub" style={{ display: "block" }}>{course.tagline}</span>}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
 
       {/* מה בונים: כרטיסי מדיה עם כיתוב */}
       <section className="section band-soft">
@@ -238,15 +262,21 @@ const Home = () => {
         </div>
       </section>
 
-      {/* טופס */}
+      {/* טופס: כרטיס כהה + שדות קו-תחתון, כמו Book a Free Discovery Call */}
       <section className="section" id="lead-form">
         <div className="container split-section">
           <div className="split-aside">
-            <SectionHeader
-              kicker="נדבר?"
-              title={<>נחזור אליכם עם <Accent>המלצה</Accent> אישית.</>}
-              sub="ספרו לנו מי אתם ומה המטרה, ונכוון אתכם למסלול הנכון. בלי התחייבות ובלי ספאם."
-            />
+            <div className="cta-card" data-reveal>
+              <span className="eyebrow">נדבר?</span>
+              <h2>מוכנים לבנות עם AI בידיים?</h2>
+              <p>
+                ספרו לנו מי אתם ומה המטרה, ונחזור אליכם עם המלצה אישית על מסלול. בלי התחייבות ובלי
+                ספאם.
+              </p>
+              <p className="cc-trust">
+                <b>{pad2(CATALOG.length)} מסלולים וסדנאות</b> · קבוצות קטנות · פנים מול פנים · תוצר ביד
+              </p>
+            </div>
           </div>
           <LeadForm leadSource="home-general" />
         </div>
