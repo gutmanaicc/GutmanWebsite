@@ -73,12 +73,12 @@ body[data-theme="site"] ::selection {
   text-wrap: balance;
 }
 
-/* החתימה: קטע כותרת בסריף עברי נטוי, בתוך השורה */
+/* מילת ההדגשה: אותו Heebo נקי, בוורוד המותג. בלי סריף, בלי הטיה */
 .acc {
-  font-family: "Frank Ruhl Libre", serif;
-  font-weight: 600;
-  display: inline-block;
-  transform: skewX(-7deg);
+  font-family: inherit;
+  font-style: normal;
+  font-weight: inherit;
+  color: var(--brand-pink);
 }
 
 /* קיקר-גלולה קטן עם נקודת מותג, כמו "◦ Our Story" */
