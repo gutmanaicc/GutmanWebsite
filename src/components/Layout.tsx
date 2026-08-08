@@ -17,17 +17,83 @@ const NAV = [
   { to: "/contact", label: "צור קשר" },
 ];
 
+const HDR_H = 70; // גובה .hdr-inner. משמש לרצועת הזיהוי של סקשן כהה
+
 const Header = () => {
   const [scrolled, setScrolled] = useState(false);
+  const [pinned, setPinned] = useState(true);
+  const [onDark, setOnDark] = useState(false);
   const [open, setOpen] = useState(false);
   const location = useLocation();
 
+  // הכותרת נסוגה בגלילה למטה וחוזרת בגלילה למעלה.
+  // קריאות ה-scroll מרוכזות ב-rAF אחד כדי לא להעיר את הדפדפן פעמיים לפריים.
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    onScroll();
+    let last = window.scrollY;
+    let ticking = false;
+
+    const update = () => {
+      const y = window.scrollY;
+      setScrolled(y > 8);
+      if (y < 120) {
+        // ליד ראש העמוד הכותרת תמיד גלויה
+        setPinned(true);
+      } else if (Math.abs(y - last) > 6) {
+        // סף של 6px מונע ריצוד על תזוזות זעירות ועל gutter bounce
+        setPinned(y < last);
+      }
+      last = y;
+      ticking = false;
+    };
+
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(update);
+    };
+
+    update();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // היפוך הכותרת מעל סקשנים כהים.
+  // רצועת זיהוי בגובה הכותרת בראש ה-viewport, דרך IntersectionObserver,
+  // כדי לא לקרוא גאומטריה בכל פריים של גלילה.
+  useEffect(() => {
+    const targets = Array.from(document.querySelectorAll('[data-surface="dark"]'));
+    if (!targets.length) {
+      setOnDark(false);
+      return;
+    }
+
+    let io: IntersectionObserver | null = null;
+    const inBand = new Set<Element>();
+
+    const build = () => {
+      io?.disconnect();
+      inBand.clear();
+      const bottom = -Math.max(0, window.innerHeight - HDR_H);
+      io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) inBand.add(e.target);
+            else inBand.delete(e.target);
+          }
+          setOnDark(inBand.size > 0);
+        },
+        { rootMargin: `0px 0px ${bottom}px 0px`, threshold: 0 }
+      );
+      targets.forEach((t) => io!.observe(t));
+    };
+
+    build();
+    window.addEventListener("resize", build);
+    return () => {
+      io?.disconnect();
+      window.removeEventListener("resize", build);
+    };
+  }, [location.pathname]);
 
   // סגירת התפריט במעבר עמוד ונעילת גלילה כשהוא פתוח
   useEffect(() => setOpen(false), [location.pathname]);
@@ -40,9 +106,15 @@ const Header = () => {
 
   return (
     <>
-      <header className={`hdr${scrolled ? " scrolled" : ""}${open ? " menu-open" : ""}`}>
+      <header
+        className={`hdr${scrolled ? " scrolled" : ""}${open ? " menu-open" : ""}`}
+        data-pinned={open ? "true" : String(pinned)}
+        data-surface={!open && onDark ? "dark" : "light"}
+      >
         <div className="container hdr-inner">
           <Link to="/" className="hdr-logo" aria-label="Gutman Academy, לעמוד הראשי">
+            {/* ה-wordmark הוורוד נשאר זהה על נייר ועל דיו — הוא קריא על שניהם.
+                logo-white.png הוא נכס אחר (לוגו מרובע עם תגית) ולא תחליף לו */}
             <img src={logoInk} alt="Gutman" width={118} height={29} />
             <span className="hdr-logo-sub">האקדמיה ל-AI</span>
           </Link>

@@ -13,8 +13,11 @@ import TestimonialPlaceholder from "../components/TestimonialPlaceholder";
 import { COURSE_ART, COURSE_LOOPS, COURSE_LOOPS_WEBM, SHOWREEL, SHOWREEL_POSTER, SHOWREEL_WEBM, WIDE_BANNER, WIDE_BANNER_LOOP, WIDE_BANNER_LOOP_WEBM } from "../data/courseArt";
 import AmbientMedia from "../components/AmbientMedia";
 import { CrmWindow, StoryboardWindow } from "../components/MockWindows";
+import { Words } from "../components/Words";
 
 const pad2 = (n: number) => String(n).padStart(2, "0");
+/* הגוונים שמעליהם הכותרת חייבת להתהפך ללבן */
+const DARK_TONES = new Set(["tone-ink", "tone-pink", "tone-graphite", "tone-deep"]);
 const FLAGSHIP = CATALOG.filter((c) => c.full);
 const HOME_FAQ = GENERAL_FAQ.slice(0, 6);
 
@@ -43,10 +46,12 @@ const Home = () => {
       <section className="hero">
         <div className="container">
           <p data-reveal><span className="eyebrow">{SITE.claim}</span></p>
-          <h1 data-reveal>
-            לא רק ללמוד AI.
+          <h1 data-reveal className="hero-title">
+            <Words text="לא רק ללמוד AI." />
             <br />
-            <Accent>לדעת לעבוד איתו.</Accent>
+            <Accent>
+              <Words text="לדעת לעבוד איתו." start={4} />
+            </Accent>
           </h1>
           <p className="hero-sub" data-reveal>
             לומדים פנים מול פנים, בקבוצות קטנות, על העבודה האמיתית שלכם. בסוף כל מסלול יוצאים עם
@@ -102,7 +107,12 @@ const Home = () => {
           const course = getCourse(c.slug);
           const tone = ["tone-ink", "tone-paper", "tone-pink", "tone-graphite", "tone-deep"][i % 5];
           return (
-            <Link key={c.slug} to={`/courses/${c.slug}`} className={`stack-slide ${tone}`}>
+            <Link
+              key={c.slug}
+              to={`/courses/${c.slug}`}
+              className={`stack-slide ${tone}`}
+              data-surface={DARK_TONES.has(tone) ? "dark" : "light"}
+            >
               <span className="ss-num">({pad2(i + 1)})</span>
               <span className="ss-explore">
                 לגלות את המסלול
@@ -148,7 +158,7 @@ const Home = () => {
       </section>
 
       {/* פס דיו: סטטיסטיקות ענק */}
-      <section className="section band-ink">
+      <section className="section band-ink" data-surface="dark">
         <div className="container">
           <div className="band-head" data-reveal>
             <h2>למה <Accent>האקדמיה של גוטמן?</Accent></h2>
@@ -271,7 +281,7 @@ const Home = () => {
       </section>
 
       {/* פס המסלולים הנע, על דיו, כמו Present on Top Creative Platforms */}
-      <section className="band-ink" style={{ paddingBlock: "clamp(28px, 4vw, 48px)" }}>
+      <section className="band-ink" data-surface="dark" style={{ paddingBlock: "clamp(28px, 4vw, 48px)" }}>
         <Marquee />
       </section>
 

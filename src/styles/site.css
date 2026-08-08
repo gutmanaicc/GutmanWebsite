@@ -2601,3 +2601,118 @@ html.a11y-highlight-links body[data-theme="site"] a {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ============================================================
+   שכבת ליטוש — premium-frontend-ui
+   שלושה דברים: כותרת שמגיבה לכיוון גלילה ומתהפכת מעל סקשן כהה,
+   כניסת כותרת ברמת מילה, וסגירת אפקטי hover במכשירי מגע.
+   הכול על transform/opacity בלבד. אפס חישוב פריסה מחדש.
+   ============================================================ */
+
+/* ---------- הכותרת נסוגה בגלילה למטה ---------- */
+
+.hdr {
+  transition: transform 0.44s var(--ease), background 0.3s, border-color 0.3s,
+    color 0.3s;
+  will-change: transform;
+}
+
+.hdr[data-pinned="false"] {
+  transform: translate3d(0, -100%, 0);
+}
+
+/* מי שביקש פחות תנועה מקבל כותרת שפשוט נשארת במקום */
+@media (prefers-reduced-motion: reduce) {
+  .hdr[data-pinned="false"] {
+    transform: none;
+  }
+}
+
+/* ---------- היפוך מעל סקשן כהה ---------- */
+
+.hdr[data-surface="dark"] {
+  background: rgba(1, 1, 1, 0.58);
+  border-bottom-color: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+.hdr[data-surface="dark"] .hdr-nav a {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.hdr[data-surface="dark"] .hdr-nav a.active,
+.hdr[data-surface="dark"] .hdr-nav a:hover {
+  color: #fff;
+}
+
+.hdr[data-surface="dark"] .hdr-nav a::after {
+  background: #fff;
+}
+
+.hdr[data-surface="dark"] .hdr-logo,
+.hdr[data-surface="dark"] .hdr-burger {
+  color: #fff;
+}
+
+.hdr[data-surface="dark"] .hdr-logo-sub {
+  color: rgba(255, 255, 255, 0.62);
+  border-inline-start-color: rgba(255, 255, 255, 0.22);
+}
+
+/* ה-CTA מתהפך לנייר כדי לא להיעלם על רקע דיו */
+.hdr[data-surface="dark"] .hdr-cta {
+  background: #fff;
+  color: var(--ink);
+}
+
+/* ---------- כניסת כותרת ברמת מילה ---------- */
+
+.word {
+  display: inline-block;
+}
+
+/* הכותרת עצמה לא נעה כבלוק. רק המילים שבתוכה */
+.hero-title[data-reveal] {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-title[data-reveal] .word {
+    opacity: 0;
+    transform: translate3d(0, 0.36em, 0);
+  }
+
+  .hero-title[data-reveal].revealed .word {
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.72s var(--ease), transform 0.72s var(--ease);
+    transition-delay: calc(var(--wi, 0) * 55ms);
+  }
+}
+
+/* ---------- מגע: בלי אפקטי hover תקועים ---------- */
+
+@media (hover: none), (pointer: coarse) {
+  .btn-primary:hover,
+  .btn-ghost:hover,
+  .cell:hover,
+  a.case-photo:hover,
+  .mock-window:hover,
+  .gallery-item:hover,
+  .stack-slide:hover .ss-inner,
+  .btn:hover .btn-orb {
+    transform: none;
+  }
+
+  .cell:hover,
+  a.case-photo:hover,
+  .gallery-item:hover {
+    box-shadow: none;
+  }
+
+  .stack-slide:hover .ss-explore {
+    gap: 8px;
+  }
+}
