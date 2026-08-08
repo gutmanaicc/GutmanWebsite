@@ -5,10 +5,10 @@ import { faqSchema, orgSchema, useSeo } from "../lib/seo";
 import { useReveal } from "../lib/useReveal";
 import SectionHeader, { Accent } from "../components/SectionHeader";
 import FAQAccordion from "../components/FAQAccordion";
-import CourseRow from "../components/CourseRow";
 import ChatFinder from "../components/ChatFinder";
 import LeadForm from "../components/LeadForm";
 import Marquee from "../components/Marquee";
+import TestimonialPlaceholder from "../components/TestimonialPlaceholder";
 import {
   AiWorkerWindow,
   CrmWindow,
@@ -18,8 +18,17 @@ import {
 } from "../components/MockWindows";
 
 const pad2 = (n: number) => String(n).padStart(2, "0");
-const FLAGSHIP_COUNT = CATALOG.filter((c) => c.full).length;
-const HOME_FAQ = GENERAL_FAQ.slice(0, 5);
+const FLAGSHIP = CATALOG.filter((c) => c.full);
+const HOME_FAQ = GENERAL_FAQ.slice(0, 6);
+
+/* עיגול-חץ קטן בקצה כפתור, בסגנון orbix */
+const Orb = () => (
+  <span className="btn-orb" aria-hidden="true">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M19 12H5M12 19l-7-7 7-7" />
+    </svg>
+  </span>
+);
 
 const Home = () => {
   useSeo({
@@ -33,85 +42,145 @@ const Home = () => {
 
   return (
     <>
-      {/* Hero: טיפוגרפיה ענקית מיושרת להתחלה */}
+      {/* Hero ממורכז + בלוק מוצר כהה */}
       <section className="hero">
         <div className="container">
-          <p className="eyebrow" data-reveal>{SITE.claim}</p>
+          <p data-reveal><span className="eyebrow">{SITE.claim}</span></p>
           <h1 data-reveal>
             לא רק ללמוד AI.
             <br />
             <Accent>לדעת לעבוד איתו.</Accent>
           </h1>
-          <div className="hero-foot" data-reveal>
-            <p className="hero-sub">
-              לומדים פנים מול פנים, בקבוצות קטנות, על העסק, הלקוח או הפרויקט האמיתיים שלכם. בסוף כל
-              מסלול יוצאים עם תוצר שעובד ועם שיטת עבודה שנשארת.
+          <p className="hero-sub" data-reveal>
+            לומדים פנים מול פנים, בקבוצות קטנות, על העבודה האמיתית שלכם. בסוף כל מסלול יוצאים עם
+            תוצר שעובד ועם שיטת עבודה שנשארת.
+          </p>
+          <div className="hero-ctas" data-reveal>
+            <Link to="/courses" className="btn btn-primary">לצפייה במסלולים<Orb /></Link>
+            <Link to="/course-finder" className="btn btn-ghost">עזרו לי לבחור</Link>
+          </div>
+
+          <div className="hero-media" data-reveal>
+            <div className="hero-chips">
+              <span className="hero-chip"><b>({pad2(CATALOG.length)})</b>מסלולים וסדנאות</span>
+              <span className="hero-chip"><b>(00)</b>הקלטות. הכול חי</span>
+              <span className="hero-chip"><b>(01)</b>תוצר ביד בסוף</span>
+            </div>
+            <ChatFinder />
+          </div>
+        </div>
+      </section>
+
+      {/* הצהרה + גריד תאי מסלולים */}
+      <section className="section">
+        <div className="container">
+          <p className="statement" data-reveal>
+            {pad2(CATALOG.length)} מסלולים וסדנאות פרונטליים, לכל מקצוע ולכל מטרה.
+            {" "}בלי הרצאות תאורטיות, בלי ספריית הקלטות. <Accent>עובדים, בונים, יוצאים עם תוצר.</Accent>
+          </p>
+          <div style={{ marginTop: "clamp(36px, 5vw, 60px)" }} data-reveal>
+            <p className="cells-note">המסלולים והסדנאות של האקדמיה · לחיצה על תא פותחת את המסלול</p>
+            <div className="cells-grid">
+              {CATALOG.map((c) => (
+                <Link key={c.slug} to={`/courses/${c.slug}`} className="cell">
+                  <span>
+                    {c.title}
+                    <span className="cell-kind">{c.kind} · {c.category}</span>
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* מה בונים: כרטיסי מדיה עם כיתוב */}
+      <section className="section band-soft">
+        <div className="container">
+          <SectionHeader
+            center
+            kicker="מה בונים באקדמיה"
+            title={<>תוצרים שבנו במסלולים, <Accent>לא הבטחות</Accent>.</>}
+            sub="כל מסלול דגל מסתיים בתוצר עובד. ככה הם נראים מבפנים."
+          />
+          <div className="case-grid">
+            <div className="case-item wide" data-reveal>
+              <AiWorkerWindow />
+              <div className="case-caption"><b>עובד AI שמכיר את הלקוח</b><span>מסלול מנהלי סושיאל</span></div>
+            </div>
+            <div className="case-item" data-reveal>
+              <CrmWindow />
+              <div className="case-caption"><b>CRM ומעקב תשלומים</b><span>מסלול בעלי עסקים</span></div>
+            </div>
+            <div className="case-item" data-reveal>
+              <StoryboardWindow />
+              <div className="case-caption"><b>מרעיון לסרטון גמור</b><span>מסלול וידאו ותוכן</span></div>
+            </div>
+            <div className="case-item" data-reveal>
+              <StudyWindow />
+              <div className="case-caption"><b>סביבת לימודים אישית</b><span>מסלול סטודנטים</span></div>
+            </div>
+            <div className="case-item" data-reveal>
+              <LandingWindow />
+              <div className="case-caption"><b>דף נחיתה שבונים לבד</b><span>סדנת דפי נחיתה</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* פס דיו: סטטיסטיקות ענק */}
+      <section className="section band-ink">
+        <div className="container">
+          <div className="band-head" data-reveal>
+            <h2>למה <Accent>האקדמיה של גוטמן?</Accent></h2>
+            <p>
+              כי פה לא צופים בהרצאה על AI. עובדים איתו בידיים, על החומרים שלכם, עד שיש תוצר ביד.
             </p>
-            <div className="hero-ctas">
-              <Link to="/courses" className="btn btn-primary">לצפייה במסלולים</Link>
-              <Link to="/course-finder" className="btn btn-ghost">עזרו לי לבחור</Link>
-            </div>
           </div>
-
-          <div className="hero-proof" data-reveal>
-            <div className="proof-item">
-              <span className="proof-num">{pad2(CATALOG.length)}</span>
-              <span className="proof-label">מסלולים וסדנאות</span>
+          <div className="stats-grid" data-reveal>
+            <div className="stat-cell">
+              <span className="stat-label">מסלולים וסדנאות פרונטליים, לכל מקצוע ומטרה</span>
+              <span className="stat-num"><i>(</i>{pad2(CATALOG.length)}<i>)</i></span>
             </div>
-            <div className="proof-item">
-              <span className="proof-num">{pad2(FLAGSHIP_COUNT)}</span>
-              <span className="proof-label">מסלולי דגל עם סילבוס מלא</span>
+            <div className="stat-cell">
+              <span className="stat-label">מסלולי דגל עם סילבוס מלא ופתוח באתר</span>
+              <span className="stat-num"><i>(</i>{pad2(FLAGSHIP.length)}<i>)</i></span>
             </div>
-            <div className="proof-item">
-              <span className="proof-num">00</span>
-              <span className="proof-label">הקלטות. הכול חי ופרונטלי</span>
+            <div className="stat-cell">
+              <span className="stat-label">הקלטות ווובינרים. הכול חי, פנים מול פנים</span>
+              <span className="stat-num"><i>(</i>00<i>)</i></span>
             </div>
-            <div className="proof-item">
-              <span className="proof-num">01</span>
-              <span className="proof-label">תוצר ביד בסוף כל מסלול</span>
+            <div className="stat-cell">
+              <span className="stat-label">תוצר אמיתי שיוצאים איתו בסוף כל מסלול</span>
+              <span className="stat-num"><i>(</i>01<i>)</i></span>
             </div>
           </div>
         </div>
+        <Marquee />
       </section>
 
-      <Marquee />
-
-      {/* מה בונים: חלונות ממשק ברצועת גלילה */}
+      {/* למה פרונטלי: גריד פיצ'רים */}
       <section className="section">
         <div className="container">
           <SectionHeader
-            kicker={`מה בונים באקדמיה (${pad2(FLAGSHIP_COUNT)})`}
-            title={<>לא לומדים על זה. <Accent>בונים</Accent> את זה.</>}
-            sub="כל מסלול מסתיים בתוצר שעובד. אלה לא הדמיות שיווקיות, זה מה שנבנה בפועל במפגשים."
+            center
+            kicker="למה דווקא פרונטלי"
+            title={<>כי בהקלטה אי אפשר <Accent>לשאול</Accent>.</>}
           />
-        </div>
-        <div className="windows-scroller" data-reveal>
-          <AiWorkerWindow />
-          <CrmWindow />
-          <StoryboardWindow />
-          <StudyWindow />
-          <LandingWindow />
+          <div className="feature-grid" data-reveal>
+            {SITE.whyFrontal.map((p, i) => (
+              <div className="feature-cell" key={p.title}>
+                <span className="fi">{pad2(i + 1)}</span>
+                <h3>{p.title}</h3>
+                <p>{p.text}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* כל המסלולים: רשימת שורות ענקית */}
-      <section className="section" id="courses">
-        <div className="container">
-          <SectionHeader
-            kicker={`המסלולים והסדנאות (${pad2(CATALOG.length)})`}
-            title={<>לכל מקצוע יש כבר <Accent>מסלול</Accent>.</>}
-            sub="בוחרים את העולם שלכם. כל מסלול בנוי סביב עבודה אמיתית ותוצר אחד ברור."
-          />
-        </div>
-        <div className="container course-list">
-          {CATALOG.map((c, i) => (
-            <CourseRow key={c.slug} entry={c} index={i} />
-          ))}
-        </div>
-      </section>
-
-      {/* השיטה: שורות ממוספרות */}
-      <section className="section">
+      {/* עקרונות: שורות ממוספרות עם צד דביק */}
+      <section className="section band-soft">
         <div className="container split-section">
           <div className="split-aside">
             <SectionHeader
@@ -133,55 +202,37 @@ const Home = () => {
         </div>
       </section>
 
-      {/* למה פרונטלי */}
+      {/* המלצות: בכנות, בקרוב */}
       <section className="section">
-        <div className="container split-section">
-          <div className="split-aside">
-            <SectionHeader
-              kicker={`למה דווקא פרונטלי (${pad2(SITE.whyFrontal.length)})`}
-              title={<>כי בהקלטה אי אפשר <Accent>לשאול</Accent>.</>}
-              sub="עובדים בזמן אמת, טועים, מתקנים, ויוצאים עם משהו ביד."
-            />
-          </div>
-          <div className="num-rows">
-            {SITE.whyFrontal.map((p, i) => (
-              <div className="num-row" key={p.title} data-reveal>
-                <span className="nr-num">({pad2(i + 1)})</span>
-                <div className="nr-body">
-                  <h3>{p.title}</h3>
-                  <p>{p.text}</p>
-                </div>
-              </div>
-            ))}
+        <div className="container">
+          <SectionHeader
+            center
+            kicker="המלצות"
+            title={<>מה משתתפים יגידו <Accent>עלינו</Accent>.</>}
+            sub="האקדמיה נפתחת עכשיו. במקום ציטוטים מומצאים, המקומות האלה שמורים למשתתפים האמיתיים הראשונים."
+          />
+          <div className="testi-grid">
+            <TestimonialPlaceholder roleHint="מנהל/ת סושיאל" />
+            <TestimonialPlaceholder roleHint="בעל/ת עסק" />
+            <TestimonialPlaceholder roleHint="סטודנט/ית" />
           </div>
         </div>
       </section>
 
-      {/* המנחה */}
-      <section className="section chat-band">
-        <div className="container split-section">
-          <div className="split-aside">
-            <SectionHeader
-              kicker="לא בטוחים איזה מסלול?"
-              title={<>שתי שאלות, והמנחה <Accent>מכוון</Accent> אתכם.</>}
-              sub="שיחה קצרה עם המנחה של האקדמיה, ותקבלו את המסלול שמתאים בדיוק למטרה שלכם."
-            />
-          </div>
-          <ChatFinder />
-        </div>
-      </section>
-
-      {/* שאלות נפוצות */}
-      <section className="section">
+      {/* שאלות: חצי-חצי עם כרטיס שיחה */}
+      <section className="section band-soft">
         <div className="container split-section">
           <div className="split-aside">
             <SectionHeader
               kicker={`שאלות נפוצות (${pad2(GENERAL_FAQ.length)})`}
-              title={<>מה שכולם <Accent>שואלים</Accent>.</>}
+              title={<>יש שאלות? יש <Accent>תשובות</Accent>.</>}
+              sub="ואם לא מצאתם כאן, דברו איתנו ישירות."
             />
-            <p data-reveal>
-              <Link to="/faq" className="btn btn-ghost btn-small">לכל השאלות</Link>
-            </p>
+            <div className="mini-call-card" data-reveal>
+              <h4>מעדיפים בן אדם?</h4>
+              <p>השאירו פרטים ונחזור אליכם עם תשובה לכל שאלה, בלי התחייבות.</p>
+              <Link to="/contact" className="btn btn-primary btn-small">דברו איתנו<Orb /></Link>
+            </div>
           </div>
           <FAQAccordion items={HOME_FAQ} />
         </div>

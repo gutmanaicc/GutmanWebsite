@@ -99,25 +99,18 @@ const Header = () => {
 };
 
 const Footer = () => (
-  <footer className="ftr">
-    <div className="container">
-      <div className="ftr-cta">
-        <span className="ftr-kicker">מוכנים להתחיל?</span>
-        <Link to="/course-finder" className="ftr-huge-link">
-          בואו נמצא לכם מסלול
-          <svg width="0.55em" height="0.55em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-        </Link>
-      </div>
-
-      <div className="ftr-grid">
+  <>
+    <div className="ftr-curve" aria-hidden="true" />
+    <footer className="ftr">
+      <div className="container">
+        <div className="ftr-grid">
         <div className="ftr-brand">
-          <img src={logoWhite} alt="Gutman" width={148} height={78} />
+          <img src={logoWhite} alt="Gutman" width={140} height={74} />
           <p>
             האקדמיה הפרונטלית ללימודי בינה מלאכותית. מסלולים מעשיים, מבוססי תוצרים, שמותאמים למקצוע, לעסק
             ולמטרה שלכם.
           </p>
+          <Link to="/course-finder" className="btn btn-primary btn-small">מצאו את המסלול שלכם</Link>
         </div>
         <div>
           <h3>מסלולי הדגל</h3>
@@ -148,12 +141,17 @@ const Footer = () => (
           </ul>
         </div>
       </div>
+      <div className="ftr-contact-row">
+        <span className="k">כתבו לנו</span>
+        <a href="mailto:gutmanaicc@gmail.com" dir="ltr">gutmanaicc@gmail.com</a>
+      </div>
       <div className="ftr-bottom">
         <span>© GutmanAI {new Date().getFullYear()} · כל הזכויות שמורות</span>
         <span>gutmanai.com</span>
       </div>
     </div>
   </footer>
+  </>
 );
 
 const ScrollManager = () => {

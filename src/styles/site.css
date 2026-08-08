@@ -1,25 +1,28 @@
 /* ============================================================
-   Gutman Academy · v2 · שפת סטודיו עריכתית (orbix.studio)
-   קנבס אפור-לבן חם, טיפוגרפיה עצומה מיושרת להתחלה, שורות
-   ממוספרות עם קווי hairline, marquee, פוטר דיו ענק.
-   מותג: #191919 (דיו) + #ff5f9e (ורוד) בנגיעות מיקרו בלבד.
+   Gutman Academy · v3 · לפי צילומי orbix.studio של רון
+   כותרות ממורכזות עם סריף נטוי בתוך השורה, קיקר-גלולה קטן,
+   סקשנים בהירים וכהים לסירוגין, סטטיסטיקות ענק 2x2, גריד תאים,
+   כרטיסי מדיה עם כיתוב, כפתורי גלולה קומפקטיים, פוטר דיו.
+   מותג: #191919 + #ff5f9e. הוורוד בנגיעות בלבד.
    ============================================================ */
 
 :root {
   --ink: #191919;
   --brand-pink: #ff5f9e;
-  --paper: #f4f4f2;
-  --paper-raised: #fafaf8;
-  --paper-sunken: #eaeae7;
+  --paper: #f7f7f5;
+  --paper-card: #efefec;
+  --white: #ffffff;
   --line: rgba(25, 25, 25, 0.12);
   --line-soft: rgba(25, 25, 25, 0.07);
   --muted: rgba(25, 25, 25, 0.55);
   --muted-strong: rgba(25, 25, 25, 0.74);
-  --r-big: 28px;
+  --w-line: rgba(255, 255, 255, 0.16);
+  --w-muted: rgba(255, 255, 255, 0.62);
+  --r-big: 26px;
   --r-med: 18px;
   --r-sm: 12px;
-  --shadow-float: 0 20px 44px -16px rgba(25, 25, 25, 0.38);
-  --shadow-card: 0 1px 2px rgba(25, 25, 25, 0.04), 0 14px 36px -22px rgba(25, 25, 25, 0.16);
+  --shadow-card: 0 1px 2px rgba(25, 25, 25, 0.04), 0 16px 40px -24px rgba(25, 25, 25, 0.18);
+  --shadow-float: 0 14px 30px -12px rgba(25, 25, 25, 0.35);
   --ease: cubic-bezier(0.22, 0.68, 0.2, 1);
   --pad-x: clamp(20px, 4.5vw, 56px);
 }
@@ -29,7 +32,7 @@ html {
 }
 
 body[data-theme="site"] {
-  background: var(--paper);
+  background: var(--white);
   color: var(--ink);
   font-family: "Heebo", sans-serif;
   font-weight: 400;
@@ -54,7 +57,7 @@ body[data-theme="site"] ::selection {
 
 .container {
   width: 100%;
-  max-width: 1360px;
+  max-width: 1240px;
   margin-inline: auto;
   padding-inline: var(--pad-x);
 }
@@ -66,11 +69,11 @@ body[data-theme="site"] ::selection {
 .site h3 {
   font-weight: 600;
   letter-spacing: -0.02em;
-  line-height: 1.08;
+  line-height: 1.14;
   text-wrap: balance;
 }
 
-/* החתימה: מילת הדגשה בסריף עברי נטוי */
+/* החתימה: קטע כותרת בסריף עברי נטוי, בתוך השורה */
 .acc {
   font-family: "Frank Ruhl Libre", serif;
   font-weight: 600;
@@ -78,20 +81,25 @@ body[data-theme="site"] ::selection {
   transform: skewX(-7deg);
 }
 
+/* קיקר-גלולה קטן עם נקודת מותג, כמו "◦ Our Story" */
 .eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  font-size: 0.8rem;
+  gap: 9px;
+  font-size: 0.78rem;
   font-weight: 600;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.08em;
   color: var(--muted-strong);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 7px 16px;
+  background: var(--white);
 }
 
 .eyebrow::before {
   content: "";
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: var(--brand-pink);
   flex-shrink: 0;
@@ -102,50 +110,46 @@ body[data-theme="site"] ::selection {
   color: var(--brand-pink);
   font-weight: 600;
   margin-inline-start: 3px;
-  letter-spacing: 0.02em;
 }
 
 /* ---------- חשיפה בגלילה ---------- */
 
 [data-reveal] {
   opacity: 0;
-  transform: translateY(26px);
-  filter: blur(3px);
-  transition: opacity 0.85s var(--ease), transform 0.85s var(--ease), filter 0.85s var(--ease);
+  transform: translateY(22px);
+  transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
 }
 
 [data-reveal].revealed {
   opacity: 1;
   transform: none;
-  filter: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
   [data-reveal] {
     opacity: 1;
     transform: none;
-    filter: none;
     transition: none;
   }
 }
 
-/* ---------- כפתורים: גלולות דיו מרחפות ---------- */
+/* ---------- כפתורים: גלולות קומפקטיות עם עיגול-חץ ---------- */
 
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  min-height: 54px;
-  padding: 15px 32px;
+  min-height: 46px;
+  padding: 11px 22px;
   border-radius: 999px;
   border: 1px solid transparent;
   font-family: inherit;
-  font-size: 1rem;
+  font-size: 0.94rem;
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
-  transition: transform 0.18s var(--ease), box-shadow 0.3s var(--ease), background 0.2s, color 0.2s;
+  transition: transform 0.18s var(--ease), box-shadow 0.25s var(--ease), background 0.2s, color 0.2s, border-color 0.2s;
   will-change: transform;
 }
 
@@ -156,8 +160,8 @@ body[data-theme="site"] ::selection {
 }
 
 .btn-primary:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 28px 56px -18px rgba(25, 25, 25, 0.46);
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px -14px rgba(25, 25, 25, 0.45);
 }
 
 .btn:active {
@@ -176,13 +180,37 @@ body[data-theme="site"] ::selection {
 }
 
 .btn-small {
-  min-height: 44px;
-  padding: 10px 22px;
-  font-size: 0.9rem;
+  min-height: 42px;
+  padding: 9px 18px;
+  font-size: 0.88rem;
 }
 
 .btn-block {
   width: 100%;
+}
+
+/* עיגול-חץ בקצה כפתור, בסגנון orbix */
+.btn-orb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--ink);
+  flex-shrink: 0;
+  margin-inline-end: -8px;
+  transition: transform 0.3s var(--ease);
+}
+
+.btn:hover .btn-orb {
+  transform: translateX(-3px);
+}
+
+.btn-ghost .btn-orb {
+  background: var(--ink);
+  color: #fff;
 }
 
 .site :focus-visible {
@@ -214,11 +242,11 @@ body[data-theme="site"] ::selection {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(244, 244, 242, 0.85);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(16px) saturate(150%);
   -webkit-backdrop-filter: blur(16px) saturate(150%);
   border-bottom: 1px solid transparent;
-  transition: border-color 0.3s;
+  transition: border-color 0.3s, background 0.3s;
 }
 
 .hdr.scrolled {
@@ -226,14 +254,14 @@ body[data-theme="site"] ::selection {
 }
 
 .hdr.menu-open {
-  background: var(--paper);
+  background: var(--white);
 }
 
 .hdr-inner {
   display: flex;
   align-items: center;
-  gap: clamp(16px, 3vw, 44px);
-  min-height: 76px;
+  gap: clamp(16px, 3vw, 40px);
+  min-height: 70px;
 }
 
 .hdr-logo {
@@ -245,13 +273,13 @@ body[data-theme="site"] ::selection {
 }
 
 .hdr-logo img {
-  width: clamp(96px, 9vw, 122px);
+  width: clamp(92px, 8vw, 112px);
   height: auto;
   display: block;
 }
 
 .hdr-logo-sub {
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   font-weight: 600;
   color: var(--muted);
   white-space: nowrap;
@@ -262,15 +290,15 @@ body[data-theme="site"] ::selection {
 .hdr-nav {
   display: flex;
   align-items: center;
-  gap: clamp(14px, 2vw, 30px);
-  margin-inline-start: auto;
+  gap: clamp(14px, 2vw, 26px);
+  margin-inline: auto;
 }
 
 .hdr-nav a {
   position: relative;
   color: var(--muted-strong);
   text-decoration: none;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: 500;
   padding: 6px 0;
   transition: color 0.18s;
@@ -309,25 +337,25 @@ body[data-theme="site"] ::selection {
   display: none;
   align-items: center;
   gap: 8px;
-  min-height: 44px;
+  min-height: 42px;
   padding: 8px 16px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: transparent;
   color: var(--ink);
   font-family: inherit;
-  font-size: 0.88rem;
+  font-size: 0.86rem;
   font-weight: 600;
   cursor: pointer;
 }
 
 .mobile-nav {
   position: fixed;
-  inset: 76px 0 0 0;
+  inset: 70px 0 0 0;
   z-index: 49;
-  background: var(--paper);
+  background: var(--white);
   overflow-y: auto;
-  padding-block: 20px 40px;
+  padding-block: 16px 40px;
 }
 
 .mnav-link {
@@ -336,10 +364,10 @@ body[data-theme="site"] ::selection {
   gap: 14px;
   color: var(--ink);
   text-decoration: none;
-  font-size: clamp(1.9rem, 7vw, 2.8rem);
+  font-size: clamp(1.8rem, 6.5vw, 2.6rem);
   font-weight: 650;
   letter-spacing: -0.02em;
-  padding: 18px 4px;
+  padding: 16px 4px;
   border-bottom: 1px solid var(--line);
   animation: mnav-in 0.5s var(--ease) backwards;
 }
@@ -353,7 +381,7 @@ body[data-theme="site"] ::selection {
 @keyframes mnav-in {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(18px);
   }
 
   to {
@@ -367,13 +395,13 @@ body[data-theme="site"] ::selection {
 }
 
 .mnav-num {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 600;
   color: var(--brand-pink);
 }
 
 .mobile-cta {
-  margin-top: 28px;
+  margin-top: 26px;
 }
 
 @media (max-width: 1020px) {
@@ -392,21 +420,41 @@ body[data-theme="site"] ::selection {
 /* ---------- סקשנים ---------- */
 
 .section {
-  padding-block: clamp(72px, 10vw, 140px);
-  border-top: 1px solid var(--line);
+  padding-block: clamp(64px, 8.5vw, 120px);
 }
 
-.section.no-line {
-  border-top: none;
+.section.tight {
+  padding-block: clamp(44px, 6vw, 80px);
 }
 
 .page-head {
-  padding-top: clamp(28px, 4vw, 56px);
+  padding-top: clamp(24px, 3.5vw, 48px);
+}
+
+/* סקשן דיו כהה מלא, בסגנון "Why Orbix Studio?" */
+.band-ink {
+  background: var(--ink);
+  color: #fff;
+}
+
+.band-ink .eyebrow {
+  background: transparent;
+  border-color: var(--w-line);
+  color: var(--w-muted);
+}
+
+/* סקשן אפרפר עדין לחילופי מקצב */
+.band-soft {
+  background: var(--paper);
+}
+
+.band-soft .eyebrow {
+  background: var(--white);
 }
 
 .sec-head {
-  max-width: 860px;
-  margin-bottom: clamp(36px, 5vw, 64px);
+  max-width: 780px;
+  margin-bottom: clamp(32px, 4.5vw, 56px);
 }
 
 .sec-head.center {
@@ -415,37 +463,42 @@ body[data-theme="site"] ::selection {
 }
 
 .sec-head .eyebrow {
-  margin-bottom: 22px;
+  margin-bottom: 20px;
 }
 
 .sec-title {
-  font-size: clamp(2.1rem, 5vw, 3.9rem);
-  letter-spacing: -0.03em;
+  font-size: clamp(1.9rem, 4vw, 3.1rem);
+  letter-spacing: -0.025em;
   font-weight: 650;
+  line-height: 1.16;
 }
 
 .sec-sub {
-  margin-top: 18px;
-  font-size: clamp(1rem, 1.6vw, 1.2rem);
+  margin-top: 16px;
+  font-size: clamp(0.98rem, 1.5vw, 1.12rem);
   color: var(--muted-strong);
-  max-width: 620px;
+  max-width: 600px;
+}
+
+.band-ink .sec-sub {
+  color: var(--w-muted);
 }
 
 .sec-head.center .sec-sub {
   margin-inline: auto;
 }
 
-/* פריסת סקשן מפוצל: כותרת דביקה בצד, תוכן זורם */
+/* פריסה מפוצלת עם צד דביק */
 .split-section {
   display: grid;
   grid-template-columns: minmax(280px, 5fr) 7fr;
-  gap: clamp(28px, 5vw, 88px);
+  gap: clamp(28px, 5vw, 80px);
   align-items: start;
 }
 
 .split-aside {
   position: sticky;
-  top: 108px;
+  top: 100px;
 }
 
 .split-aside .sec-head {
@@ -465,207 +518,233 @@ body[data-theme="site"] ::selection {
 /* ---------- Hero ---------- */
 
 .hero {
-  padding-block: clamp(64px, 9vw, 130px) clamp(56px, 7vw, 96px);
+  padding-block: clamp(52px, 7vw, 96px) 0;
+  text-align: center;
 }
 
 .hero .eyebrow {
-  margin-bottom: clamp(24px, 3vw, 40px);
+  margin-bottom: 26px;
 }
 
 .hero h1 {
-  font-size: clamp(3rem, 10.5vw, 8.2rem);
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  line-height: 0.99;
-  margin-inline-end: -0.04em;
+  font-size: clamp(2.5rem, 6vw, 4.6rem);
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  max-width: 900px;
+  margin-inline: auto;
 }
 
 .hero h1 .acc {
-  font-weight: 700;
-  color: var(--ink);
-}
-
-.hero-foot {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
-  margin-top: clamp(32px, 4.5vw, 56px);
+  font-weight: 600;
 }
 
 .hero-sub {
   max-width: 560px;
-  font-size: clamp(1.02rem, 1.7vw, 1.22rem);
+  margin: 20px auto 0;
+  font-size: clamp(0.98rem, 1.5vw, 1.12rem);
   color: var(--muted-strong);
 }
 
 .hero-ctas {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 30px;
 }
 
-.hero-proof {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 0;
-  margin-top: clamp(48px, 6vw, 88px);
-  border-top: 1px solid var(--line);
-}
-
-.proof-item {
-  padding: 24px 22px 6px;
-  border-inline-start: 1px solid var(--line);
-}
-
-.proof-item:first-child {
-  border-inline-start: none;
-  padding-inline-start: 0;
-}
-
-.proof-num {
-  display: block;
-  font-size: clamp(2rem, 4vw, 3.2rem);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.1;
-}
-
-.proof-num::before {
-  content: "(";
-  color: var(--brand-pink);
-  font-weight: 400;
-}
-
-.proof-num::after {
-  content: ")";
-  color: var(--brand-pink);
-  font-weight: 400;
-}
-
-.proof-label {
-  display: block;
-  margin-top: 6px;
-  font-size: 0.86rem;
-  color: var(--muted);
-  font-weight: 500;
-}
-
-@media (max-width: 700px) {
-  .hero-proof {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .proof-item:nth-child(odd) {
-    border-inline-start: none;
-    padding-inline-start: 0;
-  }
-}
-
-/* ---------- Marquee ---------- */
-
-.marquee {
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  padding-block: 18px;
+/* בלוק המדיה הכהה של ההירו: המוצר החי בפנים */
+.hero-media {
+  margin-top: clamp(44px, 6vw, 72px);
+  background: var(--ink);
+  border-radius: var(--r-big);
+  padding: clamp(28px, 5vw, 72px) clamp(18px, 4vw, 64px);
+  position: relative;
   overflow: hidden;
 }
 
-.marquee-track {
-  display: flex;
-  width: max-content;
-  animation: marquee 42s linear infinite;
+.hero-media::before {
+  content: "";
+  position: absolute;
+  inset: -40% -20% auto;
+  height: 90%;
+  background: radial-gradient(ellipse 45% 60% at 50% 0%, rgba(255, 95, 158, 0.22), transparent 70%);
+  pointer-events: none;
 }
 
-.marquee:hover .marquee-track {
-  animation-play-state: paused;
+.hero-media .chat-shell {
+  position: relative;
+  margin-inline: auto;
+  box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.6);
 }
 
-.marquee-strip {
+.hero-chips {
+  position: relative;
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.hero-chip {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fff;
+  border: 1px solid var(--w-line);
+  border-radius: 999px;
+  padding: 7px 16px;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(6px);
+}
+
+.hero-chip b {
+  color: var(--brand-pink);
+  margin-inline-end: 5px;
+}
+
+/* ---------- הצהרה ממורכזת (statement) ---------- */
+
+.statement {
+  max-width: 760px;
+  margin-inline: auto;
+  text-align: center;
+  font-size: clamp(1.3rem, 2.6vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+}
+
+.statement .acc {
+  font-weight: 600;
+}
+
+/* ---------- גריד תאים (כמו רשת הלוגואים) ---------- */
+
+.cells-note {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 22px;
+}
+
+.cells-grid {
+  display: flex;
+  flex-wrap: wrap;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--r-med);
+  overflow: hidden;
+}
+
+.cell {
+  flex: 1 1 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 92px;
+  padding: 18px 16px;
+  background: var(--white);
+  box-shadow: 0 0 0 0.5px var(--line);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition: background 0.2s, color 0.2s;
+}
+
+.cell:hover {
+  background: var(--paper);
+  color: var(--brand-pink);
+}
+
+.cell .cell-kind {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+@media (max-width: 620px) {
+  .cell {
+    flex-basis: 46%;
+  }
+}
+
+/* ---------- כרטיסי מדיה עם כיתוב (כמו Products We Helped) ---------- */
+
+.case-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(18px, 2.5vw, 28px);
+}
+
+.case-item {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.case-item.wide {
+  grid-column: 1 / -1;
+}
+
+.case-caption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding-inline: 4px;
+}
+
+.case-caption b {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.case-caption span {
+  font-size: 0.82rem;
+  color: var(--muted);
   flex-shrink: 0;
 }
 
-.marquee-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 26px;
-  padding-inline-end: 26px;
-  white-space: nowrap;
-  font-size: clamp(1.1rem, 2.2vw, 1.7rem);
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--ink);
+/* בגריד הכרטיסים הכיתוב יושב מתחת לחלון, לא בתוכו */
+.case-grid .mw-caption {
+  display: none;
 }
 
-.marquee-dot {
-  color: var(--brand-pink);
-  font-size: 0.7em;
-}
-
-/* RTL: מזיזים את המסלול ימינה, הרצועה משוכפלת פעמיים */
-@keyframes marquee {
-  from {
-    transform: translateX(0);
-  }
-
-  to {
-    transform: translateX(50%);
+@media (max-width: 760px) {
+  .case-grid {
+    grid-template-columns: 1fr;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .marquee-track {
-    animation: none;
-    width: auto;
-    flex-wrap: wrap;
-  }
-
-  .marquee-strip[aria-hidden] {
-    display: none;
-  }
-}
-
-/* ---------- חלונות ממשק: רצועת גלילה אופקית ---------- */
-
-.windows-scroller {
-  display: flex;
-  gap: 20px;
-  overflow-x: auto;
-  padding-inline: var(--pad-x);
-  padding-bottom: 22px;
-  scroll-snap-type: x proximity;
-  scrollbar-width: thin;
-  scrollbar-color: var(--line) transparent;
-}
-
-.windows-scroller .mock-window {
-  flex: 0 0 clamp(300px, 34vw, 430px);
-  scroll-snap-align: start;
-}
-
+/* חלונות ממשק: המדיה של הכרטיסים */
 .mock-window {
   display: flex;
   flex-direction: column;
-  background: var(--paper-raised);
+  background: var(--paper);
   border: 1px solid var(--line);
   border-radius: var(--r-big);
   overflow: hidden;
   text-decoration: none;
   color: var(--ink);
-  box-shadow: var(--shadow-card);
   transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
+  height: 100%;
 }
 
 .mock-window:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 30px 60px -24px rgba(25, 25, 25, 0.3);
+  transform: translateY(-5px);
+  box-shadow: 0 28px 56px -26px rgba(25, 25, 25, 0.3);
 }
 
 .mock-window:active {
-  transform: scale(0.985);
+  transform: scale(0.99);
 }
 
 .mw-bar,
@@ -675,7 +754,7 @@ body[data-theme="site"] ::selection {
   gap: 10px;
   padding: 12px 18px;
   border-bottom: 1px solid var(--line);
-  background: var(--paper-sunken);
+  background: var(--white);
 }
 
 .chat-dots {
@@ -708,12 +787,13 @@ body[data-theme="site"] ::selection {
   gap: 9px;
   padding: 18px;
   flex: 1;
-  font-size: 0.86rem;
+  font-size: 0.87rem;
   line-height: 1.5;
 }
 
 .mw-bubble {
-  background: var(--paper-sunken);
+  background: var(--white);
+  border: 1px solid var(--line-soft);
   border-radius: 14px 14px 14px 4px;
   padding: 10px 14px;
   color: var(--muted-strong);
@@ -724,6 +804,7 @@ body[data-theme="site"] ::selection {
 .mw-bubble.me {
   background: var(--ink);
   color: #fff;
+  border: none;
   border-radius: 14px 14px 4px 14px;
   align-self: flex-end;
 }
@@ -736,9 +817,9 @@ body[data-theme="site"] ::selection {
   padding: 10px 13px;
   border: 1px solid var(--line-soft);
   border-radius: 11px;
-  background: #fff;
+  background: var(--white);
   font-weight: 500;
-  font-size: 0.82rem;
+  font-size: 0.83rem;
 }
 
 .mw-row .st {
@@ -761,7 +842,7 @@ body[data-theme="site"] ::selection {
 .mw-frame {
   aspect-ratio: 16 / 10;
   border-radius: 9px;
-  background: linear-gradient(135deg, var(--paper-sunken), #e0e0dd);
+  background: linear-gradient(135deg, var(--white), var(--paper-card));
   border: 1px solid var(--line-soft);
 }
 
@@ -773,7 +854,7 @@ body[data-theme="site"] ::selection {
 
 .mw-block {
   border-radius: 9px;
-  background: var(--paper-sunken);
+  background: var(--white);
   border: 1px solid var(--line-soft);
 }
 
@@ -800,6 +881,7 @@ body[data-theme="site"] ::selection {
   gap: 2px;
   padding: 15px 18px 17px;
   border-top: 1px solid var(--line);
+  background: var(--white);
 }
 
 .mw-caption b {
@@ -812,96 +894,108 @@ body[data-theme="site"] ::selection {
   color: var(--muted);
 }
 
-/* ---------- רשימת מסלולים: שורות סטודיו ---------- */
+/* ---------- סטטיסטיקות ענק 2x2 על דיו ---------- */
 
-.course-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.course-row {
+.band-head {
   display: grid;
-  grid-template-columns: 64px 1fr auto 44px;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(20px, 4vw, 64px);
+  align-items: end;
+  margin-bottom: clamp(36px, 5vw, 64px);
+}
+
+.band-head h2 {
+  font-size: clamp(2rem, 4.2vw, 3.4rem);
+  letter-spacing: -0.03em;
+  font-weight: 650;
+}
+
+.band-head p {
+  color: var(--w-muted);
+  max-width: 440px;
+  justify-self: end;
+  font-size: 0.98rem;
+}
+
+@media (max-width: 800px) {
+  .band-head {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .band-head p {
+    justify-self: start;
+  }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid var(--w-line);
+  border-inline-start: 1px solid var(--w-line);
+}
+
+.stat-cell {
+  display: flex;
   align-items: center;
-  gap: clamp(14px, 2.5vw, 32px);
-  padding-block: clamp(22px, 3vw, 34px);
-  border-top: 1px solid var(--line);
-  text-decoration: none;
-  color: var(--ink);
-  position: relative;
-  transition: background 0.25s var(--ease), padding 0.25s var(--ease);
+  justify-content: space-between;
+  gap: 20px;
+  padding: clamp(24px, 3.5vw, 44px) clamp(18px, 2.5vw, 36px);
+  border-bottom: 1px solid var(--w-line);
+  border-inline-end: 1px solid var(--w-line);
 }
 
-.course-row:last-child {
-  border-bottom: 1px solid var(--line);
+.stat-label {
+  font-size: 0.92rem;
+  color: var(--w-muted);
+  max-width: 240px;
 }
 
-.course-row:hover {
-  background: var(--paper-raised);
-  padding-inline: 18px;
-  margin-inline: -18px;
-}
-
-.cr-num {
+.stat-num {
+  font-size: clamp(2.6rem, 6vw, 4.6rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
-  font-size: 0.9rem;
-  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.stat-num i {
+  font-style: normal;
   color: var(--brand-pink);
 }
 
-.cr-main {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
+@media (max-width: 640px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-cell {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
 }
 
-.cr-title {
-  font-size: clamp(1.35rem, 3vw, 2.3rem);
-  font-weight: 650;
-  letter-spacing: -0.025em;
-  line-height: 1.12;
-  transition: transform 0.3s var(--ease);
-}
+/* ---------- גריד פיצ'רים עם קווים (A Simple Team...) ---------- */
 
-.course-row:hover .cr-title {
-  transform: translateX(-6px);
-}
-
-.cr-blurb {
-  font-size: 0.92rem;
-  color: var(--muted);
-  max-width: 640px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+.feature-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--r-med);
   overflow: hidden;
 }
 
-.cr-meta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-  flex-shrink: 0;
+.feature-cell {
+  background: var(--white);
+  padding: clamp(24px, 3vw, 40px);
+  text-align: center;
 }
 
-.cr-chip {
-  font-size: 0.74rem;
-  font-weight: 600;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 5px 14px;
-  color: var(--muted-strong);
-  background: var(--paper-raised);
-}
-
-.cr-cat {
-  font-size: 0.78rem;
-  color: var(--muted);
-}
-
-.cr-arrow {
+.feature-cell .fi {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -909,116 +1003,102 @@ body[data-theme="site"] ::selection {
   height: 44px;
   border: 1px solid var(--line);
   border-radius: 50%;
-  color: var(--ink);
-  opacity: 0.55;
-  transition: opacity 0.25s, background 0.25s, color 0.25s, transform 0.3s var(--ease);
-}
-
-.course-row:hover .cr-arrow {
-  opacity: 1;
-  background: var(--ink);
-  color: #fff;
-  transform: translateX(-4px);
-}
-
-@media (max-width: 760px) {
-  .course-row {
-    grid-template-columns: 1fr 40px;
-    grid-template-areas:
-      "num arrow"
-      "main main"
-      "meta meta";
-    row-gap: 10px;
-  }
-
-  .cr-num { grid-area: num; }
-  .cr-main { grid-area: main; }
-  .cr-arrow { grid-area: arrow; width: 40px; height: 40px; justify-self: end; }
-
-  .cr-meta {
-    grid-area: meta;
-    flex-direction: row;
-    align-items: center;
-  }
-}
-
-/* ---------- שורות ממוספרות (עקרונות / איך זה עובד) ---------- */
-
-.num-rows {
-  display: flex;
-  flex-direction: column;
-}
-
-.num-row {
-  display: grid;
-  grid-template-columns: 72px 1fr;
-  gap: clamp(12px, 2vw, 28px);
-  padding-block: clamp(20px, 2.6vw, 30px);
-  border-top: 1px solid var(--line);
-}
-
-.num-row:last-child {
-  border-bottom: 1px solid var(--line);
-}
-
-.nr-num {
-  font-variant-numeric: tabular-nums;
+  color: var(--brand-pink);
   font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--brand-pink);
-  padding-top: 5px;
-}
-
-.nr-body h3 {
-  font-size: clamp(1.15rem, 2vw, 1.5rem);
-  margin-bottom: 6px;
-}
-
-.nr-body p {
-  color: var(--muted-strong);
-  font-size: 0.98rem;
-  max-width: 560px;
-}
-
-/* גריד ממוספר ישן (עמוד אודות) יורש את אותה שפה */
-.num-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
-  border-top: 1px solid var(--line);
-  border-inline-start: 1px solid var(--line);
-}
-
-.num-cell {
-  padding: 30px 26px 34px;
-  border-bottom: 1px solid var(--line);
-  border-inline-end: 1px solid var(--line);
-}
-
-.num-cell .num {
-  display: block;
-  font-variant-numeric: tabular-nums;
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--brand-pink);
+  font-weight: 700;
   margin-bottom: 16px;
+  font-variant-numeric: tabular-nums;
 }
 
-.num-cell h3 {
-  font-size: 1.15rem;
+.feature-cell h3 {
+  font-size: 1.08rem;
   margin-bottom: 8px;
 }
 
-.num-cell p {
-  font-size: 0.95rem;
+.feature-cell p {
+  font-size: 0.92rem;
   color: var(--muted-strong);
+  max-width: 340px;
+  margin-inline: auto;
+}
+
+@media (max-width: 700px) {
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- marquee בפס דיו ---------- */
+
+.marquee {
+  padding-block: 20px;
+  overflow: hidden;
+}
+
+.band-ink .marquee {
+  border-block: 1px solid var(--w-line);
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 46s linear infinite;
+}
+
+.marquee:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+.marquee-strip {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.marquee-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 24px;
+  padding-inline-end: 24px;
+  white-space: nowrap;
+  font-size: clamp(1rem, 1.9vw, 1.4rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: inherit;
+}
+
+.marquee-dot {
+  color: var(--brand-pink);
+  font-size: 0.7em;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+    width: auto;
+    flex-wrap: wrap;
+  }
+
+  .marquee-strip[aria-hidden] {
+    display: none;
+  }
 }
 
 /* ---------- הצ'אט המנחה ---------- */
 
 .chat-shell {
   width: 100%;
-  max-width: 620px;
-  background: var(--paper-raised);
+  max-width: 560px;
+  background: var(--white);
   border: 1px solid var(--line);
   border-radius: var(--r-big);
   overflow: hidden;
@@ -1026,21 +1106,22 @@ body[data-theme="site"] ::selection {
 }
 
 .chat-body {
-  padding: 22px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  min-height: 360px;
-  max-height: 460px;
+  min-height: 340px;
+  max-height: 430px;
   overflow-y: auto;
   scroll-behavior: smooth;
+  background: var(--paper);
 }
 
 .chat-msg {
   max-width: 86%;
-  padding: 12px 17px;
-  border-radius: 17px;
-  font-size: 0.96rem;
+  padding: 11px 16px;
+  border-radius: 16px;
+  font-size: 0.95rem;
   line-height: 1.55;
   animation: msg-in 0.35s var(--ease);
 }
@@ -1064,7 +1145,8 @@ body[data-theme="site"] ::selection {
 }
 
 .chat-msg.bot {
-  background: var(--paper-sunken);
+  background: var(--white);
+  border: 1px solid var(--line-soft);
   color: var(--ink);
   align-self: flex-start;
   border-start-start-radius: 5px;
@@ -1123,15 +1205,15 @@ body[data-theme="site"] ::selection {
 }
 
 .chat-choice {
-  min-height: 50px;
+  min-height: 48px;
   text-align: start;
-  padding: 13px 20px;
+  padding: 12px 18px;
   border-radius: 999px;
   border: 1px solid var(--line);
-  background: #fff;
+  background: var(--white);
   color: var(--ink);
   font-family: inherit;
-  font-size: 0.94rem;
+  font-size: 0.93rem;
   font-weight: 500;
   cursor: pointer;
   transition: border-color 0.15s, transform 0.12s;
@@ -1149,13 +1231,13 @@ body[data-theme="site"] ::selection {
   align-self: stretch;
   border: 1px solid var(--line);
   border-radius: var(--r-med);
-  background: #fff;
-  padding: 22px;
+  background: var(--white);
+  padding: 20px;
   box-shadow: var(--shadow-card);
 }
 
 .chat-result-card h3 {
-  font-size: 1.12rem;
+  font-size: 1.1rem;
   margin-bottom: 6px;
 }
 
@@ -1188,7 +1270,7 @@ body[data-theme="site"] ::selection {
   color: var(--ink);
 }
 
-/* ---------- FAQ ---------- */
+/* ---------- FAQ (חצי-חצי כמו Got Questions) ---------- */
 
 .faq-list {
   width: 100%;
@@ -1212,9 +1294,9 @@ body[data-theme="site"] ::selection {
   text-align: start;
   background: none;
   border: none;
-  padding: 24px 4px;
+  padding: 20px 4px;
   font-family: inherit;
-  font-size: clamp(1.02rem, 1.7vw, 1.2rem);
+  font-size: clamp(0.98rem, 1.5vw, 1.1rem);
   font-weight: 600;
   color: var(--ink);
   cursor: pointer;
@@ -1225,11 +1307,11 @@ body[data-theme="site"] ::selection {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border: 1px solid var(--line);
   border-radius: 50%;
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 400;
   transition: transform 0.35s var(--ease), background 0.2s, color 0.2s, border-color 0.2s;
 }
@@ -1256,7 +1338,7 @@ body[data-theme="site"] ::selection {
 }
 
 .faq-a-inner p {
-  padding: 0 4px 26px;
+  padding: 0 4px 22px;
   color: var(--muted-strong);
   max-width: 640px;
 }
@@ -1267,28 +1349,50 @@ body[data-theme="site"] ::selection {
   }
 }
 
+/* כרטיס "רוצים שיחה?" קטן ליד ה-FAQ */
+.mini-call-card {
+  margin-top: 24px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-med);
+  padding: 22px;
+  max-width: 340px;
+}
+
+.mini-call-card h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.mini-call-card p {
+  font-size: 0.86rem;
+  color: var(--muted-strong);
+  margin-bottom: 16px;
+}
+
 /* ---------- טופס לידים ---------- */
 
 .lead-form {
   width: 100%;
-  background: var(--paper-raised);
+  background: var(--white);
   border: 1px solid var(--line);
   border-radius: var(--r-big);
-  padding: clamp(26px, 4vw, 44px);
-  max-width: 680px;
+  padding: clamp(24px, 3.5vw, 40px);
+  max-width: 660px;
   box-shadow: var(--shadow-card);
 }
 
 .lead-form h3 {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   letter-spacing: -0.02em;
   margin-bottom: 8px;
 }
 
 .form-sub {
   color: var(--muted-strong);
-  font-size: 0.95rem;
-  margin-bottom: 26px;
+  font-size: 0.94rem;
+  margin-bottom: 24px;
 }
 
 .form-error-summary {
@@ -1321,7 +1425,7 @@ body[data-theme="site"] ::selection {
 }
 
 .field label {
-  font-size: 0.88rem;
+  font-size: 0.87rem;
   font-weight: 600;
 }
 
@@ -1333,16 +1437,16 @@ body[data-theme="site"] ::selection {
   font-family: inherit;
   font-size: 1rem;
   color: var(--ink);
-  background: #fff;
+  background: var(--paper);
   border: 1px solid var(--line);
   border-radius: var(--r-sm);
-  padding: 13px 16px;
-  min-height: 52px;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  padding: 12px 15px;
+  min-height: 50px;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
 }
 
 .field textarea {
-  min-height: 104px;
+  min-height: 100px;
   resize: vertical;
 }
 
@@ -1350,6 +1454,7 @@ body[data-theme="site"] ::selection {
 .field select:focus,
 .field textarea:focus {
   outline: none;
+  background: var(--white);
   border-color: var(--ink);
   box-shadow: 0 0 0 3px rgba(25, 25, 25, 0.07);
 }
@@ -1378,7 +1483,7 @@ body[data-theme="site"] ::selection {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  padding-block: 18px 0;
+  padding-block: 16px 0;
   font-size: 0.84rem;
 }
 
@@ -1405,7 +1510,8 @@ body[data-theme="site"] ::selection {
 /* ---------- דף מסלול ---------- */
 
 .course-hero {
-  padding-block: clamp(36px, 5vw, 64px) clamp(48px, 7vw, 96px);
+  padding-block: clamp(36px, 5vw, 64px) clamp(44px, 6vw, 80px);
+  text-align: center;
 }
 
 .course-hero .eyebrow {
@@ -1413,28 +1519,34 @@ body[data-theme="site"] ::selection {
 }
 
 .course-hero h1 {
-  font-size: clamp(2.4rem, 6.6vw, 5.4rem);
-  font-weight: 700;
-  letter-spacing: -0.035em;
-  line-height: 1.02;
-  max-width: 1000px;
+  font-size: clamp(2.1rem, 4.8vw, 3.9rem);
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  max-width: 880px;
+  margin-inline: auto;
+}
+
+.course-hero .hero-sub {
+  margin-inline: auto;
 }
 
 .badge-row {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 10px;
-  margin-top: 30px;
+  margin-top: 26px;
 }
 
 .badge {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 500;
   color: var(--muted-strong);
   border: 1px solid var(--line);
   border-radius: 999px;
-  padding: 8px 17px;
-  background: var(--paper-raised);
+  padding: 7px 16px;
+  background: var(--white);
   text-decoration: none;
 }
 
@@ -1473,19 +1585,19 @@ a.badge:hover {
 .prose p {
   color: var(--muted-strong);
   max-width: 620px;
-  font-size: 1.02rem;
+  font-size: 1rem;
 }
 
 .panel {
-  background: var(--paper-raised);
+  background: var(--white);
   border: 1px solid var(--line);
   border-radius: var(--r-big);
-  padding: clamp(24px, 3vw, 36px);
+  padding: clamp(22px, 3vw, 34px);
   box-shadow: var(--shadow-card);
 }
 
 .panel h3 {
-  font-size: 1.18rem;
+  font-size: 1.15rem;
   margin-bottom: 16px;
 }
 
@@ -1501,7 +1613,7 @@ a.badge:hover {
   display: flex;
   gap: 12px;
   align-items: flex-start;
-  font-size: 0.96rem;
+  font-size: 0.95rem;
   color: var(--muted-strong);
   line-height: 1.55;
 }
@@ -1535,12 +1647,12 @@ a.badge:hover {
 }
 
 .chip {
-  font-size: 0.86rem;
+  font-size: 0.85rem;
   font-weight: 500;
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 8px 16px;
-  background: var(--paper-raised);
+  background: var(--white);
   color: var(--muted-strong);
   transition: border-color 0.2s, color 0.2s;
 }
@@ -1550,7 +1662,6 @@ a.badge:hover {
   color: var(--ink);
 }
 
-/* סילבוס */
 .syllabus {
   display: flex;
   flex-direction: column;
@@ -1558,9 +1669,9 @@ a.badge:hover {
 
 .syl-module {
   display: grid;
-  grid-template-columns: 88px 1fr;
-  gap: clamp(16px, 3vw, 44px);
-  padding-block: clamp(26px, 3.5vw, 44px);
+  grid-template-columns: 84px 1fr;
+  gap: clamp(16px, 3vw, 40px);
+  padding-block: clamp(24px, 3.5vw, 40px);
   border-top: 1px solid var(--line);
 }
 
@@ -1577,28 +1688,28 @@ a.badge:hover {
 
 .syl-num {
   font-variant-numeric: tabular-nums;
-  font-size: clamp(1.1rem, 2vw, 1.4rem);
+  font-size: clamp(1rem, 1.8vw, 1.3rem);
   font-weight: 650;
   color: var(--brand-pink);
 }
 
 .syl-body h3 {
-  font-size: clamp(1.25rem, 2.4vw, 1.8rem);
+  font-size: clamp(1.2rem, 2.2vw, 1.65rem);
   letter-spacing: -0.02em;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
 
 .syl-rows {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 14px;
+  gap: 13px;
 }
 
 .syl-row {
-  background: var(--paper-raised);
-  border: 1px solid var(--line);
+  background: var(--paper);
+  border: 1px solid var(--line-soft);
   border-radius: var(--r-med);
-  padding: 16px 18px;
+  padding: 15px 17px;
 }
 
 .syl-row .k {
@@ -1607,21 +1718,21 @@ a.badge:hover {
   font-weight: 600;
   letter-spacing: 0.1em;
   color: var(--brand-pink);
-  margin-bottom: 7px;
+  margin-bottom: 6px;
 }
 
 .syl-row .v {
-  font-size: 0.92rem;
+  font-size: 0.9rem;
   color: var(--muted-strong);
   line-height: 1.55;
 }
 
 .syl-takeaway {
-  margin-top: 16px;
+  margin-top: 15px;
   display: flex;
   gap: 10px;
   align-items: baseline;
-  font-size: 0.98rem;
+  font-size: 0.96rem;
 }
 
 .syl-takeaway .k {
@@ -1633,31 +1744,31 @@ a.badge:hover {
   color: var(--muted-strong);
 }
 
-/* לוגיסטיקה */
 .logistics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
-  border-top: 1px solid var(--line);
-  border-inline-start: 1px solid var(--line);
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--r-med);
+  overflow: hidden;
 }
 
 .log-cell {
-  padding: 22px;
-  border-bottom: 1px solid var(--line);
-  border-inline-end: 1px solid var(--line);
-  background: var(--paper-raised);
+  padding: 20px;
+  background: var(--white);
 }
 
 .log-cell .k {
   display: block;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 600;
   color: var(--muted);
-  margin-bottom: 7px;
+  margin-bottom: 6px;
 }
 
 .log-cell .v {
-  font-size: 1rem;
+  font-size: 0.98rem;
   font-weight: 500;
 }
 
@@ -1666,26 +1777,122 @@ a.badge:hover {
 }
 
 .course-note {
-  margin-top: 26px;
+  margin-top: 24px;
   border-inline-start: 3px solid var(--brand-pink);
-  background: var(--paper-raised);
+  background: var(--paper);
   border-radius: 0 var(--r-sm) var(--r-sm) 0;
-  padding: 16px 20px;
-  font-size: 0.95rem;
+  padding: 15px 19px;
+  font-size: 0.94rem;
   color: var(--muted-strong);
   max-width: 720px;
+}
+
+/* ---------- שורות ממוספרות ותאים (עמודי משנה) ---------- */
+
+.num-rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.num-row {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: clamp(12px, 2vw, 26px);
+  padding-block: clamp(18px, 2.4vw, 26px);
+  border-top: 1px solid var(--line);
+}
+
+.num-row:last-child {
+  border-bottom: 1px solid var(--line);
+}
+
+.nr-num {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--brand-pink);
+  padding-top: 5px;
+}
+
+.nr-body h3 {
+  font-size: clamp(1.08rem, 1.8vw, 1.35rem);
+  margin-bottom: 5px;
+}
+
+.nr-body p {
+  color: var(--muted-strong);
+  font-size: 0.95rem;
+  max-width: 560px;
+}
+
+.num-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--r-med);
+  overflow: hidden;
+}
+
+.num-cell {
+  padding: 28px 24px 32px;
+  background: var(--white);
+}
+
+.num-cell .num {
+  display: block;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--brand-pink);
+  margin-bottom: 14px;
+}
+
+.num-cell h3 {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+}
+
+.num-cell p {
+  font-size: 0.93rem;
+  color: var(--muted-strong);
+}
+
+/* תא-קישור בקטלוג המסלולים */
+a.dir-cell {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: var(--ink);
+  transition: background 0.2s;
+}
+
+a.dir-cell:hover {
+  background: var(--paper);
+}
+
+a.dir-cell:hover h3 {
+  color: var(--brand-pink);
+}
+
+.dir-meta {
+  margin-top: 14px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
 }
 
 /* ---------- רצועת CTA ---------- */
 
 .cta-band {
-  border-top: 1px solid var(--line);
-  padding-block: clamp(72px, 10vw, 140px);
+  padding-block: clamp(64px, 9vw, 120px);
   text-align: center;
+  background: var(--paper);
 }
 
 .cta-band .sec-title {
-  max-width: 780px;
+  max-width: 760px;
   margin-inline: auto;
 }
 
@@ -1695,7 +1902,7 @@ a.badge:hover {
 
 .cta-band .hero-ctas {
   justify-content: center;
-  margin-top: 36px;
+  margin-top: 32px;
 }
 
 /* ---------- המלצות וגלריה ---------- */
@@ -1703,14 +1910,14 @@ a.badge:hover {
 .testi-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
+  gap: 18px;
 }
 
 .testi {
-  background: var(--paper-raised);
+  background: var(--white);
   border: 1px dashed var(--line);
   border-radius: var(--r-big);
-  padding: 28px;
+  padding: 26px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -1727,7 +1934,7 @@ a.badge:hover {
 }
 
 .testi-quote {
-  font-size: 0.95rem;
+  font-size: 0.94rem;
   color: var(--muted-strong);
   flex: 1;
 }
@@ -1745,7 +1952,7 @@ a.badge:hover {
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: var(--paper-sunken);
+  background: var(--paper-card);
   color: var(--brand-pink);
 }
 
@@ -1762,7 +1969,7 @@ a.badge:hover {
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 14px;
+  gap: 13px;
 }
 
 .gallery-item {
@@ -1772,12 +1979,12 @@ a.badge:hover {
   gap: 10px;
   border: 1px solid var(--line);
   border-radius: var(--r-med);
-  background: var(--paper-raised);
-  padding: 18px 20px;
+  background: var(--white);
+  padding: 17px 19px;
   text-decoration: none;
   color: var(--ink);
   font-weight: 500;
-  font-size: 0.95rem;
+  font-size: 0.94rem;
   transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease), border-color 0.2s;
 }
 
@@ -1796,11 +2003,11 @@ a.badge:hover {
 
 .legal {
   max-width: 760px;
-  padding-block: clamp(40px, 6vw, 72px) clamp(72px, 10vw, 140px);
+  padding-block: clamp(36px, 5vw, 64px) clamp(64px, 9vw, 120px);
 }
 
 .legal h1 {
-  font-size: clamp(2.2rem, 5vw, 3.6rem);
+  font-size: clamp(2rem, 4.4vw, 3.2rem);
   letter-spacing: -0.03em;
   margin-bottom: 12px;
 }
@@ -1808,12 +2015,12 @@ a.badge:hover {
 .legal .updated {
   color: var(--muted);
   font-size: 0.88rem;
-  margin-bottom: 40px;
+  margin-bottom: 36px;
 }
 
 .legal h2 {
-  font-size: 1.35rem;
-  margin: 34px 0 10px;
+  font-size: 1.3rem;
+  margin: 32px 0 10px;
 }
 
 .legal p,
@@ -1829,99 +2036,51 @@ a.badge:hover {
 /* ---------- 404 / תודה ---------- */
 
 .center-page {
-  min-height: 55vh;
+  min-height: 52vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding-block: clamp(72px, 11vw, 150px);
+  padding-block: clamp(64px, 10vw, 130px);
 }
 
 .center-page h1 {
-  font-size: clamp(2.6rem, 7vw, 5rem);
-  font-weight: 700;
-  letter-spacing: -0.035em;
+  font-size: clamp(2.3rem, 5.5vw, 4rem);
+  font-weight: 650;
+  letter-spacing: -0.03em;
 }
 
 .center-page p {
-  margin-top: 18px;
+  margin-top: 16px;
   color: var(--muted-strong);
   max-width: 520px;
 }
 
 .center-page .hero-ctas {
   justify-content: center;
-  margin-top: 30px;
+  margin-top: 28px;
 }
 
-/* ---------- Footer: דיו ענק ---------- */
+/* ---------- Footer: דיו, קשת עליונה, שורות קשר ---------- */
+
+.ftr-curve {
+  height: clamp(28px, 5vw, 64px);
+  background: var(--ink);
+  border-radius: 100% 100% 0 0 / 100% 100% 0 0;
+  margin-top: clamp(40px, 6vw, 80px);
+}
 
 .ftr {
   background: var(--ink);
-  color: rgba(255, 255, 255, 0.72);
-  margin-top: clamp(24px, 4vw, 48px);
-  border-radius: var(--r-big) var(--r-big) 0 0;
-}
-
-.ftr-cta {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding-block: clamp(56px, 8vw, 110px) clamp(40px, 6vw, 80px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
-}
-
-.ftr-kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.84rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  color: rgba(255, 255, 255, 0.55);
-}
-
-.ftr-kicker::before {
-  content: "";
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--brand-pink);
-}
-
-.ftr-huge-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35em;
-  color: #fff;
-  text-decoration: none;
-  font-size: clamp(2.2rem, 7.5vw, 6rem);
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  line-height: 1.05;
-  width: fit-content;
-  transition: color 0.25s;
-}
-
-.ftr-huge-link svg {
-  color: var(--brand-pink);
-  transition: transform 0.35s var(--ease);
-}
-
-.ftr-huge-link:hover {
-  color: var(--brand-pink);
-}
-
-.ftr-huge-link:hover svg {
-  transform: translateX(-0.15em);
+  color: var(--w-muted);
 }
 
 .ftr-grid {
   display: grid;
   grid-template-columns: 2fr 1.2fr 1fr 1fr;
-  gap: clamp(28px, 4vw, 64px);
-  padding-block: clamp(44px, 6vw, 72px) clamp(32px, 5vw, 56px);
+  gap: clamp(28px, 4vw, 60px);
+  padding-block: clamp(20px, 3vw, 40px) clamp(36px, 5vw, 64px);
 }
 
 @media (max-width: 900px) {
@@ -1937,23 +2096,24 @@ a.badge:hover {
 }
 
 .ftr-brand img {
-  width: 148px;
+  width: 140px;
   height: auto;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
 
 .ftr-brand p {
-  font-size: 0.92rem;
+  font-size: 0.9rem;
   line-height: 1.7;
-  max-width: 320px;
+  max-width: 300px;
+  margin-bottom: 20px;
 }
 
 .ftr h3 {
   color: #fff;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  margin-bottom: 16px;
+  letter-spacing: 0.05em;
+  margin-bottom: 15px;
 }
 
 .ftr ul {
@@ -1965,13 +2125,40 @@ a.badge:hover {
 }
 
 .ftr a {
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--w-muted);
   text-decoration: none;
-  font-size: 0.92rem;
+  font-size: 0.9rem;
   transition: color 0.15s;
 }
 
 .ftr a:hover {
+  color: var(--brand-pink);
+}
+
+/* שורות קשר רוחביות עם קווים, כמו "Email us" של orbix */
+.ftr-contact-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-block: 20px;
+  border-top: 1px solid var(--w-line);
+}
+
+.ftr-contact-row .k {
+  font-size: 0.86rem;
+  color: var(--w-muted);
+}
+
+.ftr-contact-row a {
+  font-size: clamp(1.05rem, 2.2vw, 1.5rem);
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+
+.ftr-contact-row a:hover {
   color: var(--brand-pink);
 }
 
@@ -1980,16 +2167,16 @@ a.badge:hover {
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 10px;
-  padding-block: 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding-block: 22px;
+  border-top: 1px solid var(--w-line);
   font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.42);
 }
 
-/* ---------- רכיבי רוחב (עוגיות / נגישות) על האתר הבהיר ---------- */
+/* ---------- רכיבי רוחב (עוגיות / נגישות) ---------- */
 
 body[data-theme="site"] .consent {
-  background: rgba(250, 250, 248, 0.96);
+  background: rgba(255, 255, 255, 0.96);
   border: 1px solid var(--line);
   box-shadow: var(--shadow-float);
 }
@@ -2016,7 +2203,7 @@ body[data-theme="site"] .a11y-launcher {
 
 body[data-theme="site"] .a11y-panel,
 body[data-theme="site"] .a11y-modal {
-  background: var(--paper-raised);
+  background: var(--white);
   border-color: var(--line);
   color: var(--ink);
   box-shadow: 0 26px 68px -22px rgba(25, 25, 25, 0.38);
@@ -2083,7 +2270,6 @@ body[data-theme="site"] .a11y-updated {
   color: var(--muted);
 }
 
-/* מצבי נגישות בזמן ריצה */
 html.a11y-high-contrast body[data-theme="site"] {
   background: #fff;
   color: #000;
@@ -2092,7 +2278,6 @@ html.a11y-high-contrast body[data-theme="site"] {
 html.a11y-high-contrast body[data-theme="site"] .sec-sub,
 html.a11y-high-contrast body[data-theme="site"] .hero-sub,
 html.a11y-high-contrast body[data-theme="site"] .prose p,
-html.a11y-high-contrast body[data-theme="site"] .cr-blurb,
 html.a11y-high-contrast body[data-theme="site"] .nr-body p,
 html.a11y-high-contrast body[data-theme="site"] .num-cell p {
   color: #000;
