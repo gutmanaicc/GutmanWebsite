@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { COURSES } from "../data/courses";
+import { CATALOG } from "../data/catalog";
 import { collectUtm, submitLead } from "../lib/leads";
 
 type Props = {
@@ -155,7 +155,7 @@ const LeadForm = ({ courseSlug, leadSource, title, sub, initialGoal }: Props) =>
             aria-describedby={errors.courseInterest ? `${leadSource}-course-err` : undefined}
           >
             <option value="">בחרו מסלול...</option>
-            {COURSES.map((c) => (
+            {CATALOG.map((c) => (
               <option key={c.slug} value={c.slug}>{c.title}</option>
             ))}
             <option value="unsure">עדיין מתלבט/ת, אשמח להכוונה</option>
