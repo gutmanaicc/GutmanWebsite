@@ -1,0 +1,21 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//GutmanAI//Academy Launch//HE
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:gutman-academy-launch-20260809@gutmanai.com
+DTSTAMP:20260720T120000Z
+DTSTART:20260809T070000Z
+DTEND:20260809T100000Z
+SUMMARY:🎓 ההשקה של האקדמיה הרשמית ל-AI · Gutman
+DESCRIPTION:זה קורה. האתר עולה\, ההרשמה נפתחת\, והמסלולים נחשפים.\nהדמיון הוא הגבול היחיד.\n\nhttps://gutmanai.com
+URL:https://gutmanai.com
+LOCATION:gutmanai.com
+BEGIN:VALARM
+TRIGGER:-PT1H
+ACTION:DISPLAY
+DESCRIPTION:ההשקה של האקדמיה מתחילה בעוד שעה
+END:VALARM
+END:VEVENT
+END:VCALENDAR
