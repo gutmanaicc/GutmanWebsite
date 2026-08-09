@@ -3284,3 +3284,55 @@ html.a11y-highlight-links body[data-theme="site"] a {
   from { background-position: 250% 0; }
   to { background-position: -150% 0; }
 }
+
+/* ============================================================
+   תיקוני ניגודיות שנחשפו בסריקת 13 המסלולים.
+   שלושתם נוצרו כשהיפוך --ink הפך רקעים לבהירים אבל הטקסט
+   שעליהם נשאר לבן.
+   ============================================================ */
+
+/* קישור הדילוג היה לבן על לבן. הוא כלי נגישות למקלדת — אם הוא
+   לא נראה כשהוא במיקוד, הוא לא קיים */
+.skip-link {
+  background: var(--ink);
+  color: #0a0a0b;
+}
+
+/* .ftr a קובע צבע לכל קישור בפוטר וגובר על .btn-primary,
+   ולכן ה-CTA בפוטר נעלם. ממקדים חזרה */
+.ftr a.btn-primary,
+.ftr .btn-primary {
+  color: #0a0a0b;
+}
+
+.ftr a.btn-primary:hover {
+  color: #0a0a0b;
+}
+
+/* קישורים בתוך טקסט רץ בעמודי המשפט לא עוצבו מעולם, ולכן קיבלו
+   את הכחול של הדפדפן. על קנבס כהה זה 2.11:1 */
+.legal a,
+.prose a {
+  color: var(--brand-pink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .legal a:hover,
+  .prose a:hover {
+    color: #ffd0e0;
+  }
+}
+
+/* מטרות מגע: קישורי הפוטר היו בגובה 16px. HANDOFF §7 דורש 44px+ */
+.ftr ul a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+}
+
+.ftr ul {
+  gap: 0;
+}
