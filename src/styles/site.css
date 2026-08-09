@@ -7,25 +7,44 @@
    ============================================================ */
 
 :root {
-  /* טוקנים אחד-לאחד מ-orbix.studio (מהקוד שלהם), מותאמים למותג Gutman */
-  --ink: #010101;
-  --brand-pink: #ff5f9e;
-  --paper: #f3f4f6;
-  --paper-card: #f1f1f1;
-  --white: #ffffff;
-  --line: #e6e6e6;
-  --line-soft: rgba(1, 1, 1, 0.06);
-  --muted: rgba(1, 1, 1, 0.5);
-  --muted-strong: rgba(1, 1, 1, 0.75);
+  /* ------------------------------------------------------------------
+     קנבס כהה, מיושר לדף ה-Teaser החי ב-gutmanai.com.
+     הערכים #0a0a0b / #17171a / #2a2a2e / #f5578a / #be185d נלקחו
+     מה-CSS שרץ שם בפועל, כדי שהמעבר בין השניים יהיה רציף.
+
+     שים לב: --ink הוא "צבע הניגוד החזק", לא "שחור". בקנבס כהה הוא
+     מתהפך ללבן. המשטחים הכהים שקודם השתמשו בו כרקע עברו
+     ל---surface-deep / --surface-raise, אחרת הם היו מתהפכים ללבן.
+     ------------------------------------------------------------------ */
+
+  --ink: #f2f2f4; /* טקסט וניגוד חזק */
+  --surface-deep: #050506; /* השכבה הכי עמוקה: פוטר, סלאבים */
+  --surface-raise: #17171a; /* בלוק מורם בתוך סקשן כהה */
+
+  --brand-pink: #f5578a; /* הוורוד של ה-Teaser */
+  --brand-pink-deep: #be185d; /* מה-Teaser, לשוליים ולמצבי לחיצה */
+
+  --paper: #0a0a0b; /* הקנבס */
+  --paper-card: #131316;
+  --white: #17171a; /* "המשטח המורם". השם נשאר, המשמעות התהפכה */
+  --line: #2a2a2e;
+  --line-soft: rgba(255, 255, 255, 0.08);
+  --muted: rgba(255, 255, 255, 0.52);
+  --muted-strong: rgba(255, 255, 255, 0.78);
   --w-line: rgba(255, 255, 255, 0.16);
   --w-muted: rgba(255, 255, 255, 0.65);
+
   --r-big: 32px;
   --r-med: 16px;
   --r-sm: 10px;
-  --shadow-card: 0 1px 5px rgba(0, 0, 0, 0.1);
-  /* צל השכבות החתום של orbix: כתם מוזח למטה-שמאלה */
-  --shadow-orbix: -1px 2px 4px rgba(0, 0, 0, 0.16), -4px 7px 8px rgba(0, 0, 0, 0.14), -9px 15px 11px rgba(0, 0, 0, 0.08), -16px 27px 12px rgba(0, 0, 0, 0.02);
+
+  /* על קנבס כהה צל שחור לא נראה. ההפרדה נשענת על שוליים דקים,
+     והצל רק מוסיף עומק מתחת לאלמנטים שמרחפים באמת */
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.6);
+  --shadow-orbix: -1px 2px 6px rgba(0, 0, 0, 0.55), -6px 12px 22px rgba(0, 0, 0, 0.45),
+    -12px 24px 40px rgba(0, 0, 0, 0.3);
   --shadow-float: var(--shadow-orbix);
+
   --ease: cubic-bezier(0.22, 0.68, 0.2, 1);
   --pad-x: clamp(20px, 4.5vw, 56px);
 }
@@ -2715,4 +2734,324 @@ html.a11y-highlight-links body[data-theme="site"] a {
   .stack-slide:hover .ss-explore {
     gap: 8px;
   }
+}
+
+/* ============================================================
+   "orbix כהה" — שכבת העיצוב המשולבת
+   מבנה, טיפוגרפיה וריתמוס: orbix.studio
+   פלטה, אווירה ומושן: דף ה-Teaser החי ב-gutmanai.com
+   ============================================================ */
+
+:root {
+  /* סקאלה נוזלית, אותה נוסחה של orbix (clamp עם רכיב vw + בסיס rem) */
+  --fs-h1: clamp(2.4rem, 5vw + 1rem, 5.6rem);
+  --fs-h2: clamp(2rem, 4.1vw + 0.95rem, 4.4rem);
+  --fs-h3: clamp(1.6rem, 2.5vw + 1.04rem, 3.1rem);
+  --fs-h4: clamp(1.4rem, 1.9vw + 1.05rem, 2.4rem);
+  --fs-lead: clamp(1.2rem, 0.51vw + 1.13rem, 1.5rem);
+  --fs-body: clamp(1rem, 0.26vw + 0.94rem, 1.125rem);
+  --fs-caption: clamp(0.85rem, 0.13vw + 0.84rem, 0.94rem);
+  --fs-label: 0.75rem;
+
+  /* גופן התצוגה. Frank Ruhl Libre הוא המקבילה העברית ל-Ivyora Display */
+  --font-display: "Frank Ruhl Libre", Georgia, serif;
+
+  /* אווירה מה-Teaser */
+  --glow-pink-soft: 0 0 30px rgba(245, 87, 138, 0.25);
+  --glow-pink-hard: 0 0 16px var(--brand-pink);
+  --grid-pink: rgba(245, 87, 138, 0.13);
+}
+
+/* ------------------------------------------------------------
+   1. תיקון המשטחים שקודם השתמשו ב---ink כרקע.
+   --ink התהפך ללבן, אז בלעדי זה הסקשנים הכהים היו נהיים בהירים.
+   ------------------------------------------------------------ */
+
+.band-ink,
+.stack-slide.tone-ink,
+.showreel,
+.ftr,
+.ftr-curve {
+  background: var(--surface-deep);
+}
+
+.stack-slide.tone-deep {
+  background: #0d0d10;
+}
+
+.stack-slide.tone-graphite {
+  background: #131316;
+}
+
+/* הסלייד שהיה "נייר" הופך לגרפיט בהיר. שומר על הפעימה בין הסלאבים
+   בלי לירות מלבן לבן באמצע קנבס כהה */
+.stack-slide.tone-paper {
+  background: #1c1c21;
+  color: var(--ink);
+}
+
+.cta-card {
+  background: linear-gradient(180deg, #17171a, #101013);
+  border: 1px solid var(--line);
+}
+
+/* כרטיסים מקבלים את השכבתיות של ה-Teaser במקום צל על לבן */
+.cell,
+.case-item,
+.mock-window,
+.gallery-item {
+  border: 1px solid var(--line-soft);
+}
+
+/* ------------------------------------------------------------
+   2. טיפוגרפיה: הזיווג של orbix
+   ------------------------------------------------------------ */
+
+/* רק כותרות ברמת עמוד. h3 נשאר בשליטת הקומפוננטה שמכילה אותו,
+   אחרת עמודות הפוטר מקבלות גודל כותרת ראשית */
+.site main > section h1,
+.site main > .hero h1 { font-size: var(--fs-h1); }
+.site main > section h2 { font-size: var(--fs-h2); }
+
+.site main > section h1,
+.site main > section h2,
+.site main > .hero h1 {
+  letter-spacing: -0.03em;
+  line-height: 1.06;
+}
+
+/* החתימה: מילת ההדגשה עוברת לסריף תצוגה, כמו "B2B SaaS Companies"
+   של orbix, ומקבלת את ה-shimmer הוורוד של ה-Teaser */
+.acc {
+  font-family: var(--font-display);
+  font-weight: 500;
+  color: var(--brand-pink);
+  background: linear-gradient(90deg, #f5578a 25%, #ffd0e0 50%, #f5578a 75%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .acc {
+    animation: shimmer 6s linear infinite;
+  }
+}
+
+@keyframes shimmer {
+  from { background-position: 220% 0; }
+  to { background-position: -220% 0; }
+}
+
+.lede,
+.hero-sub,
+.section-sub {
+  font-size: var(--fs-lead);
+  color: var(--muted-strong);
+}
+
+/* ------------------------------------------------------------
+   3. אווירה: גריד ורוד, זוהר עליון, ויניה. הכול מה-Teaser.
+   שכבות דקורטיביות, מחוץ לזרימת התוכן ולא לוכדות עכבר.
+   ------------------------------------------------------------ */
+
+.atmos {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.atmos__grid {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(var(--grid-pink) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-pink) 1px, transparent 1px);
+  background-size: 64px 64px;
+  opacity: 0.5;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 0%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 0%, transparent 75%);
+}
+
+.atmos__glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 50% 60% at 50% 0%, rgba(245, 87, 138, 0.14), transparent 70%);
+}
+
+.atmos__vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 52%, rgba(0, 0, 0, 0.6) 100%);
+}
+
+/* הזרקור שעוקב אחרי הסמן — החתימה של ה-Teaser.
+   רק במכשירים עם עכבר אמיתי, ורק אם לא ביקשו פחות תנועה */
+.atmos__spot {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(
+    circle 300px at var(--mx, 50vw) var(--my, 40vh),
+    rgba(245, 87, 138, 0.09),
+    transparent 70%
+  );
+  transition: opacity 0.6s var(--ease);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  @media (prefers-reduced-motion: no-preference) {
+    .atmos__spot {
+      opacity: 1;
+    }
+  }
+}
+
+/* מרימים את התוכן מעל שכבת האווירה. ממוקד בכוונה: סלקטור על
+   .site > * דרס את position של ה-skip-link ושל .atmos עצמה */
+.site main,
+.ftr-curve,
+.ftr {
+  position: relative;
+  z-index: 1;
+}
+
+/* ------------------------------------------------------------
+   4. אינדקס המסלולים — מחליף את גריד המשבצות.
+   רשימה עורכית בסגנון "(44) Case Studies" של orbix:
+   שורות בגובה מלא, מספור, טיפוגרפיה גדולה, חשיפה ב-hover.
+   ------------------------------------------------------------ */
+
+.index-list {
+  border-top: 1px solid var(--line);
+}
+
+.index-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: clamp(14px, 2.5vw, 40px);
+  padding: clamp(18px, 2.4vw, 30px) 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  text-decoration: none;
+  overflow: hidden;
+}
+
+/* מילוי שנפתח מהצד הימני ב-RTL, על transform בלבד */
+.index-row::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(245, 87, 138, 0.1), transparent 70%);
+  transform: scaleX(0);
+  transform-origin: right center;
+  transition: transform 0.5s var(--ease);
+}
+
+.index-row > * {
+  position: relative;
+}
+
+.index-num {
+  font-size: var(--fs-caption);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  min-width: 3.5ch;
+}
+
+.index-title {
+  font-size: clamp(1.25rem, 2.1vw, 2.05rem);
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+
+.index-kind {
+  display: block;
+  font-size: var(--fs-caption);
+  font-weight: 400;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.index-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--fs-caption);
+  color: var(--muted);
+  opacity: 0;
+  transform: translateX(10px);
+  transition: opacity 0.35s var(--ease), transform 0.35s var(--ease);
+  white-space: nowrap;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .index-row:hover::before {
+    transform: scaleX(1);
+  }
+
+  .index-row:hover .index-title {
+    color: var(--brand-pink);
+  }
+
+  .index-row:hover .index-go {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* במגע החץ פשוט תמיד שם, בלי מצב תלוי-ריחוף */
+@media (hover: none), (pointer: coarse) {
+  .index-go {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .index-go span {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------
+   5. הכותרת על קנבס כהה
+   ------------------------------------------------------------ */
+
+.hdr {
+  background: rgba(10, 10, 11, 0.72);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+}
+
+.hdr.menu-open,
+.mobile-nav {
+  background: var(--paper);
+}
+
+.hdr.scrolled {
+  border-bottom-color: var(--line);
+}
+
+/* הכפתור הראשי הוא עכשיו גלולה בהירה על כהה, כמו "אני בפנים" ב-Teaser */
+.btn-primary {
+  color: #0a0a0b;
+}
+
+.btn-primary:hover {
+  box-shadow: var(--glow-pink-soft);
+}
+
+.eyebrow {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--line);
+  color: var(--muted-strong);
+}
+
+.eyebrow::before {
+  box-shadow: var(--glow-pink-hard);
 }

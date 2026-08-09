@@ -267,9 +267,44 @@ const Layout = () => {
     };
   }, []);
 
+  // הזרקור שעוקב אחרי הסמן, מדף ה-Teaser. הקואורדינטות נכתבות כמשתני CSS
+  // בתוך rAF אחד, כך שתנועת עכבר מהירה לא מייצרת יותר מעדכון אחד לפריים.
+  useEffect(() => {
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let x = 0;
+    let y = 0;
+    let queued = false;
+
+    const paint = () => {
+      queued = false;
+      document.documentElement.style.setProperty("--mx", `${x}px`);
+      document.documentElement.style.setProperty("--my", `${y}px`);
+    };
+
+    const onMove = (e: MouseEvent) => {
+      x = e.clientX;
+      y = e.clientY;
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(paint);
+    };
+
+    window.addEventListener("mousemove", onMove, { passive: true });
+    return () => window.removeEventListener("mousemove", onMove);
+  }, []);
+
   return (
     <div className="site">
       <a href="#main-content" className="skip-link">דילוג לתוכן המרכזי</a>
+      {/* שכבות אווירה, דקורטיביות בלבד */}
+      <div className="atmos" aria-hidden="true">
+        <div className="atmos__grid" />
+        <div className="atmos__glow" />
+        <div className="atmos__spot" />
+        <div className="atmos__vignette" />
+      </div>
       <ScrollManager />
       <Header />
       <main id="main-content">

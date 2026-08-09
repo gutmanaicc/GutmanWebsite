@@ -86,13 +86,20 @@ const Home = () => {
             <AmbientMedia video={WIDE_BANNER_LOOP} videoWebm={WIDE_BANNER_LOOP_WEBM} poster={WIDE_BANNER} />
           </div>
           <div style={{ marginTop: "clamp(36px, 5vw, 60px)" }} data-reveal>
-            <p className="cells-note">המסלולים והסדנאות של האקדמיה · לחיצה על תא פותחת את המסלול</p>
-            <div className="cells-grid">
-              {CATALOG.map((c) => (
-                <Link key={c.slug} to={`/courses/${c.slug}`} className="cell">
-                  <span>
+            <p className="cells-note">המסלולים והסדנאות של האקדמיה · לחיצה על שורה פותחת את המסלול</p>
+            <div className="index-list">
+              {CATALOG.map((c, i) => (
+                <Link key={c.slug} to={`/courses/${c.slug}`} className="index-row">
+                  <span className="index-num">({pad2(i + 1)})</span>
+                  <span className="index-title">
                     {c.title}
-                    <span className="cell-kind">{c.kind} · {c.category}</span>
+                    <span className="index-kind">{c.kind} · {c.category}</span>
+                  </span>
+                  <span className="index-go">
+                    <span>לפתיחת המסלול</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M19 12H5M12 19l-7-7 7-7" />
+                    </svg>
                   </span>
                 </Link>
               ))}
