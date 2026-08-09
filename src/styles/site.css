@@ -3055,3 +3055,232 @@ html.a11y-highlight-links body[data-theme="site"] a {
 .eyebrow::before {
   box-shadow: var(--glow-pink-hard);
 }
+
+/* ============================================================
+   תיקוני קנבס כהה + מערכת המושן
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   1. בלוק ה-hero: היה גרדיאנט ורוד מלא. על קנבס בהיר זה היה
+   בלוק הדגשה אחד; על כהה זה מלבן צועק. הופך לכרטיס כהה עם
+   הילה ורודה — הרגע המותגי נשמר, הצעקה לא.
+   ------------------------------------------------------------ */
+
+.hero-media {
+  background: linear-gradient(168deg, #1b1b20, #101013 60%, #0d0d10);
+  border: 1px solid var(--line);
+  box-shadow: 0 0 80px rgba(245, 87, 138, 0.1) inset, 0 40px 90px -40px rgba(0, 0, 0, 0.9);
+}
+
+.hero-media::before {
+  background: radial-gradient(ellipse 60% 55% at 50% 0%, rgba(245, 87, 138, 0.16), transparent 70%);
+}
+
+/* הצ'יפס היו לבן-על-ורוד ולכן נעלמו. עכשיו כהים עם מספר ורוד */
+.hero-chip {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  color: var(--muted-strong);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.hero-chip b {
+  color: var(--brand-pink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------
+   2. מיסוך המדיה.
+   הנכסים נוצרו על רקע בהיר. במקום לרנדר מחדש, מרככים את הקצה
+   כך שהמלבן הבהיר נמס לתוך הקנבס במקום להיחתך עליו, ומעט
+   מכהים אותו כדי שלא יבהיק.
+   ------------------------------------------------------------ */
+
+.wide-banner,
+.case-photo,
+.showreel {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--r-med);
+  border: 1px solid var(--line-soft);
+}
+
+.wide-banner img,
+.wide-banner video,
+.case-photo img,
+.case-photo video,
+.showreel img,
+.showreel video {
+  filter: brightness(0.82) contrast(1.06) saturate(1.05);
+  mask-image: radial-gradient(ellipse 92% 88% at 50% 50%, #000 58%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 92% 88% at 50% 50%, #000 58%, transparent 100%);
+}
+
+/* שכבת דיו דקה מעל, כדי שהבהיר יישב באותו עומק כמו שאר העמוד */
+.wide-banner::after,
+.case-photo::after,
+.showreel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(10, 10, 11, 0.15), rgba(10, 10, 11, 0.55));
+}
+
+/* ------------------------------------------------------------
+   3. מעבר בין עמודים
+   ------------------------------------------------------------ */
+
+@media (prefers-reduced-motion: no-preference) {
+  .route-fade {
+    animation: routeIn 0.55s var(--ease) both;
+  }
+}
+
+@keyframes routeIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ------------------------------------------------------------
+   4. מושן מקושר-גלילה.
+   animation-timeline: view() נותן תנועה שקשורה להתקדמות הגלילה
+   בלי מאזין scroll ובלי ספרייה. איפה שלא נתמך, פשוט אין תנועה.
+   ------------------------------------------------------------ */
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .wide-banner img,
+    .wide-banner video,
+    .case-photo img,
+    .case-photo video,
+    .showreel img,
+    .showreel video {
+      animation: mediaRise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 55%;
+    }
+
+    /* הסלאבים נכנסים עם עומק קל */
+    .stack-slide .ss-inner {
+      animation: slabRise linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 45%;
+    }
+
+    /* פס ההתקדמות של הגלילה, בוורוד המותג */
+    .scroll-progress {
+      animation: progressGrow linear both;
+      animation-timeline: scroll(root);
+    }
+  }
+}
+
+@keyframes mediaRise {
+  from {
+    transform: translate3d(0, 4%, 0) scale(1.05);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes slabRise {
+  from {
+    opacity: 0.35;
+    transform: translate3d(0, 26px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes progressGrow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+.scroll-progress {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--brand-pink), #ffd0e0);
+  transform-origin: right center;
+  transform: scaleX(0);
+  z-index: 120;
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------
+   5. פעימת הרדאר של ה-Teaser, על נקודת המותג
+   ------------------------------------------------------------ */
+
+@media (prefers-reduced-motion: no-preference) {
+  .eyebrow::before {
+    animation: qPulse 2.4s ease-in-out infinite;
+  }
+}
+
+@keyframes qPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 87, 138, 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 9px rgba(245, 87, 138, 0);
+  }
+}
+
+/* ------------------------------------------------------------
+   6. Sweep: אור שעובר על כרטיס ב-hover. מה-Teaser.
+   ------------------------------------------------------------ */
+
+.case-item,
+.cta-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.case-item::after,
+.cta-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgba(245, 87, 138, 0.05) 40%,
+    rgba(255, 255, 255, 0.06) 50%,
+    rgba(245, 87, 138, 0.05) 60%,
+    transparent
+  );
+  background-size: 250% 100%;
+  background-position: 250% 0;
+  opacity: 0;
+  transition: opacity 0.3s var(--ease);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  @media (prefers-reduced-motion: no-preference) {
+    .case-item:hover::after,
+    .cta-card:hover::after {
+      opacity: 1;
+      animation: sweep 1.4s var(--ease);
+    }
+  }
+}
+
+@keyframes sweep {
+  from { background-position: 250% 0; }
+  to { background-position: -150% 0; }
+}

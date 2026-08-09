@@ -83,7 +83,7 @@ const Home = () => {
             {" "}בלי הרצאות תאורטיות, בלי ספריית הקלטות. <Accent>עובדים, בונים, יוצאים עם תוצר.</Accent>
           </p>
           <div className="wide-banner" style={{ marginTop: "clamp(32px, 4.5vw, 56px)" }} data-reveal>
-            <AmbientMedia video={WIDE_BANNER_LOOP} videoWebm={WIDE_BANNER_LOOP_WEBM} poster={WIDE_BANNER} />
+            <AmbientMedia video={WIDE_BANNER_LOOP} videoWebm={WIDE_BANNER_LOOP_WEBM} poster={WIDE_BANNER} scrub />
           </div>
           <div style={{ marginTop: "clamp(36px, 5vw, 60px)" }} data-reveal>
             <p className="cells-note">המסלולים והסדנאות של האקדמיה · לחיצה על שורה פותחת את המסלול</p>
@@ -203,7 +203,7 @@ const Home = () => {
             title={<>חמישה עולמות. קו עבודה <Accent>אחד</Accent>.</>}
           />
           <div className="showreel" data-reveal>
-            <AmbientMedia video={SHOWREEL} videoWebm={SHOWREEL_WEBM} poster={SHOWREEL_POSTER} alt="חמשת עולמות המסלולים של האקדמיה בשוט רציף אחד" />
+            <AmbientMedia video={SHOWREEL} videoWebm={SHOWREEL_WEBM} poster={SHOWREEL_POSTER} scrub alt="חמשת עולמות המסלולים של האקדמיה בשוט רציף אחד" />
           </div>
         </div>
       </section>

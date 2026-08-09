@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import ScrollVideo from "./ScrollVideo";
 
 type Props = {
   video?: string;
@@ -6,10 +7,12 @@ type Props = {
   poster: string;
   alt?: string;
   className?: string;
+  /** הסרטון מתקדם עם הגלילה במקום לנגן בלופ */
+  scrub?: boolean;
 };
 
 // מדיה אווירתית: וידאו לופ שקט כשמותר, תמונה סטטית כשהמשתמש ביקש פחות תנועה
-const AmbientMedia = ({ video, videoWebm, poster, alt = "", className }: Props) => {
+const AmbientMedia = ({ video, videoWebm, poster, alt = "", className, scrub = false }: Props) => {
   const [reduced, setReduced] = useState(false);
 
   useEffect(() => {
@@ -33,6 +36,18 @@ const AmbientMedia = ({ video, videoWebm, poster, alt = "", className }: Props) 
 
   if (!video || reduced) {
     return <img src={poster} alt={alt} loading="lazy" className={className} />;
+  }
+
+  if (scrub) {
+    return (
+      <ScrollVideo
+        video={video}
+        videoWebm={videoWebm}
+        poster={poster}
+        alt={alt}
+        className={className}
+      />
+    );
   }
 
   return (

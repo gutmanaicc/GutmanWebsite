@@ -243,7 +243,9 @@ const ScrollManager = () => {
 };
 
 const Layout = () => {
-  // מצב "אתר": קנבס בהיר. דף ה-Teaser (מחוץ ל-Layout) מנהל את הרקע של עצמו
+  const { pathname } = useLocation();
+
+  // מצב "אתר": קנבס כהה. דף ה-Teaser (מחוץ ל-Layout) מנהל את הרקע של עצמו
   useEffect(() => {
     document.body.dataset.theme = "site";
     return () => {
@@ -307,8 +309,14 @@ const Layout = () => {
       </div>
       <ScrollManager />
       <Header />
+      {/* פס התקדמות גלילה. מונע מ-animation-timeline, בלי מאזין scroll */}
+      <div className="scroll-progress" aria-hidden="true" />
       <main id="main-content">
-        <Outlet />
+        {/* המפתח לפי הנתיב מרנדר מחדש בכל מעבר עמוד, וכך גם מפעיל
+            את אנימציית הכניסה וגם מאפס את מצבי החשיפה של העמוד החדש */}
+        <div className="route-fade" key={pathname}>
+          <Outlet />
+        </div>
       </main>
       <Footer />
       <Consent />
