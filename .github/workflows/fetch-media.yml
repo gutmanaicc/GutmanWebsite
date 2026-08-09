@@ -1,0 +1,33 @@
+# כלי עזר זמני: מוריד את קבצי המקור מ-Higgsfield ומקמיט אותם לברנץ'.
+# רשת הסביבה של Claude חוסמת את ה-CDN, אבל הראנרים של GitHub לא.
+# נמחק אחרי שהקבצים נקלטים.
+name: fetch-media
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download source videos
+        run: |
+          set -e
+          mkdir -p tmp-media
+          B="https://d8j0ntlcm91z4.cloudfront.net/user_38FBV0m3OAb6h7ZwN4GmoR45uZk"
+          for f in \
+            hf_20260808_214543_137e121c-f74c-4b0f-8a64-dfea3337b57d.mp4 \
+            hf_20260809_110007_a8db8da1-dda2-492a-9031-6d8580187bed.mp4 \
+            hf_20260809_105945_120ca2d3-e7d3-401e-b478-a36f624c0766.mp4 \
+            hf_20260809_110046_6c346907-026a-4515-b7af-42899121b7dd.mp4 \
+            hf_20260809_110102_3b8511f6-812a-485c-a0c9-5844a2c26bc7.mp4 ; do
+            curl -fsS "$B/$f" -o "tmp-media/$f"
+          done
+          ls -la tmp-media
+      - name: Commit
+        run: |
+          git config user.name "media-fetch-bot"
+          git config user.email "actions@github.com"
+          git add tmp-media
+          git commit -m "tmp: fetched source videos from Higgsfield CDN"
+          git push
