@@ -5,7 +5,6 @@ import SectionHeader, { Accent } from "../components/SectionHeader";
 import Breadcrumbs from "../components/Breadcrumbs";
 import CTASection from "../components/CTASection";
 
-const pad2 = (n: number) => String(n).padStart(2, "0");
 
 const About = () => {
   useSeo({
@@ -52,14 +51,13 @@ const About = () => {
       <section className="section">
         <div className="container">
           <SectionHeader
-            kicker={`השיטה (${pad2(SITE.method.length)})`}
+            kicker="השיטה"
             title={<>מהבעיה ועד שיטת עבודה, <Accent>בשבעה</Accent> צעדים.</>}
             sub="אותם שבעה צעדים חוזרים בכל מסלול, על כל תוצר. זה מה שהופך רשימת כלים לתהליך שאפשר לחזור עליו."
           />
           <div className="num-grid">
-            {SITE.method.map((s, i) => (
+            {SITE.method.map((s) => (
               <div className="num-cell" key={s.title} data-reveal>
-                <span className="num">({pad2(i + 1)})</span>
                 <h3>{s.title}</h3>
                 <p>{s.text}</p>
               </div>
@@ -71,13 +69,12 @@ const About = () => {
       <section className="section">
         <div className="container">
           <SectionHeader
-            kicker={`העקרונות (${pad2(SITE.principles.length)})`}
+            kicker="העקרונות"
             title={<>במה אנחנו <Accent>מאמינים</Accent>.</>}
           />
           <div className="num-grid">
-            {SITE.principles.map((p, i) => (
+            {SITE.principles.map((p) => (
               <div className="num-cell" key={p.title} data-reveal>
-                <span className="num">({pad2(i + 1)})</span>
                 <h3>{p.title}</h3>
                 <p>{p.text}</p>
               </div>

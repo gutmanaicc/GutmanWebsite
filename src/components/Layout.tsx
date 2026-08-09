@@ -2,15 +2,12 @@ import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import Lenis from "lenis";
 import logoInk from "../assets/logo-cutout.png";
-import logoWhite from "../assets/logo-white.png";
 import { CATALOG } from "../data/catalog";
 import AccessibilityWidget from "../AccessibilityWidget";
 import { Consent } from "./Consent";
 
-const pad2 = (n: number) => String(n).padStart(2, "0");
-
 const NAV = [
-  { to: "/courses", label: "מסלולים", count: CATALOG.length },
+  { to: "/courses", label: "סדנאות" },
   { to: "/results", label: "תוצאות" },
   { to: "/about", label: "אודות" },
   { to: "/faq", label: "שאלות" },
@@ -123,7 +120,6 @@ const Header = () => {
             {NAV.map((item) => (
               <NavLink key={item.to} to={item.to} className={({ isActive }) => (isActive ? "active" : "")}>
                 {item.label}
-                {item.count ? <sup className="nav-count">({pad2(item.count)})</sup> : null}
               </NavLink>
             ))}
           </nav>
@@ -151,14 +147,17 @@ const Header = () => {
       {open && (
         <nav className="mobile-nav" id="mobile-nav" aria-label="ניווט מובייל">
           <div className="container">
-            <NavLink to="/" end className={({ isActive }) => `mnav-link${isActive ? " active" : ""}`}>
-              <span className="mnav-num">(01)</span>ראשי
+            <NavLink to="/" end className={({ isActive }) => `mnav-link${isActive ? " active" : ""}`} style={{ "--mi": 0 } as React.CSSProperties}>
+              ראשי
             </NavLink>
             {NAV.map((item, i) => (
-              <NavLink key={item.to} to={item.to} className={({ isActive }) => `mnav-link${isActive ? " active" : ""}`}>
-                <span className="mnav-num">({pad2(i + 2)})</span>
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) => `mnav-link${isActive ? " active" : ""}`}
+                style={{ "--mi": i + 1 } as React.CSSProperties}
+              >
                 {item.label}
-                {item.count ? <sup className="nav-count">({pad2(item.count)})</sup> : null}
               </NavLink>
             ))}
             <Link to="/course-finder" className="btn btn-primary btn-block mobile-cta">
@@ -178,7 +177,7 @@ const Footer = () => (
       <div className="container">
         <div className="ftr-grid">
         <div className="ftr-brand">
-          <img src={logoWhite} alt="Gutman" width={140} height={74} />
+          <img src={logoInk} alt="Gutman" width={140} height={35} />
           <p>
             האקדמיה הפרונטלית ללימודי בינה מלאכותית. מסלולים מעשיים, מבוססי תוצרים, שמותאמים למקצוע, לעסק
             ולמטרה שלכם.
@@ -193,7 +192,7 @@ const Footer = () => (
                 <Link to={`/courses/${c.slug}`}>{c.title}</Link>
               </li>
             ))}
-            <li><Link to="/courses">לכל המסלולים ({pad2(CATALOG.length)})</Link></li>
+            <li><Link to="/courses">לכל הסדנאות</Link></li>
           </ul>
         </div>
         <div>
@@ -211,6 +210,7 @@ const Footer = () => (
           <ul>
             <li><Link to="/privacy">מדיניות פרטיות</Link></li>
             <li><Link to="/terms">תנאי שימוש</Link></li>
+            <li><Link to="/accessibility">הצהרת נגישות</Link></li>
           </ul>
         </div>
       </div>
@@ -230,14 +230,18 @@ const Footer = () => (
 const ScrollManager = () => {
   const { pathname, hash } = useLocation();
   useEffect(() => {
+    const lenis = (window as unknown as { __lenis?: { scrollTo: (t: Element | number, o?: object) => void } }).__lenis;
     if (hash) {
       const el = document.querySelector(hash);
       if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "start" });
+        // דרך Lenis כשהוא פעיל: scrollIntoView רגיל נדרס על ידו בפריים הבא
+        if (lenis) lenis.scrollTo(el, { offset: -80 });
+        else el.scrollIntoView({ behavior: "smooth", block: "start" });
         return;
       }
     }
-    window.scrollTo(0, 0);
+    if (lenis) lenis.scrollTo(0, { immediate: true });
+    else window.scrollTo(0, 0);
   }, [pathname, hash]);
   return null;
 };
@@ -257,6 +261,8 @@ const Layout = () => {
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const lenis = new Lenis({ lerp: 0.1, wheelMultiplier: 1 });
+    // ScrollManager צריך את המופע: scrollIntoView רגיל נדרס על ידי Lenis
+    (window as unknown as { __lenis?: Lenis }).__lenis = lenis;
     let raf = 0;
     const tick = (t: number) => {
       lenis.raf(t);
@@ -265,6 +271,7 @@ const Layout = () => {
     raf = requestAnimationFrame(tick);
     return () => {
       cancelAnimationFrame(raf);
+      delete (window as unknown as { __lenis?: Lenis }).__lenis;
       lenis.destroy();
     };
   }, []);

@@ -79,9 +79,35 @@ const ChatFinder = ({ onResult }: { onResult?: (slug: string) => void }) => {
     }, 350);
   };
 
+  // השיחה מתחילה רק כשהצ'אט נכנס לפריים, כדי שבאמת רואים את ההקלדה
+  // קורית. התחלה על mount הייתה גומרת את הפתיח לפני שגללת אליו.
+  const startedRef = useRef(false);
+  const shellRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    start();
-    return () => timers.current.forEach(clearTimeout);
+    const el = shellRef.current;
+    if (!el) return;
+
+    if (typeof IntersectionObserver === "undefined") {
+      start();
+      return () => timers.current.forEach(clearTimeout);
+    }
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !startedRef.current) {
+          startedRef.current = true;
+          start();
+          io.disconnect();
+        }
+      },
+      { threshold: 0.35 }
+    );
+    io.observe(el);
+    return () => {
+      io.disconnect();
+      timers.current.forEach(clearTimeout);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -111,10 +137,13 @@ const ChatFinder = ({ onResult }: { onResult?: (slug: string) => void }) => {
   const result = resultSlug ? getCourse(resultSlug) : null;
 
   return (
-    <div className="chat-shell" data-reveal>
+    <div className="chat-shell" data-reveal ref={shellRef}>
       <div className="chat-bar">
-        <span className="chat-dots" aria-hidden="true"><span /><span /><span /></span>
-        <span className="chat-bar-title">GUTMAN.AI · המנחה</span>
+        <span className="chat-avatar" aria-hidden="true">G</span>
+        <span className="chat-bar-meta">
+          <span className="chat-bar-title">המנחה של האקדמיה</span>
+          <span className="chat-bar-status">מחובר עכשיו</span>
+        </span>
       </div>
       <div className="chat-body" ref={bodyRef} aria-live="polite">
         {messages.map((m, i) =>

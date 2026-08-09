@@ -10,6 +10,7 @@ import FAQPage from "./pages/FAQPage";
 import Contact from "./pages/Contact";
 import ThankYou from "./pages/ThankYou";
 import Privacy from "./pages/Privacy";
+import Accessibility from "./pages/Accessibility";
 import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
 import ComingSoon from "./pages/ComingSoon";
@@ -30,6 +31,7 @@ const App = () => (
       <Route path="/contact" element={<Contact />} />
       <Route path="/thank-you" element={<ThankYou />} />
       <Route path="/privacy" element={<Privacy />} />
+        <Route path="/accessibility" element={<Accessibility />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="*" element={<NotFound />} />
     </Route>

@@ -14,8 +14,8 @@ import { COURSE_ART, COURSE_LOOPS, COURSE_LOOPS_WEBM, SHOWREEL, SHOWREEL_POSTER,
 import AmbientMedia from "../components/AmbientMedia";
 import { CrmWindow, StoryboardWindow } from "../components/MockWindows";
 import { Words } from "../components/Words";
+import { getWorkshop } from "../data/workshops";
 
-const pad2 = (n: number) => String(n).padStart(2, "0");
 /* הגוונים שמעליהם הכותרת חייבת להתהפך ללבן */
 const DARK_TONES = new Set(["tone-ink", "tone-pink", "tone-graphite", "tone-deep"]);
 const FLAGSHIP = CATALOG.filter((c) => c.full);
@@ -58,7 +58,7 @@ const Home = () => {
             תוצר שעובד ועם שיטת עבודה שנשארת.
           </p>
           <div className="hero-ctas" data-reveal>
-            <Link to="/courses" className="btn btn-primary">לצפייה במסלולים<Orb /></Link>
+            <Link to="/courses" className="btn btn-primary">לצפייה בסדנאות<Orb /></Link>
             <Link to="/course-finder" className="btn btn-ghost">עזרו לי לבחור</Link>
           </div>
 
@@ -66,9 +66,9 @@ const Home = () => {
             <div className="hero-side side-a" aria-hidden="true"><CrmWindow /></div>
             <div className="hero-side side-b" aria-hidden="true"><StoryboardWindow /></div>
             <div className="hero-chips">
-              <span className="hero-chip"><b>({pad2(CATALOG.length)})</b>מסלולים וסדנאות</span>
-              <span className="hero-chip"><b>(00)</b>הקלטות. הכול חי</span>
-              <span className="hero-chip"><b>(01)</b>תוצר ביד בסוף</span>
+              <span className="hero-chip">סדנאות פרונטליות</span>
+              <span className="hero-chip">בלי הקלטות. הכול חי</span>
+              <span className="hero-chip">תוצר ביד בסוף</span>
             </div>
             <ChatFinder />
           </div>
@@ -79,24 +79,23 @@ const Home = () => {
       <section className="section">
         <div className="container">
           <p className="statement" data-reveal>
-            {pad2(CATALOG.length)} מסלולים וסדנאות פרונטליים, לכל מקצוע ולכל מטרה.
+            סדנאות פרונטליות, לכל מקצוע ולכל מטרה.
             {" "}בלי הרצאות תאורטיות, בלי ספריית הקלטות. <Accent>עובדים, בונים, יוצאים עם תוצר.</Accent>
           </p>
           <div className="wide-banner" style={{ marginTop: "clamp(32px, 4.5vw, 56px)" }} data-reveal>
             <AmbientMedia video={WIDE_BANNER_LOOP} videoWebm={WIDE_BANNER_LOOP_WEBM} poster={WIDE_BANNER} scrub />
           </div>
           <div style={{ marginTop: "clamp(36px, 5vw, 60px)" }} data-reveal>
-            <p className="cells-note">המסלולים והסדנאות של האקדמיה · לחיצה על שורה פותחת את המסלול</p>
+            <p className="cells-note">הסדנאות של האקדמיה · לחיצה על שורה פותחת את הסדנה</p>
             <div className="index-list">
-              {CATALOG.map((c, i) => (
+              {CATALOG.map((c) => (
                 <Link key={c.slug} to={`/courses/${c.slug}`} className="index-row">
-                  <span className="index-num">({pad2(i + 1)})</span>
                   <span className="index-title">
                     {c.title}
                     <span className="index-kind">{c.kind} · {c.category}</span>
                   </span>
                   <span className="index-go">
-                    <span>לפתיחת המסלול</span>
+                    <span>לפתיחת הסדנה</span>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M19 12H5M12 19l-7-7 7-7" />
                     </svg>
@@ -108,10 +107,12 @@ const Home = () => {
         </div>
       </section>
 
-      {/* עולמות המסלולים: סלאבים במסך מלא שנערמים בגלילה, כמו סקשן השירותים של orbix */}
+      {/* עולמות הסדנאות: סלאבים שנערמים בגלילה. כל סלאב הוא קומפוזיציה:
+          עמודת תוכן מימין, פאנל מדיה משמאל, לא טקסט ענק לבד */}
       <div className="stack-slides">
         {FLAGSHIP.map((c, i) => {
           const course = getCourse(c.slug);
+          const workshop = getWorkshop(c.slug);
           const tone = ["tone-ink", "tone-paper", "tone-pink", "tone-graphite", "tone-deep"][i % 5];
           return (
             <Link
@@ -120,16 +121,30 @@ const Home = () => {
               className={`stack-slide ${tone}`}
               data-surface={DARK_TONES.has(tone) ? "dark" : "light"}
             >
-              <span className="ss-num">({pad2(i + 1)})</span>
-              <span className="ss-explore">
-                לגלות את המסלול
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M19 12H5M12 19l-7-7 7-7" />
-                </svg>
-              </span>
-              <span className="ss-inner">
-                <span className="ss-title">{c.title}</span>
-                {course && <span className="ss-sub" style={{ display: "block" }}>{course.tagline}</span>}
+              <span className="ss-grid">
+                <span className="ss-copy">
+                  <span className="ss-kicker">{c.category}</span>
+                  <span className="ss-title">{c.title}</span>
+                  {course && <span className="ss-sub">{course.tagline}</span>}
+                  {workshop && workshop.sessions.length > 1 && (
+                    <span className="ss-meta">
+                      {workshop.sessions.map((sess) => (
+                        <span className="ss-session" key={sess.title}>{sess.title}</span>
+                      ))}
+                    </span>
+                  )}
+                  <span className="ss-explore">
+                    לגלות את הסדנה
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M19 12H5M12 19l-7-7 7-7" />
+                    </svg>
+                  </span>
+                </span>
+                {COURSE_ART[c.slug] && (
+                  <span className="ss-media" aria-hidden="true">
+                    <AmbientMedia video={COURSE_LOOPS[c.slug]} videoWebm={COURSE_LOOPS_WEBM[c.slug]} poster={COURSE_ART[c.slug]} scrub />
+                  </span>
+                )}
               </span>
             </Link>
           );
@@ -175,11 +190,11 @@ const Home = () => {
           </div>
           <div className="stats-grid" data-reveal>
             <div className="stat-cell">
-              <span className="stat-label">מסלולים וסדנאות פרונטליים, לכל מקצוע ומטרה</span>
-              <span className="stat-num">{CATALOG.length}<i>+</i></span>
+              <span className="stat-label">סדנאות פרונטליות, לכל מקצוע ומטרה</span>
+              <span className="stat-num">{CATALOG.length}</span>
             </div>
             <div className="stat-cell">
-              <span className="stat-label">מסלולי דגל עם סילבוס מלא ופתוח באתר</span>
+              <span className="stat-label">סילבוס מלא ופתוח באתר לכל סדנה</span>
               <span className="stat-num">{FLAGSHIP.length}</span>
             </div>
             <div className="stat-cell">
@@ -217,9 +232,8 @@ const Home = () => {
             title={<>כי בהקלטה אי אפשר <Accent>לשאול</Accent>.</>}
           />
           <div className="feature-grid" data-reveal>
-            {SITE.whyFrontal.map((p, i) => (
+            {SITE.whyFrontal.map((p) => (
               <div className="feature-cell" key={p.title}>
-                <span className="fi">{pad2(i + 1)}</span>
                 <h3>{p.title}</h3>
                 <p>{p.text}</p>
               </div>
@@ -233,14 +247,13 @@ const Home = () => {
         <div className="container split-section">
           <div className="split-aside">
             <SectionHeader
-              kicker={`העקרונות (${pad2(SITE.principles.length)})`}
+              kicker="העקרונות"
               title={<>ככה נראית למידה <Accent>שעובדת</Accent>.</>}
             />
           </div>
           <div className="num-rows">
-            {SITE.principles.map((p, i) => (
+            {SITE.principles.map((p) => (
               <div className="num-row" key={p.title} data-reveal>
-                <span className="nr-num">({pad2(i + 1)})</span>
                 <div className="nr-body">
                   <h3>{p.title}</h3>
                   <p>{p.text}</p>
@@ -273,7 +286,7 @@ const Home = () => {
         <div className="container split-section">
           <div className="split-aside">
             <SectionHeader
-              kicker={`שאלות נפוצות (${pad2(GENERAL_FAQ.length)})`}
+              kicker="שאלות נפוצות"
               title={<>יש שאלות? יש <Accent>תשובות</Accent>.</>}
               sub="ואם לא מצאתם כאן, דברו איתנו ישירות."
             />
@@ -304,7 +317,7 @@ const Home = () => {
                 ספאם.
               </p>
               <p className="cc-trust">
-                <b>{pad2(CATALOG.length)} מסלולים וסדנאות</b> · קבוצות קטנות · פנים מול פנים · תוצר ביד
+                <b>סדנאות פרונטליות</b> · קבוצות קטנות · פנים מול פנים · תוצר ביד
               </p>
             </div>
           </div>

@@ -11,8 +11,9 @@ import { CheckIcon, XIcon } from "../components/icons";
 import { GENERAL_FAQ } from "../data/site";
 import { COURSE_ART, COURSE_LOOPS, COURSE_LOOPS_WEBM } from "../data/courseArt";
 import AmbientMedia from "../components/AmbientMedia";
+import LecturerCard from "../components/LecturerCard";
+import { getWorkshop } from "../data/workshops";
 
-const pad2 = (n: number) => String(n).padStart(2, "0");
 
 const LOGISTICS_LABELS: { key: "format" | "sessions" | "sessionLength" | "location" | "groupSize" | "equipment" | "support" | "materials" | "nextCohort"; label: string }[] = [
   { key: "format", label: "פורמט" },
@@ -30,6 +31,7 @@ const CoursePage = () => {
   const { slug } = useParams();
   const entry = slug ? getCatalogEntry(slug) : undefined;
   const course = slug ? getCourse(slug) : undefined;
+  const workshop = slug ? getWorkshop(slug) : undefined;
 
   useSeo({
     title: entry ? `${entry.title} | Gutman Academy` : "מסלול | Gutman Academy",
@@ -67,27 +69,31 @@ const CoursePage = () => {
           <p className="eyebrow" data-reveal>{entry.category} · {entry.kind}</p>
           <h1 data-reveal>{entry.title}</h1>
           <div className="hero-foot" data-reveal>
-            <p className="hero-sub">{course ? course.tagline : entry.blurb}</p>
+            <p className="hero-sub">{workshop ? workshop.intro : course ? course.tagline : entry.blurb}</p>
             <div className="hero-ctas">
               <a href="#lead-form" className="btn btn-primary">{ctaText}</a>
               {course && <a href="#syllabus" className="btn btn-ghost">מה לומדים בפנים</a>}
             </div>
           </div>
           <div className="badge-row" data-reveal>
+            {entry.soon && <span className="badge accent">נפתח בקרוב</span>}
             <span className="badge">פרונטלי ומעשי, בקבוצה קטנה</span>
             {course && <span className="badge">{course.experienceLevel}</span>}
-            {course && <span className="badge accent">{pad2(course.syllabus.length)} חלקי לימוד ובנייה</span>}
+            
             {parent && (
               <Link to={`/courses/${parent.slug}`} className="badge">
                 סדנת המשך מתוך {parent.title}
               </Link>
             )}
           </div>
-          {COURSE_ART[entry.slug] && (
-            <div className="case-photo" style={{ maxWidth: 880, marginInline: "auto", marginTop: "clamp(32px, 5vw, 56px)" }} data-reveal>
-              <AmbientMedia video={COURSE_LOOPS[entry.slug]} videoWebm={COURSE_LOOPS_WEBM[entry.slug]} poster={COURSE_ART[entry.slug]} />
-            </div>
-          )}
+          <div className="course-hero-row">
+            {COURSE_ART[entry.slug] && (
+              <div className="case-photo course-hero-media" data-reveal>
+                <AmbientMedia video={COURSE_LOOPS[entry.slug]} videoWebm={COURSE_LOOPS_WEBM[entry.slug]} poster={COURSE_ART[entry.slug]} scrub />
+              </div>
+            )}
+            <LecturerCard />
+          </div>
         </div>
       </section>
 
@@ -122,7 +128,7 @@ const CoursePage = () => {
           <section className="section">
             <div className="container">
               <SectionHeader
-                kicker={`מה תדעו לעשות (${pad2(course.capabilities.length)})`}
+                kicker="מה תדעו לעשות"
                 title={<>יכולות שנשארות <Accent>אצלכם</Accent>.</>}
               />
               <div className="chip-row" data-reveal>
@@ -137,14 +143,36 @@ const CoursePage = () => {
           <section className="section" id="syllabus">
             <div className="container">
               <SectionHeader
-                kicker={`הסילבוס (${pad2(course.syllabus.length)})`}
+                kicker="הסילבוס"
                 title={<>לומדים, מתרגלים, <Accent>בונים</Accent>.</>}
                 sub="כל חלק בנוי מאותם ארבעה צעדים: מה לומדים, מה מתרגלים, מה בונים ועם מה יוצאים."
               />
+              {workshop ? (
+                <>
+                  <div className="sessions" data-reveal>
+                    {workshop.sessions.map((sess) => (
+                      <div className="session" key={sess.title}>
+                        <div className="session-head">
+                          {sess.name && <span className="session-name">{sess.name}</span>}
+                          <h3>{sess.title}</h3>
+                        </div>
+                        <ul className="session-points">
+                          {sess.points.map((pt) => (
+                            <li key={pt}>{pt}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="outcome-card" data-reveal>
+                    <span className="outcome-k">מה יוצאים איתו</span>
+                    <p>{workshop.outcome}</p>
+                  </div>
+                </>
+              ) : (
               <div className="syllabus">
-                {course.syllabus.map((m, i) => (
+                {course.syllabus.map((m) => (
                   <div className="syl-module" key={m.title} data-reveal>
-                    <span className="syl-num">({pad2(i + 1)})</span>
                     <div className="syl-body">
                       <h3>{m.title}</h3>
                       <div className="syl-rows">
@@ -169,13 +197,14 @@ const CoursePage = () => {
                   </div>
                 ))}
               </div>
+              )}
             </div>
           </section>
 
           {/* נושאים */}
           <section className="section">
             <div className="container">
-              <SectionHeader kicker={`הנושאים (${pad2(topics.length)})`} title={<>מה נכנס <Accent>פנימה</Accent>.</>} />
+              <SectionHeader kicker="הנושאים" title={<>מה נכנס <Accent>פנימה</Accent>.</>} />
               <div className="chip-row" data-reveal>
                 {topics.map((t) => (
                   <span className="chip" key={t}>{t}</span>
@@ -236,7 +265,7 @@ const CoursePage = () => {
             <div className="container split-section">
               <div className="split-aside">
                 <SectionHeader
-                  kicker={`שאלות על המסלול (${pad2(course.faq.length)})`}
+                  kicker="שאלות על הסדנה"
                   title={<>מה ששואלים <Accent>הכי הרבה</Accent>.</>}
                 />
               </div>
@@ -270,10 +299,40 @@ const CoursePage = () => {
             </div>
           </section>
 
+          {workshop && (
+            <section className="section" id="syllabus">
+              <div className="container">
+                <SectionHeader
+                  kicker="הסילבוס"
+                  title={<>מה קורה <Accent>בפנים</Accent>.</>}
+                />
+                <div className="sessions" data-reveal>
+                  {workshop.sessions.map((sess) => (
+                    <div className="session" key={sess.title}>
+                      <div className="session-head">
+                        {sess.name && <span className="session-name">{sess.name}</span>}
+                        <h3>{sess.title}</h3>
+                      </div>
+                      <ul className="session-points">
+                        {sess.points.map((pt) => (
+                          <li key={pt}>{pt}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+                <div className="outcome-card" data-reveal>
+                  <span className="outcome-k">מה יוצאים איתו</span>
+                  <p>{workshop.outcome}</p>
+                </div>
+              </div>
+            </section>
+          )}
+
           <section className="section">
             <div className="container">
-              <SectionHeader kicker="הפרטים" title={<>הסילבוס המלא <Accent>נחשף</Accent> בקרוב.</>}
-                sub="המועדים, המבנה המלא והמחיר ייסגרו בקרוב. השאירו פרטים ותקבלו אותם ראשונים, בלי התחייבות." />
+              <SectionHeader kicker="הפרטים" title={<>המועדים <Accent>נסגרים</Accent> בקרוב.</>}
+                sub="המועדים והמחיר ייסגרו בקרוב. השאירו פרטים ותקבלו אותם ראשונים, בלי התחייבות." />
               <div className="logistics-grid" data-reveal>
                 <div className="log-cell">
                   <span className="k">פורמט</span>
@@ -283,10 +342,7 @@ const CoursePage = () => {
                   <span className="k">מועדים</span>
                   <span className="v soon">ייסגר בקרוב</span>
                 </div>
-                <div className="log-cell">
-                  <span className="k">סילבוס מלא</span>
-                  <span className="v soon">ייחשף בקרוב</span>
-                </div>
+
                 <div className="log-cell">
                   <span className="k">ציוד נדרש</span>
                   <span className="v">מחשב נייד</span>

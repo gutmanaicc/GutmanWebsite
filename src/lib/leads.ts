@@ -7,7 +7,9 @@
 
 import { track } from "../pixel";
 
-export const LEAD_ENDPOINT = ""; // TODO: להזין כתובת Webhook לפני עלייה לאוויר
+// Webhook של Make (חשבון GutmanAI): תרחיש "Gutman Academy: ליד מהאתר אל Fireberry".
+// ה-webhook קולט את הליד ושומר אותו בתור; התרחיש דוחף ל-Fireberry.
+export const LEAD_ENDPOINT = "https://hook.us2.make.com/dpq1djvtml118alux9q4byalyjnrhzc4";
 
 export type LeadPayload = {
   fullName: string;

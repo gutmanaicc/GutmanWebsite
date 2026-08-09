@@ -6,7 +6,6 @@ import SectionHeader, { Accent } from "../components/SectionHeader";
 import CTASection from "../components/CTASection";
 import Breadcrumbs from "../components/Breadcrumbs";
 
-const pad2 = (n: number) => String(n).padStart(2, "0");
 
 const Courses = () => {
   useSeo({
@@ -26,14 +25,13 @@ const Courses = () => {
           <SectionHeader
             as="h1"
             center
-            kicker={`המסלולים והסדנאות (${pad2(CATALOG.length)})`}
+            kicker="הסדנאות של האקדמיה"
             title={<>בוחרים עולם. יוצאים עם <Accent>תוצר</Accent>.</>}
             sub="כל מסלול בנוי סביב מקצוע או צורך אחד, ומסתיים בתוצר שממשיך לעבוד גם אחרי המפגש האחרון."
           />
           <div className="num-grid" data-reveal>
-            {CATALOG.map((c, i) => (
+            {CATALOG.map((c) => (
               <Link key={c.slug} to={`/courses/${c.slug}`} className="num-cell dir-cell">
-                <span className="num">({pad2(i + 1)})</span>
                 <h3>{c.title}</h3>
                 <p>{c.blurb}</p>
                 <span className="dir-meta">{c.kind} · {c.category}</span>

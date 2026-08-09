@@ -7,7 +7,6 @@ import Breadcrumbs from "../components/Breadcrumbs";
 import FAQAccordion from "../components/FAQAccordion";
 import CTASection from "../components/CTASection";
 
-const pad2 = (n: number) => String(n).padStart(2, "0");
 
 const FAQPage = () => {
   useSeo({
@@ -27,7 +26,7 @@ const FAQPage = () => {
         <div className="container">
           <SectionHeader
             as="h1"
-            kicker={`שאלות נפוצות (${pad2(GENERAL_FAQ.length)})`}
+            kicker="שאלות נפוצות"
             title={<>כל מה שרציתם <Accent>לשאול</Accent>.</>}
             sub="ואם לא מצאתם כאן תשובה, אפשר תמיד לשאול אותנו ישירות בעמוד יצירת הקשר."
           />
