@@ -2,7 +2,12 @@
 # רשת הסביבה של Claude חוסמת את ה-CDN, אבל הראנרים של GitHub לא.
 # נמחק אחרי שהקבצים נקלטים.
 name: fetch-media
-on: workflow_dispatch
+# push trigger כי workflow_dispatch לא נרשם מברנץ' שאינו ברירת המחדל.
+# אין לולאה: ה-push של הראנר נעשה עם GITHUB_TOKEN, ופושים כאלה לא מפעילים workflows.
+on:
+  push:
+    branches: [claude/premium-frontend-ui-skill-uy32gb]
+    paths: [".github/workflows/fetch-media.yml"]
 permissions:
   contents: write
 jobs:
