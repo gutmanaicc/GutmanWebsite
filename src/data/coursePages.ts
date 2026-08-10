@@ -1,0 +1,308 @@
+export type AudienceIcon = "bolt" | "users" | "target" | "spark" | "briefcase" | "graduation" | "video" | "layers";
+
+export type TargetAudienceProfile = {
+  title: string;
+  description: string;
+  icon: AudienceIcon;
+};
+
+export type CurriculumModule = {
+  title: string;
+  topics: string[];
+  outcome: string;
+};
+
+export type CourseDeliverable = {
+  title: string;
+  description: string;
+  icon: AudienceIcon;
+};
+
+export type CourseFaqItem = {
+  question: string;
+  answer: string;
+};
+
+export type CoursePageContent = {
+  valueProposition: string;
+  heroMeta: {
+    duration: string;
+    format: string;
+    outcome: string;
+  };
+  targetAudience: TargetAudienceProfile[];
+  deliverables: CourseDeliverable[];
+};
+
+/** Rich page-level content keyed by course slug. Curriculum + FAQ are derived from syllabus/faq. */
+export const COURSE_PAGE_CONTENT: Record<string, CoursePageContent> = {
+  "social-media-ai": {
+    valueProposition:
+      "בונים לכל לקוח עובד AI שמכיר את הטון, הקהל והמטרות שלו.\nמנהלים יותר לקוחות בפחות שעות — בלי לוותר על איכות.",
+    heroMeta: {
+      duration: "מועדים ייסגרו בקרוב",
+      format: "פרונטלי · קבוצה קטנה",
+      outcome: "עובד AI מוכן ללקוח",
+    },
+    targetAudience: [
+      {
+        title: "מנהלי ומנהלות סושיאל",
+        description: "מנהלים כמה לקוחות במקביל ורוצים לצמוח בלי להישחק על מחקר, כתיבה ועריכה חוזרת.",
+        icon: "users",
+      },
+      {
+        title: "סוכנויות תוכן",
+        description: "צוותים שצריכים תהליך אחיד שמייצר תוכן מותאם לכל לקוח, לא תוצאה גנרית.",
+        icon: "briefcase",
+      },
+      {
+        title: "פרילנסרים בתחום התוכן",
+        description: "רוצים לקלוט לקוחות נוספים בלי להכפיל שעות עבודה ובלי לאבד את הקול של כל מותג.",
+        icon: "bolt",
+      },
+      {
+        title: "מי שכבר משתמש ב-ChatGPT",
+        description: "עובדים עם AI מדי יום אבל מרגישים שהתוצאות שטחיות ושכל שיחה מתחילה מאפס.",
+        icon: "spark",
+      },
+    ],
+    deliverables: [
+      {
+        title: "עובד AI פעיל ללקוח",
+        description: "עובד מותאם שמכיר את העסק, הקהל, הטון והגבולות — מוכן לעבודה שוטפת.",
+        icon: "bolt",
+      },
+      {
+        title: "מסמך חפיפה מלא",
+        description: "בסיס ידע מסודר: קהל, הצעה, מתחרים, טון ומדיניות \"לא ממציאים\".",
+        icon: "layers",
+      },
+      {
+        title: "בנק רעיונות ותוכן",
+        description: "אסטרטגיה, רעיונות, פוסטים, תסריטים וקרוסלות שיצאו מהמערכת.",
+        icon: "spark",
+      },
+      {
+        title: "תבנית שכפול ללקוח הבא",
+        description: "תהליך מלא לבניית עובד AI חדש — בלי להמציא את הגלגל בכל פעם.",
+        icon: "target",
+      },
+    ],
+  },
+
+  "ai-for-students": {
+    valueProposition:
+      "בונים מערכת לימודים אישית שמבינה את הקורסים שלכם.\nמסכמים, מתרגלים ומתארגנים — ומגיעים מוכנים למבחנים.",
+    heroMeta: {
+      duration: "מועדים ייסגרו בקרוב",
+      format: "פרונטלי · קבוצה קטנה",
+      outcome: "סביבת לימודים אישית",
+    },
+    targetAudience: [
+      {
+        title: "סטודנטים בכל תחום",
+        description: "בין אם זו שנה א׳ או תואר מתקדם — המערכת נבנית על הקורסים האמיתיים שלכם.",
+        icon: "graduation",
+      },
+      {
+        title: "מי שטובע בחומר",
+        description: "יש יותר מדי מאמרים, סיכומים ומטלות, וקשה לדעת מאיפה להתחיל.",
+        icon: "layers",
+      },
+      {
+        title: "משתמשי AI שטחיים",
+        description: "כבר מבקשים סיכומים מצ'אט — אבל מקבלים תשובות לא מדויקות ובלי שיטת עבודה.",
+        icon: "spark",
+      },
+      {
+        title: "מי שרוצה תוכנית למבחן",
+        description: "להגיע עם מערך תרגול וזיהוי פערי ידע — לא עם פאניקה בלילה שלפני.",
+        icon: "target",
+      },
+    ],
+    deliverables: [
+      {
+        title: "סביבת לימודים אישית",
+        description: "מערכת שמכירה את הקורסים, החומרים והמשימות שלכם.",
+        icon: "graduation",
+      },
+      {
+        title: "שיטת סיכום אמינה",
+        description: "תהליך לסיכום הרצאות ומאמרים בלי לאבד את העיקר.",
+        icon: "layers",
+      },
+      {
+        title: "מערך תרגול למבחן",
+        description: "שאלות, מבחני דמה וכרטיסיות שמבוססים על הפערים שלכם.",
+        icon: "target",
+      },
+      {
+        title: "שגרת ניהול סמסטר",
+        description: "משימות, דדליינים ותהליך שאפשר להפעיל מחדש בכל סמסטר.",
+        icon: "bolt",
+      },
+    ],
+  },
+
+  "ai-video-content": {
+    valueProposition:
+      "מרעיון ועד תוצר מסחרי — תהליך הפקה מבוסס AI.\nקונספט, תסריט, שוטים, וידאו ועריכה בשיטה שאפשר לשחזר.",
+    heroMeta: {
+      duration: "מועדים ייסגרו בקרוב",
+      format: "פרונטלי · קבוצה קטנה",
+      outcome: "סרטון / קמפיין מוכן",
+    },
+    targetAudience: [
+      {
+        title: "עורכי ועורכות וידאו",
+        description: "רוצים להרחיב את סל היכולות ולהוביל תהליך AI בלי לאבד את השליטה המקצועית.",
+        icon: "video",
+      },
+      {
+        title: "יוצרי תוכן",
+        description: "מפיקים לבד או בצוות קטן וצריכים תהליך יציב מרעיון ועד מסירה.",
+        icon: "spark",
+      },
+      {
+        title: "אנשי קריאייטיב וסוכנויות",
+        description: "מחפשים תהליך AI מסודר שאפשר להציג ללקוח ולשחזר בין פרויקטים.",
+        icon: "briefcase",
+      },
+      {
+        title: "מי שכבר התנסה בכלים",
+        description: "ניסיתם כלי תמונה ווידאו — אבל עדיין לא הגעתם לרמה מסחרית עקבית.",
+        icon: "target",
+      },
+    ],
+    deliverables: [
+      {
+        title: "פרויקט תוכן גמור",
+        description: "סרטון או קמפיין קצר שנבנה במהלך המסלול, מוכן להצגה.",
+        icon: "video",
+      },
+      {
+        title: "קונספט + תסריט + סטוריבורד",
+        description: "מסמכי הפקה מלאים מהבריף ועד שוט ליסט.",
+        icon: "layers",
+      },
+      {
+        title: "סט נכסים ויזואליים",
+        description: "תמונות ושוטים עקביים ברמה מסחרית, לא ניסוי וטעייה.",
+        icon: "spark",
+      },
+      {
+        title: "תהליך עבודה לשכפול",
+        description: "שיטה מקצה לקצה שמיישמים בכל פרויקט הבא.",
+        icon: "bolt",
+      },
+    ],
+  },
+
+  "ai-business-systems": {
+    valueProposition:
+      "מפסיקים לנהל את העסק מוואטסאפ, פתקים וזיכרון.\nבונים CRM ומעקב תשלומים שמותאמים בדיוק לעסק שלכם.",
+    heroMeta: {
+      duration: "מועדים ייסגרו בקרוב",
+      format: "פרונטלי · קבוצה קטנה",
+      outcome: "CRM ומעקב תשלומים",
+    },
+    targetAudience: [
+      {
+        title: "בעלי עסקים קטנים",
+        description: "רוצים תמונה ברורה של לקוחות, לידים ותשלומים בכל בוקר.",
+        icon: "briefcase",
+      },
+      {
+        title: "עצמאיים ונותני שירות",
+        description: "מנהלים היום הכל בהודעות וטבלאות — ולידים נופלים בין הכיסאות.",
+        icon: "users",
+      },
+      {
+        title: "מי שחי על וואטסאפ",
+        description: "המידע החשוב ביותר של העסק נמצא בראש או בצ'אטים מפוזרים.",
+        icon: "bolt",
+      },
+      {
+        title: "מי שרוצה שליטה בכספים",
+        description: "לדעת מי שילם, מי חייב ומה פתוח — בלי לחפש בקבצים.",
+        icon: "target",
+      },
+    ],
+    deliverables: [
+      {
+        title: "CRM פעיל עם הלקוחות שלכם",
+        description: "מאגר לידים ולקוחות עם סטטוסים, שלבים ומשימות המשך.",
+        icon: "briefcase",
+      },
+      {
+        title: "מעקב חשבוניות ותשלומים",
+        description: "חיבור בין לקוח, עסקה ותשלום — כולל תזכורות לפתוח.",
+        icon: "layers",
+      },
+      {
+        title: "דשבורד בוקר עסקי",
+        description: "מסך אחד שאומר במה לטפל היום.",
+        icon: "target",
+      },
+      {
+        title: "שגרת AI לתפעול",
+        description: "סיכום שיחות, הודעות ומשימות שלא נופלות בין הכיסאות.",
+        icon: "spark",
+      },
+    ],
+  },
+
+  "ai-landing-page": {
+    valueProposition:
+      "בונים בעצמכם דף נחיתה מקצועי, רספונסיבי ומוכן לפרסום.\nבלי תלות במעצב, במפתח או בהמתנה לשינוי קטן.",
+    heroMeta: {
+      duration: "מועדים ייסגרו בקרוב",
+      format: "פרונטלי · קבוצה קטנה",
+      outcome: "דף נחיתה באוויר",
+    },
+    targetAudience: [
+      {
+        title: "בעלי עסקים",
+        description: "צריכים דף לעסק, לשירות או לקמפיין — ורוצים עצמאות מלאה לשנות אותו.",
+        icon: "briefcase",
+      },
+      {
+        title: "עצמאיים ונותני שירות",
+        description: "רוצים להפסיק לחכות ולשלם על כל עדכון קטן בדף.",
+        icon: "bolt",
+      },
+      {
+        title: "אנשי שיווק וקריאייטיב",
+        description: "רוצים להוציא רעיונות לאוויר לבד, ממסר מדויק ועד דף חי.",
+        icon: "spark",
+      },
+      {
+        title: "בלי רקע בתכנות",
+        description: "לא צריך להיות מפתחים. לומדים לבנות נכון — ואז בונים עם כלי AI.",
+        icon: "graduation",
+      },
+    ],
+    deliverables: [
+      {
+        title: "דף נחיתה חי ומוכן",
+        description: "דף אמיתי לעסק או לרעיון שלכם: רספונסיבי ומוכן לפרסום.",
+        icon: "bolt",
+      },
+      {
+        title: "מסמך אפיון חד",
+        description: "קהל, הצעה, הבטחה מרכזית ומטרת הדף — לפני שפיקסל אחד נבנה.",
+        icon: "target",
+      },
+      {
+        title: "קופי ושפה ויזואלית",
+        description: "תוכן שיווקי מדויק ועיצוב עקבי שלא מרגיש תבניתי.",
+        icon: "spark",
+      },
+      {
+        title: "יכולת לבנות את הדף הבא",
+        description: "תהליך שחוזר על עצמו — כך שהדף הבא כבר לא תלוי באף אחד.",
+        icon: "layers",
+      },
+    ],
+  },
+};
