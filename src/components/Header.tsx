@@ -140,18 +140,18 @@ const Header = () => {
             {NAV.map((item) => renderNavLink(item))}
           </nav>
 
-          <div className="flex flex-1 items-center justify-end gap-2">
+          <div className="flex flex-1 items-center justify-end gap-2 sm:gap-2.5">
             <Pressable
               type="button"
-              className="btn-primary hidden md:inline-flex"
-              onClick={() => openRegisterModal({ leadSource: "header-cta" })}
+              className="navbar-lead-cta inline-flex min-h-10 shrink-0 items-center justify-center rounded-full bg-[#FF2D85] px-3.5 text-sm font-medium text-white shadow-[0_6px_18px_-6px_rgba(255,45,133,0.55)] transition-[filter,box-shadow] hover:brightness-105 hover:shadow-[0_8px_22px_-6px_rgba(255,45,133,0.6)] sm:min-h-11 sm:px-5"
+              onClick={() => openRegisterModal({ leadSource: "navbar-cta" })}
             >
               השאירו פרטים
             </Pressable>
 
             <button
               type="button"
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-line bg-white text-ink shadow-sm transition hover:shadow-md md:hidden"
+              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-line bg-white text-ink shadow-sm transition hover:shadow-md sm:h-11 sm:w-11 md:hidden"
               onClick={() => setOpen((o) => !o)}
               aria-expanded={open}
               aria-controls="mobile-nav"
@@ -198,10 +198,10 @@ const Header = () => {
             </div>
             <Pressable
               type="button"
-              className="btn-primary mt-3 w-full"
+              className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[#FF2D85] px-5 text-sm font-medium text-white shadow-[0_6px_18px_-6px_rgba(255,45,133,0.55)]"
               onClick={() => {
                 setOpen(false);
-                openRegisterModal({ leadSource: "mobile-header-cta" });
+                openRegisterModal({ leadSource: "navbar-cta" });
               }}
             >
               השאירו פרטים

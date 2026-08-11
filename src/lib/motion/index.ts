@@ -10,6 +10,7 @@ export {
   staggerItem,
 } from "./motionPresets";
 export { useFinePointer } from "./useFinePointer";
+export { useMediaQuery } from "./useMediaQuery";
 export { useMotionCapability, type MotionLevel } from "./useMotionCapability";
 export {
   acquirePointerStore,

@@ -1,15 +1,17 @@
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  motion,
-  useScroll,
-  useSpring,
-  useTransform,
-  type MotionValue,
-} from "framer-motion";
+import { motion, useMotionValueEvent, useScroll } from "framer-motion";
 import { COURSES, type Course } from "../data/courses";
-import { useMotionCapability } from "../lib/motion";
+import { springSoft, useMotionCapability } from "../lib/motion";
+import { useRegisterModal } from "../context/RegisterModalContext";
 import { getMockWindowForVisual } from "./MockWindows";
+
+/** Exact brand tokens — no off-palette colors */
+const BRAND = {
+  canvas: "#F4F4F2",
+  ink: "#191919",
+  pink: "#FF2D85",
+} as const;
 
 export type StickyCourseSlide = {
   id: string;
@@ -29,13 +31,13 @@ export type StickyCourseSlide = {
   skills: string[];
 };
 
-/** Brand palette washes — pink, ink, canvas, deep pink, near-black */
+/** Alternating ink / canvas curtains only */
 const SLIDE_THEMES: Array<Pick<StickyCourseSlide, "bg" | "fg" | "accentColor">> = [
-  { bg: "#FF2D85", fg: "#ffffff", accentColor: "#ffffff" },
-  { bg: "#121212", fg: "#f4f4f2", accentColor: "#ff5f9e" },
-  { bg: "#f4f4f2", fg: "#191919", accentColor: "#ff5f9e" },
-  { bg: "#191919", fg: "#f4f4f2", accentColor: "#FF2D85" },
-  { bg: "#ff5f9e", fg: "#191919", accentColor: "#ffffff" },
+  { bg: BRAND.ink, fg: BRAND.canvas, accentColor: BRAND.pink },
+  { bg: BRAND.canvas, fg: BRAND.ink, accentColor: BRAND.pink },
+  { bg: BRAND.ink, fg: BRAND.canvas, accentColor: BRAND.pink },
+  { bg: BRAND.canvas, fg: BRAND.ink, accentColor: BRAND.pink },
+  { bg: BRAND.ink, fg: BRAND.canvas, accentColor: BRAND.pink },
 ];
 
 type ShowcaseMeta = {
@@ -46,7 +48,6 @@ type ShowcaseMeta = {
   skills: string[];
 };
 
-/** Outcome phrases + compact meta for each sticky card (not duplicate titles). */
 const SHOWCASE_META: Record<string, ShowcaseMeta> = {
   "social-media-ai": {
     accent: "עובד AI לכל לקוח",
@@ -105,419 +106,204 @@ export function buildStickyCourseSlides(courses: Course[] = COURSES): StickyCour
   });
 }
 
-type SlideLayerProps = {
+/**
+ * Content is always mounted & visible (ready).
+ * "show" only adds a one-shot focus settle — never opacity: 0.
+ */
+const revealContainer = {
+  ready: {},
+  show: {
+    transition: { staggerChildren: 0.08, delayChildren: 0.04 },
+  },
+};
+
+const revealItem = (reduced: boolean) =>
+  reduced
+    ? {
+        ready: { opacity: 1, y: 0 },
+        show: { opacity: 1, y: 0 },
+      }
+    : {
+        // Visible fallback for hydration + under-wipe layers
+        ready: { opacity: 1, y: 0 },
+        show: {
+          opacity: 1,
+          y: 0,
+          transition: springSoft,
+        },
+      };
+
+type CurtainProps = {
   slide: StickyCourseSlide;
   index: number;
-  total: number;
-  progress: MotionValue<number>;
   reduced: boolean;
-  /** Full capability — stronger arc + visual yaw */
-  allowTilt: boolean;
-  /** css3d+ — mild scroll unroll without heavy yaw */
-  allowArc: boolean;
 };
 
-const MetaBadges = ({
-  slide,
-  isLightBg,
-}: {
-  slide: StickyCourseSlide;
-  isLightBg: boolean;
-}) => {
-  const badges = [slide.duration, slide.format, slide.level];
-  return (
-    <div
-      className="mt-4 flex flex-wrap justify-center gap-1.5 sm:mt-5 sm:gap-2 lg:justify-start"
-      style={{ transform: "translateZ(28px)" }}
-    >
-      {badges.map((label) => (
-        <span
-          key={label}
-          className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium tracking-wide sm:px-3 sm:text-xs ${
-            isLightBg
-              ? "border border-line/80 bg-white/80 text-ink/80"
-              : "border border-white/25 bg-white/10"
-          }`}
-        >
-          {label}
-        </span>
-      ))}
-    </div>
-  );
-};
+/**
+ * Sibling sticky curtains (top-0 / 100dvh).
+ * The active deck stays frozen & flex-centered while the next full-bleed
+ * section slides up and wipes over it — no scale/shift on the pinned card.
+ */
+const CurtainSlide = ({ slide, index, reduced }: CurtainProps) => {
+  const { openRegisterModal } = useRegisterModal();
+  const panelRef = useRef<HTMLElement>(null);
+  /** One-shot focus settle — content is already visible in "ready" */
+  const [focused, setFocused] = useState(index === 0);
 
-const SkillBadges = ({
-  skills,
-  isLightBg,
-}: {
-  skills: string[];
-  isLightBg: boolean;
-}) => (
-  <div
-    className="mt-3 flex flex-wrap justify-center gap-1.5 sm:mt-4 sm:gap-2 lg:justify-start"
-    style={{ transform: "translateZ(22px)" }}
-  >
-    {skills.map((skill) => (
-      <span
-        key={skill}
-        className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium shadow-sm ${
-          isLightBg
-            ? "border border-white/50 bg-white/90 text-zinc-900"
-            : "border border-white/20 bg-black/30 text-white backdrop-blur-md"
-        }`}
-      >
-        {skill}
-      </span>
-    ))}
-  </div>
-);
+  const { scrollYProgress } = useScroll({
+    target: panelRef,
+    offset: ["start start", "end start"],
+  });
 
-const SlideCopy = ({
-  slide,
-  isLightBg,
-}: {
-  slide: StickyCourseSlide;
-  isLightBg: boolean;
-}) => (
-  <>
-    <h3 className="text-[clamp(2rem,5vw,3.5rem)] font-normal leading-[1.05] tracking-tight">
-      {slide.title}
-      <br />
-      <em
-        className="inline-block font-serif text-[0.72em] font-extrabold italic"
-        style={{ color: slide.accentColor, transform: "skewX(-6deg)" }}
-      >
-        {slide.accent}
-      </em>
-    </h3>
-
-    <MetaBadges slide={slide} isLightBg={isLightBg} />
-
-    <p
-      className={`mx-auto mt-3 max-w-md text-sm leading-snug sm:mt-4 sm:leading-relaxed lg:mx-0 ${
-        isLightBg ? "text-ink/70" : "opacity-80"
-      }`}
-    >
-      {slide.description}
-    </p>
-
-    <SkillBadges skills={slide.skills} isLightBg={isLightBg} />
-  </>
-);
-
-const SlideLayer = ({
-  slide,
-  index,
-  total,
-  progress,
-  reduced,
-  allowTilt,
-  allowArc,
-}: SlideLayerProps) => {
-  const last = Math.max(total - 1, 1);
-  const center = index / last;
-  const half = 0.55 / last;
-  const enter = Math.max(0, center - half);
-  const leave = Math.min(1, center + half);
-
-  const opacity = useTransform(
-    progress,
-    index === 0
-      ? [0, center + half * 0.35, leave]
-      : index === total - 1
-        ? [enter, center - half * 0.35, 1]
-        : [enter, center - half * 0.25, center + half * 0.25, leave],
-    index === 0
-      ? [1, 1, 0]
-      : index === total - 1
-        ? [0, 1, 1]
-        : [0, 1, 1, 0],
-  );
-
-  const scale = useTransform(
-    progress,
-    index === 0 ? [0, leave] : [enter, center, leave],
-    index === 0 ? [1, 0.96] : [0.94, 1, 0.96],
-  );
-
-  const y = useTransform(
-    progress,
-    index === 0 ? [0, leave] : [enter, center, leave],
-    index === 0 ? [0, -20] : [28, 0, -20],
-  );
-
-  const arcIn = allowTilt ? 10 : allowArc ? 4 : 0;
-  const arcOut = allowTilt ? 6 : allowArc ? 2 : 0;
-
-  // Arc unroll — tiles tip toward the camera as they hit center
-  const rotateX = useTransform(
-    progress,
-    index === 0 ? [0, center, leave] : [enter, center, leave],
-    index === 0 ? [0, 0, arcOut] : [arcIn, 0, arcOut],
-  );
-
-  // Multi-layer visual theater — stronger perspective on the mock-window panel
-  const visualRotateXRaw = useTransform(
-    progress,
-    index === 0 ? [0, center, leave] : [enter, center, leave],
-    allowTilt
-      ? index === 0
-        ? [0, -2, 8]
-        : [14, 0, 9]
-      : allowArc
-        ? index === 0
-          ? [0, 0, 3]
-          : [6, 0, 3]
-        : [0, 0, 0],
-  );
-
-  const visualRotateYRaw = useTransform(
-    progress,
-    index === 0 ? [0, leave] : [enter, center, leave],
-    allowTilt
-      ? index === 0
-        ? [0, -6]
-        : [8, 0, -6]
-      : allowArc
-        ? index === 0
-          ? [0, -2]
-          : [3, 0, -2]
-        : index === 0
-          ? [0, 0]
-          : [0, 0, 0],
-  );
-
-  const visualZRaw = useTransform(
-    progress,
-    index === 0 ? [0, leave] : [enter, center, leave],
-    allowTilt
-      ? index === 0
-        ? [40, 12]
-        : [8, 48, 12]
-      : index === 0
-        ? [0, 0]
-        : [0, 0, 0],
-  );
-
-  const visualRotateX = useSpring(visualRotateXRaw, { stiffness: 120, damping: 26, mass: 0.35 });
-  const visualRotateY = useSpring(visualRotateYRaw, { stiffness: 120, damping: 26, mass: 0.35 });
-  const visualZ = useSpring(visualZRaw, { stiffness: 130, damping: 28, mass: 0.35 });
+  useMotionValueEvent(scrollYProgress, "change", (v) => {
+    // Latch focus polish when this curtain owns the viewport; never reverse
+    if (v < 0.55) setFocused(true);
+  });
 
   const MockWindow = getMockWindowForVisual(slide.visual);
-  const isLightBg = slide.fg === "#191919";
+  const isLight = slide.bg === BRAND.canvas;
+  const item = revealItem(reduced);
+  const zIndex = (index + 1) * 10;
 
-  if (reduced) {
-    return (
-      <article
-        className="relative flex min-h-[85vh] flex-col justify-center py-16"
-        style={{ backgroundColor: slide.bg, color: slide.fg }}
-      >
-        {isLightBg && (
-          <div className="pointer-events-none absolute inset-0 grid-canvas opacity-50" aria-hidden />
-        )}
-        <div className="deck-strip-tight relative grid w-full items-center gap-10 lg:grid-cols-2">
-          <div className="text-center lg:text-right">
-            <SlideCopy slide={slide} isLightBg={isLightBg} />
-            <Link
-              to={slide.href}
-              className="relative mt-8 inline-flex min-h-11 w-auto shrink-0 items-center justify-center rounded-full px-6 text-sm font-semibold transition-transform active:scale-[0.98]"
-              style={{
-                backgroundColor: isLightBg ? "#191919" : "#ffffff",
-                color: isLightBg ? "#ffffff" : "#191919",
-              }}
-            >
-              לפרטי המסלול
-            </Link>
-          </div>
-          <div className="mx-auto w-full max-w-md overflow-hidden rounded-[1.75rem] border border-white/20 bg-white/90 p-3 shadow-card ring-1 ring-white/10 sm:p-4">
-            <MockWindow />
-          </div>
-        </div>
-      </article>
-    );
-  }
+  const primaryCta = isLight
+    ? { backgroundColor: BRAND.ink, color: BRAND.canvas }
+    : { backgroundColor: BRAND.canvas, color: BRAND.ink };
+  const ghostCta = isLight
+    ? "border-[#191919]/25 text-[#191919]"
+    : "border-[#F4F4F2]/35 text-[#F4F4F2]";
 
   return (
-    <motion.div
-      className="absolute inset-0 flex items-center overflow-hidden"
+    <article
+      ref={panelRef}
+      className="sticky top-0 flex h-screen h-[100dvh] w-full flex-col items-center justify-center overflow-hidden"
       style={{
-        opacity,
-        scale,
-        y,
-        rotateX,
-        transformPerspective: 1200,
+        zIndex,
+        backgroundColor: slide.bg,
         color: slide.fg,
       }}
     >
-      <div className="deck-strip-tight relative grid w-full items-center gap-8 lg:grid-cols-2 lg:gap-10">
-        <div
-          className="relative z-10 order-2 text-center lg:order-1 lg:text-right"
-          style={{ transformStyle: "preserve-3d" }}
-        >
-          <SlideCopy slide={slide} isLightBg={isLightBg} />
-          <Link
-            to={slide.href}
-            className="relative mt-8 inline-flex min-h-11 w-auto shrink-0 items-center justify-center rounded-full px-6 text-sm font-semibold transition-transform active:scale-[0.98]"
-            style={{
-              backgroundColor: isLightBg ? "#191919" : "#ffffff",
-              color: isLightBg ? "#ffffff" : "#191919",
-              transform: "translateZ(36px)",
-            }}
-          >
-            לפרטי המסלול
-          </Link>
-        </div>
+      <div
+        className={`pointer-events-none absolute inset-0 grid-canvas ${
+          isLight ? "opacity-55" : "opacity-[0.14]"
+        }`}
+        aria-hidden
+      />
 
-        <motion.div
-          className="relative z-10 order-1 mx-auto w-full max-w-sm lg:order-2 lg:max-w-md"
-          style={{
-            rotateX: visualRotateX,
-            rotateY: visualRotateY,
-            z: visualZ,
-            transformPerspective: 1400,
-            transformStyle: "preserve-3d",
-          }}
-        >
-          {/* Soft under-plane for layered depth */}
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[#FF2D85]/40"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute -left-24 top-1/3 h-64 w-64 rounded-full bg-[#FF2D85]/15 blur-3xl"
+        aria-hidden
+      />
+
+      <motion.div
+        className="relative z-10 flex w-full max-w-3xl flex-col items-center px-4 text-center opacity-100 sm:px-6"
+        variants={revealContainer}
+        initial="ready"
+        animate={focused ? "show" : "ready"}
+      >
+        <motion.div variants={item} className="mb-5 w-full max-w-[15.5rem] sm:mb-7 sm:max-w-sm">
           <div
-            className="pointer-events-none absolute inset-3 -z-10 rounded-[1.5rem] bg-black/10 blur-md"
-            style={{ transform: "translateZ(-28px) scale(0.96)" }}
-            aria-hidden
-          />
-          <div
-            className={`overflow-hidden rounded-[1.75rem] p-3 shadow-card ring-1 sm:p-4 ${
-              isLightBg
-                ? "border border-white/40 bg-white ring-ink/5"
-                : "border border-white/20 bg-white/95 ring-white/15"
-            }`}
-            style={{ transform: "translateZ(28px)" }}
+            className="glow-edge overflow-hidden rounded-[1.75rem] border border-[#FF2D85]/25 p-2.5 shadow-card sm:p-4"
+            style={{
+              backgroundColor: isLight ? "rgb(255 255 255 / 0.92)" : "rgb(244 244 242 / 0.96)",
+              boxShadow:
+                "0 0 0 1px rgb(255 45 133 / 0.12), 0 18px 40px -18px rgb(25 25 25 / 0.35)",
+            }}
           >
             <MockWindow />
           </div>
         </motion.div>
-      </div>
-    </motion.div>
-  );
-};
 
-type BackgroundProps = {
-  slides: StickyCourseSlide[];
-  progress: MotionValue<number>;
-};
+        <motion.p
+          variants={item}
+          className="mb-2 text-[11px] font-semibold tracking-[0.18em] text-[#FF2D85] sm:text-xs"
+        >
+          {slide.format} · {slide.duration}
+        </motion.p>
 
-/** Smoothly interpolates full-bleed background across slide brand colors */
-const DynamicBackground = ({ slides, progress }: BackgroundProps) => {
-  const colors = slides.map((s) => s.bg);
-  const stops = slides.map((_, i) => (slides.length === 1 ? 0 : i / (slides.length - 1)));
-  const backgroundColor = useTransform(progress, stops, colors);
+        <motion.h3
+          variants={item}
+          className="max-w-2xl text-[clamp(1.75rem,7vw,3.75rem)] font-bold leading-[1.05] tracking-tight"
+        >
+          {slide.title}
+          <br />
+          <em className="inline-block font-serif text-[0.78em] font-extrabold italic text-[#FF2D85]">
+            {slide.accent}
+          </em>
+        </motion.h3>
 
-  const showGrid = useTransform(progress, (p) => {
-    if (slides.length < 2) return slides[0]?.bg === "#f4f4f2" ? 0.5 : 0;
-    const idx = p * (slides.length - 1);
-    const a = Math.floor(idx);
-    const b = Math.min(a + 1, slides.length - 1);
-    const t = idx - a;
-    const lightA = slides[a]?.bg === "#f4f4f2" ? 1 : 0;
-    const lightB = slides[b]?.bg === "#f4f4f2" ? 1 : 0;
-    return (lightA * (1 - t) + lightB * t) * 0.55;
-  });
+        <motion.p
+          variants={item}
+          className={`mt-3 max-w-md text-sm leading-relaxed sm:mt-4 sm:text-base ${
+            isLight ? "text-[#191919]/70" : "text-[#F4F4F2]/75"
+          }`}
+        >
+          {slide.description}
+        </motion.p>
 
-  const gridY = useTransform(progress, [0, 1], [0, 48]);
-  const orbY = useTransform(progress, [0, 1], [36, -90]);
-  const orbYSlow = useTransform(progress, [0, 1], [20, -50]);
+        <motion.div
+          variants={item}
+          className="mt-3 flex flex-wrap justify-center gap-1.5 sm:mt-4 sm:gap-2"
+        >
+          {slide.skills.map((skill) => (
+            <span
+              key={skill}
+              className={`inline-flex min-h-8 items-center rounded-full border border-[#FF2D85]/35 px-3 py-1 text-xs font-medium ${
+                isLight ? "bg-[#FF2D85]/5 text-[#191919]" : "bg-[#FF2D85]/15 text-[#F4F4F2]"
+              }`}
+            >
+              {skill}
+            </span>
+          ))}
+        </motion.div>
 
-  return (
-    <>
-      <motion.div className="absolute inset-0" style={{ backgroundColor }} aria-hidden />
-      <motion.div
-        className="pointer-events-none absolute inset-0 grid-canvas"
-        style={{ opacity: showGrid, y: gridY }}
-        aria-hidden
-      />
-      <motion.div
-        className="pointer-events-none absolute -left-24 top-[20%] h-72 w-72 rounded-full bg-white/15 blur-3xl"
-        style={{ y: orbY, opacity: 0.55 }}
-        aria-hidden
-      />
-      <motion.div
-        className="pointer-events-none absolute -right-16 bottom-[10%] h-56 w-56 rounded-full bg-[#FF2D85]/20 blur-3xl"
-        style={{ y: orbYSlow, opacity: 0.35 }}
-        aria-hidden
-      />
-    </>
+        <motion.div
+          variants={item}
+          className="mt-6 flex w-full max-w-md flex-wrap items-center justify-center gap-2 sm:mt-8"
+        >
+          <button
+            type="button"
+            className="inline-flex min-h-11 min-w-[9.5rem] flex-1 items-center justify-center rounded-full px-5 text-sm font-semibold transition-transform active:scale-[0.98] sm:flex-none"
+            style={primaryCta}
+            onClick={() =>
+              openRegisterModal({ courseId: slide.id, leadSource: `showcase-${slide.id}` })
+            }
+          >
+            שמרו לי מקום
+          </button>
+          <Link
+            to={slide.href}
+            className={`inline-flex min-h-11 min-w-[9.5rem] flex-1 items-center justify-center rounded-full border px-5 text-sm font-semibold transition-transform active:scale-[0.98] sm:flex-none ${ghostCta}`}
+          >
+            לסילבוס המלא
+          </Link>
+        </motion.div>
+      </motion.div>
+    </article>
   );
 };
 
 type Props = {
   slides?: StickyCourseSlide[];
+  /** Kept for API compat — curtains are always 100dvh */
   vhPerSlide?: number;
 };
 
-const StickyCoursesShowcase = ({ slides: slidesProp, vhPerSlide = 100 }: Props) => {
+const StickyCoursesShowcase = ({ slides: slidesProp }: Props) => {
   const slides = useMemo(() => slidesProp ?? buildStickyCourseSlides(), [slidesProp]);
   const level = useMotionCapability();
   const reduced = level === "static";
-  const allowTilt = level === "full";
-  const allowArc = level !== "static";
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"],
-  });
-
-  const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 140,
-    damping: 32,
-    mass: 0.3,
-  });
 
   if (!slides.length) return null;
 
-  if (reduced) {
-    return (
-      <section aria-label="מסלולי האקדמיה">
-        {slides.map((slide, index) => (
-          <SlideLayer
-            key={slide.id}
-            slide={slide}
-            index={index}
-            total={slides.length}
-            progress={smoothProgress}
-            reduced
-            allowTilt={false}
-            allowArc={false}
-          />
-        ))}
-      </section>
-    );
-  }
-
   return (
-    <section
-      ref={containerRef}
-      aria-label="מסלולי האקדמיה"
-      className="relative"
-      style={{ height: `${slides.length * vhPerSlide}vh` }}
-    >
-      <div className="sticky top-[4.25rem] h-[calc(100dvh-4.25rem)] overflow-hidden">
-        <DynamicBackground slides={slides} progress={smoothProgress} />
-
-        <div className="relative h-full [&_[data-reveal]]:translate-y-0 [&_[data-reveal]]:opacity-100">
-          {slides.map((slide, index) => (
-            <SlideLayer
-              key={slide.id}
-              slide={slide}
-              index={index}
-              total={slides.length}
-              progress={smoothProgress}
-              reduced={false}
-              allowTilt={allowTilt}
-              allowArc={allowArc}
-            />
-          ))}
-        </div>
-      </div>
+    <section aria-label="מסלולי האקדמיה" className="relative">
+      {slides.map((slide, index) => (
+        <CurtainSlide key={slide.id} slide={slide} index={index} reduced={reduced} />
+      ))}
     </section>
   );
 };

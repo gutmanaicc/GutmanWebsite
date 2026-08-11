@@ -24,8 +24,8 @@
 
   .grid-canvas {
     background-image:
-      linear-gradient(to right, rgba(25, 25, 25, 0.04) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(25, 25, 25, 0.04) 1px, transparent 1px);
+      linear-gradient(to right, rgba(25, 25, 25, 0.055) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(25, 25, 25, 0.055) 1px, transparent 1px);
     background-size: 48px 48px;
   }
 
@@ -134,7 +134,7 @@
   }
 
   .stat-pill {
-    @apply inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-3 py-1 text-xs font-medium text-muted transition-[transform,box-shadow,border-color,color] duration-200 ease-out;
+    @apply inline-flex min-h-11 items-center gap-1.5 rounded-full border border-line bg-white px-3.5 py-2 text-xs font-medium text-muted transition-[transform,box-shadow,border-color,color] duration-200 ease-out sm:min-h-0 sm:py-1 sm:px-3;
   }
 
   .stat-pill b {
@@ -256,14 +256,15 @@
   }
 
   .course-card:hover {
-    @apply border-[#FF2D85]/30 shadow-2xl;
+    border-color: rgb(255 45 133 / 0.3);
+    @apply shadow-2xl;
     box-shadow:
       0 25px 50px -12px rgba(255, 45, 133, 0.12),
       0 8px 24px -8px rgba(25, 25, 25, 0.1);
   }
 
   .course-card:focus-within {
-    @apply border-[#FF2D85]/40;
+    border-color: rgb(255 45 133 / 0.4);
   }
 
   .course-card-accent {
@@ -342,13 +343,48 @@
     will-change: transform;
   }
 
+  /* Ambient pink edge glow — scroll/focus reactive, not infinite bounce */
+  .glow-edge {
+    @apply relative;
+    box-shadow:
+      0 0 0 1px rgba(255, 45, 133, calc(0.08 + var(--scroll-p, 0) * 0.12)),
+      0 8px 28px -12px rgba(255, 45, 133, calc(0.12 + var(--scroll-p, 0) * 0.18));
+    transition: box-shadow 280ms ease-out, border-color 280ms ease-out;
+  }
+
+  .glow-edge:hover,
+  .glow-edge:focus-within {
+    border-color: rgba(255, 45, 133, 0.35);
+    box-shadow:
+      0 0 0 1px rgba(255, 45, 133, 0.28),
+      0 0 24px -4px rgba(255, 45, 133, 0.35),
+      0 12px 32px -12px rgba(255, 45, 133, 0.22);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .glow-edge {
+      transition: none;
+      box-shadow: 0 0 0 1px rgba(255, 45, 133, 0.1);
+    }
+
+    .glow-edge:hover,
+    .glow-edge:focus-within {
+      box-shadow: 0 0 0 1px rgba(255, 45, 133, 0.22);
+    }
+  }
+
   /* Compact floating deck — leaves side margins for glow / canvas atmosphere */
   .deck-strip {
-    @apply mx-auto w-full max-w-5xl;
+    @apply mx-auto w-full max-w-5xl px-1 sm:px-0;
   }
 
   .deck-strip-tight {
     @apply mx-auto w-full max-w-4xl px-4 sm:px-6;
+  }
+
+  /* Sticky course deck — prevent 3D transforms from causing sideways bleed */
+  .sticky-course-stage {
+    @apply relative h-full overflow-x-clip overflow-y-hidden;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -453,6 +489,26 @@
     @apply flex items-center gap-3 border-b border-line px-4 py-3;
   }
 
+  .chat-progress {
+    @apply mr-auto flex items-center gap-1.5;
+  }
+
+  .chat-progress-dot {
+    @apply h-1.5 w-1.5 rounded-full bg-line transition-[background-color,transform] duration-200;
+  }
+
+  .chat-progress-dot.is-active {
+    @apply bg-[#FF2D85]/55;
+  }
+
+  .chat-progress-dot.is-current {
+    @apply scale-125 bg-[#FF2D85];
+  }
+
+  .chat-celebrate {
+    @apply mb-1 inline-flex text-lg text-[#FF2D85];
+  }
+
   .chat-dots {
     @apply inline-flex gap-1;
   }
@@ -502,7 +558,17 @@
   }
 
   .chat-choice {
-    @apply rounded-xl border border-line bg-white px-4 py-3 text-right text-sm font-medium text-ink transition-colors hover:border-ink/20 hover:bg-canvas active:scale-[0.99];
+    @apply min-h-11 rounded-xl border border-line bg-white px-4 py-3 text-right text-sm font-medium text-ink transition-[colors,border-color,box-shadow,transform] hover:border-[#FF2D85]/35 hover:bg-canvas hover:shadow-[0_0_0_1px_rgba(255,45,133,0.12)] active:scale-[0.97];
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .chat-choice {
+      @apply transition-colors active:scale-100;
+    }
+
+    .chat-progress-dot {
+      @apply transition-none;
+    }
   }
 
   .chat-result-card {

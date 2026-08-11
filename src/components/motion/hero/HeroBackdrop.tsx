@@ -69,8 +69,8 @@ const HeroBackdrop = () => {
           <HeroScene />
         </div>
       </Suspense>
-      {/* Soft wash so text stays legible over the mesh */}
-      <div className="absolute inset-0 bg-gradient-to-b from-canvas/40 via-transparent to-canvas/70" />
+      {/* Soft wash so text stays legible over the mesh — keep light so the grid reads through */}
+      <div className="absolute inset-0 bg-gradient-to-b from-canvas/25 via-transparent to-canvas/45" />
     </div>
   );
 };

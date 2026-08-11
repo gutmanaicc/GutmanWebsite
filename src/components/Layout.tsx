@@ -5,7 +5,7 @@ import Header from "./Header";
 import { Consent } from "./Consent";
 import AccessibilityWidget from "./AccessibilityWidget";
 import RegisterModal from "./RegisterModal";
-import { CursorTrail, ParallaxGridCanvas, PointerGlow } from "./motion";
+import { ParallaxGridCanvas } from "./motion";
 import { COURSES } from "../data/courses";
 import { SITE } from "../data/site";
 import { REGISTRATION_FORM_ID, scrollToRegistrationForm } from "../lib/registration";
@@ -96,8 +96,6 @@ const ScrollManager = () => {
 const Layout = () => (
   <div className="relative min-h-screen bg-canvas">
     <ParallaxGridCanvas />
-    <PointerGlow size={520} intensity={0.2} />
-    <CursorTrail />
     <div className="relative z-[1]">
       <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:m-4 focus:rounded-lg focus:bg-ink focus:px-4 focus:py-2 focus:text-white">
         דילוג לתוכן המרכזי
