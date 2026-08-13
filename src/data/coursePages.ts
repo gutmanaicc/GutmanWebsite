@@ -38,7 +38,7 @@ export type CoursePageContent = {
 export const COURSE_PAGE_CONTENT: Record<string, CoursePageContent> = {
   "social-media-ai": {
     valueProposition:
-      "בונים לכל לקוח עובד AI שמכיר את הטון, הקהל והמטרות שלו.\nמנהלים יותר לקוחות בפחות שעות — בלי לוותר על איכות.",
+      "בונים לכל לקוח עובד AI שמכיר את הטון, הקהל והמטרות שלו.\nמנהלים יותר לקוחות בפחות שעות - בלי לוותר על איכות.",
     heroMeta: {
       duration: "מועדים ייסגרו בקרוב",
       format: "פרונטלי · קבוצה קטנה",
@@ -69,7 +69,7 @@ export const COURSE_PAGE_CONTENT: Record<string, CoursePageContent> = {
     deliverables: [
       {
         title: "עובד AI פעיל ללקוח",
-        description: "עובד מותאם שמכיר את העסק, הקהל, הטון והגבולות — מוכן לעבודה שוטפת.",
+        description: "עובד מותאם שמכיר את העסק, הקהל, הטון והגבולות - מוכן לעבודה שוטפת.",
         icon: "bolt",
       },
       {
@@ -84,7 +84,7 @@ export const COURSE_PAGE_CONTENT: Record<string, CoursePageContent> = {
       },
       {
         title: "תבנית שכפול ללקוח הבא",
-        description: "תהליך מלא לבניית עובד AI חדש — בלי להמציא את הגלגל בכל פעם.",
+        description: "תהליך מלא לבניית עובד AI חדש - בלי להמציא את הגלגל בכל פעם.",
         icon: "target",
       },
     ],
@@ -92,7 +92,7 @@ export const COURSE_PAGE_CONTENT: Record<string, CoursePageContent> = {
 
   "ai-for-students": {
     valueProposition:
-      "בונים מערכת לימודים אישית שמבינה את הקורסים שלכם.\nמסכמים, מתרגלים ומתארגנים — ומגיעים מוכנים למבחנים.",
+      "בונים מערכת לימודים אישית שמבינה את הקורסים שלכם.\nמסכמים, מתרגלים ומתארגנים - ומגיעים מוכנים למבחנים.",
     heroMeta: {
       duration: "מועדים ייסגרו בקרוב",
       format: "פרונטלי · קבוצה קטנה",
@@ -101,7 +101,7 @@ export const COURSE_PAGE_CONTENT: Record<string, CoursePageContent> = {
     targetAudience: [
       {
         title: "סטודנטים בכל תחום",
-        description: "בין אם זו שנה א׳ או תואר מתקדם — המערכת נבנית על הקורסים האמיתיים שלכם.",
+        description: "בין אם זו שנה א׳ או תואר מתקדם - המערכת נבנית על הקורסים האמיתיים שלכם.",
         icon: "graduation",
       },
       {
@@ -111,12 +111,12 @@ export const COURSE_PAGE_CONTENT: Record<string, CoursePageContent> = {
       },
       {
         title: "משתמשי AI שטחיים",
-        description: "כבר מבקשים סיכומים מצ'אט — אבל מקבלים תשובות לא מדויקות ובלי שיטת עבודה.",
+        description: "כבר מבקשים סיכומים מצ'אט - אבל מקבלים תשובות לא מדויקות ובלי שיטת עבודה.",
         icon: "spark",
       },
       {
         title: "מי שרוצה תוכנית למבחן",
-        description: "להגיע עם מערך תרגול וזיהוי פערי ידע — לא עם פאניקה בלילה שלפני.",
+        description: "להגיע עם מערך תרגול וזיהוי פערי ידע - לא עם פאניקה בלילה שלפני.",
         icon: "target",
       },
     ],
@@ -146,7 +146,7 @@ export const COURSE_PAGE_CONTENT: Record<string, CoursePageContent> = {
 
   "ai-video-content": {
     valueProposition:
-      "מרעיון ועד תוצר מסחרי — תהליך הפקה מבוסס AI.\nקונספט, תסריט, שוטים, וידאו ועריכה בשיטה שאפשר לשחזר.",
+      "מרעיון ועד תוצר מסחרי - תהליך הפקה מבוסס AI.\nקונספט, תסריט, שוטים, וידאו ועריכה בשיטה שאפשר לשחזר.",
     heroMeta: {
       duration: "מועדים ייסגרו בקרוב",
       format: "פרונטלי · קבוצה קטנה",
@@ -170,7 +170,7 @@ export const COURSE_PAGE_CONTENT: Record<string, CoursePageContent> = {
       },
       {
         title: "מי שכבר התנסה בכלים",
-        description: "ניסיתם כלי תמונה ווידאו — אבל עדיין לא הגעתם לרמה מסחרית עקבית.",
+        description: "ניסיתם כלי תמונה ווידאו - אבל עדיין לא הגעתם לרמה מסחרית עקבית.",
         icon: "target",
       },
     ],
@@ -200,11 +200,11 @@ export const COURSE_PAGE_CONTENT: Record<string, CoursePageContent> = {
 
   "ai-business-systems": {
     valueProposition:
-      "מפסיקים לנהל את העסק מוואטסאפ, פתקים וזיכרון.\nבונים CRM ומעקב תשלומים שמותאמים בדיוק לעסק שלכם.",
+      "שלושה מסלולי משנה מעשיים לעסק שלכם.\nCRM, מעקב תשלומים, או דף נחיתה - בוחרים תוצר ויוצאים עם מערכת חיה.",
     heroMeta: {
       duration: "מועדים ייסגרו בקרוב",
       format: "פרונטלי · קבוצה קטנה",
-      outcome: "CRM ומעקב תשלומים",
+      outcome: "3 מסלולי משנה לבחירה",
     },
     targetAudience: [
       {
@@ -214,7 +214,7 @@ export const COURSE_PAGE_CONTENT: Record<string, CoursePageContent> = {
       },
       {
         title: "עצמאיים ונותני שירות",
-        description: "מנהלים היום הכל בהודעות וטבלאות — ולידים נופלים בין הכיסאות.",
+        description: "מנהלים היום הכל בהודעות וטבלאות - ולידים נופלים בין הכיסאות.",
         icon: "users",
       },
       {
@@ -223,8 +223,62 @@ export const COURSE_PAGE_CONTENT: Record<string, CoursePageContent> = {
         icon: "bolt",
       },
       {
-        title: "מי שרוצה שליטה בכספים",
-        description: "לדעת מי שילם, מי חייב ומה פתוח — בלי לחפש בקבצים.",
+        title: "מי שרוצה נכס דיגיטלי",
+        description: "דף נחיתה מקצועי באוויר - בלי תלות במעצב או במפתח.",
+        icon: "target",
+      },
+    ],
+    deliverables: [
+      {
+        title: "בחירת מסלול משנה מדויק",
+        description: "CRM, מעקב תשלומים או דף נחיתה - לפי מה שהעסק צריך עכשיו.",
+        icon: "target",
+      },
+      {
+        title: "מערכת או נכס חי",
+        description: "יוצאים עם תוצר פעיל על הנתונים או על השירות האמיתי שלכם.",
+        icon: "briefcase",
+      },
+      {
+        title: "שגרת עבודה ברורה",
+        description: "תהליך יומי שלא מאבד לידים, תשלומים או הזדמנויות.",
+        icon: "layers",
+      },
+      {
+        title: "שכבת AI לתפעול",
+        description: "סיכום שיחות, הודעות וקופי - בלי לבזבז שעות על שגרה.",
+        icon: "spark",
+      },
+    ],
+  },
+
+  "business-crm": {
+    valueProposition:
+      "בניית מערכת CRM מותאמת אישית לעסק שלך.\nמפנייה ראשונה ועד לקוח חוזר - הכל במקום אחד.",
+    heroMeta: {
+      duration: "מועדים ייסגרו בקרוב",
+      format: "פרונטלי · קבוצה קטנה",
+      outcome: "CRM פעיל עם הלקוחות שלכם",
+    },
+    targetAudience: [
+      {
+        title: "בעלי עסקים עם לידים",
+        description: "רוצים מרכז לקוחות שלא מאבד פניות בין וואטסאפ לטבלאות.",
+        icon: "briefcase",
+      },
+      {
+        title: "עצמאיים ונותני שירות",
+        description: "צריכים שלבים ברורים במכירה ומשימות המשך שלא נופלות.",
+        icon: "users",
+      },
+      {
+        title: "מי שחי על זיכרון",
+        description: "המידע על הלקוחות בראש - ורוצים להוציא אותו למערכת.",
+        icon: "bolt",
+      },
+      {
+        title: "מי שרוצה תהליך מדיד",
+        description: "לדעת בכל בוקר איפה כל ליד עומד ומה הצעד הבא.",
         icon: "target",
       },
     ],
@@ -235,24 +289,78 @@ export const COURSE_PAGE_CONTENT: Record<string, CoursePageContent> = {
         icon: "briefcase",
       },
       {
-        title: "מעקב חשבוניות ותשלומים",
-        description: "חיבור בין לקוח, עסקה ותשלום — כולל תזכורות לפתוח.",
+        title: "מפת מסע לקוח",
+        description: "תהליך מכירה ברור שמותאם בדיוק לצורת העבודה שלכם.",
         icon: "layers",
       },
       {
-        title: "דשבורד בוקר עסקי",
-        description: "מסך אחד שאומר במה לטפל היום.",
+        title: "שגרת בוקר ללידים",
+        description: "מבט אחד שאומר במה לטפל היום.",
         icon: "target",
       },
       {
-        title: "שגרת AI לתפעול",
-        description: "סיכום שיחות, הודעות ומשימות שלא נופלות בין הכיסאות.",
+        title: "AI לסיכום שיחות",
+        description: "סיכומים והודעות המשך בלי לבזבז שעות על תיעוד.",
         icon: "spark",
       },
     ],
   },
 
-  "ai-landing-page": {
+  "business-payments": {
+    valueProposition:
+      "מערכת למעקב תשלומים שמותאמת לעסק שלכם.\nיודעים מי שילם, מי חייב ומה פתוח - בלי לחפש בקבצים.",
+    heroMeta: {
+      duration: "מועדים ייסגרו בקרוב",
+      format: "פרונטלי · קבוצה קטנה",
+      outcome: "מעקב חשבוניות ותשלומים פעיל",
+    },
+    targetAudience: [
+      {
+        title: "בעלי עסקים עם עסקאות",
+        description: "רוצים שליטה תפעולית בכסף בלי לחכות לסוף החודש.",
+        icon: "briefcase",
+      },
+      {
+        title: "עצמאיים עם חובות פתוחים",
+        description: "תזכורות ותשלומים מפוזרים - ורוצים מערכת אחת.",
+        icon: "target",
+      },
+      {
+        title: "מי שמחבר לקוח לעסקה",
+        description: "צריכים חיבור ברור בין לקוח, חשבונית וסטטוס תשלום.",
+        icon: "layers",
+      },
+      {
+        title: "בלי רקע טכני",
+        description: "שכבת ניהול פנימית ידידותית - לא הנהלת חשבונות רשמית.",
+        icon: "bolt",
+      },
+    ],
+    deliverables: [
+      {
+        title: "מעקב חשבוניות ותשלומים",
+        description: "סטטוסים, תזכורות וחיבור בין לקוח, עסקה ותשלום.",
+        icon: "layers",
+      },
+      {
+        title: "מפת זרימת כסף",
+        description: "בהירות על איפה תשלומים נתקעים היום.",
+        icon: "target",
+      },
+      {
+        title: "דשבורד כספי בסיסי",
+        description: "מסך בוקר שאומר מה פתוח ומה דורש טיפול.",
+        icon: "briefcase",
+      },
+      {
+        title: "שגרת מעקב שבועית",
+        description: "תהליך תחזוקה שלא נופל בין הכיסאות.",
+        icon: "spark",
+      },
+    ],
+  },
+
+  "business-landing-page": {
     valueProposition:
       "בונים בעצמכם דף נחיתה מקצועי, רספונסיבי ומוכן לפרסום.\nבלי תלות במעצב, במפתח או בהמתנה לשינוי קטן.",
     heroMeta: {
@@ -263,7 +371,7 @@ export const COURSE_PAGE_CONTENT: Record<string, CoursePageContent> = {
     targetAudience: [
       {
         title: "בעלי עסקים",
-        description: "צריכים דף לעסק, לשירות או לקמפיין — ורוצים עצמאות מלאה לשנות אותו.",
+        description: "צריכים דף לעסק, לשירות או לקמפיין - ורוצים עצמאות מלאה לשנות אותו.",
         icon: "briefcase",
       },
       {
@@ -278,7 +386,7 @@ export const COURSE_PAGE_CONTENT: Record<string, CoursePageContent> = {
       },
       {
         title: "בלי רקע בתכנות",
-        description: "לא צריך להיות מפתחים. לומדים לבנות נכון — ואז בונים עם כלי AI.",
+        description: "לא צריך להיות מפתחים. לומדים לבנות נכון - ואז בונים עם כלי AI.",
         icon: "graduation",
       },
     ],
@@ -290,7 +398,7 @@ export const COURSE_PAGE_CONTENT: Record<string, CoursePageContent> = {
       },
       {
         title: "מסמך אפיון חד",
-        description: "קהל, הצעה, הבטחה מרכזית ומטרת הדף — לפני שפיקסל אחד נבנה.",
+        description: "קהל, הצעה, הבטחה מרכזית ומטרת הדף - לפני שפיקסל אחד נבנה.",
         icon: "target",
       },
       {
@@ -300,7 +408,7 @@ export const COURSE_PAGE_CONTENT: Record<string, CoursePageContent> = {
       },
       {
         title: "יכולת לבנות את הדף הבא",
-        description: "תהליך שחוזר על עצמו — כך שהדף הבא כבר לא תלוי באף אחד.",
+        description: "תהליך שחוזר על עצמו - כך שהדף הבא כבר לא תלוי באף אחד.",
         icon: "layers",
       },
     ],

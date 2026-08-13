@@ -63,7 +63,7 @@ const toneClass: Record<NonNullable<SharedProps["rippleTone"]>, string> = {
   brand: "btn-ripple-wave--brand",
 };
 
-/** Subtle elastic stretch — transform only so hit targets stay stable. */
+/** Subtle elastic stretch - transform only so hit targets stay stable. */
 const morphHover = {
   scaleX: 1.045,
   scaleY: 1.02,

@@ -53,7 +53,7 @@ const About = () => {
               kicker={SITE.founder.title}
               title={
                 <>
-                  {SITE.founder.name}. <AccentWord>המנחה.</AccentWord>
+                  {SITE.founder.name}. <AccentWord>מייסד.</AccentWord>
                 </>
               }
               sub={SITE.founder.bio}
@@ -61,8 +61,7 @@ const About = () => {
             <ScrollReveal3D fromRotateX={11} fromY={28}>
               <div className="rounded-[1.75rem] border border-white/40 bg-white p-6 shadow-card ring-1 ring-ink/5 sm:p-8">
                 <p className="text-sm leading-relaxed text-muted">
-                  האקדמיה בנויה סביב עבודה מעשית, פידבק מיידי, ותוצר שיוצא איתכם הביתה —
-                  לא סדרת הקלטות ולא רשימת כלים בלי שיטה.
+                  האקדמיה בנויה סביב עבודה מעשית, פידבק מיידי, ותוצר שיוצא איתכם הביתה - לא סדרת הקלטות ולא רשימת כלים בלי שיטה.
                 </p>
                 <Pressable
                   type="button"

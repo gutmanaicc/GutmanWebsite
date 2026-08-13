@@ -49,7 +49,7 @@ const RegisterModal = () => {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.18 }}
         >
-          {/* Backdrop — separate layer so panel stays above */}
+          {/* Backdrop - separate layer so panel stays above */}
           <button
             type="button"
             className="absolute inset-0 z-0 bg-ink/50 backdrop-blur-sm"

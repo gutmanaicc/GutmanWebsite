@@ -27,7 +27,7 @@ export const SITE = {
     title: "לא רק ללמוד AI.",
     titleAccent: "לדעת לעבוד איתו.",
     subtitle:
-      "האקדמיה הפרונטלית ללימודי בינה מלאכותית, עם מסלולים מעשיים למנהלי סושיאל, סטודנטים, יוצרי תוכן, עורכי וידאו ובעלי עסקים שרוצים להפוך AI מכלי שהם מכירים ליכולת שהם באמת יודעים להפעיל.",
+      "מפסיקים לנסות פרומפטים. לומדים לבנות תהליכי עבודה אמיתיים עם הבינה המלאכותית.",
     primaryCta: "לצפייה במסלולים",
     secondaryCta: "עזרו לי לבחור מסלול",
   },
@@ -76,10 +76,10 @@ export const SITE = {
     { title: "סרטון AI", course: "ai-video-content" },
     { title: "מערכת לימודים אישית", course: "ai-for-students" },
     { title: "תוכנית הכנה למבחן", course: "ai-for-students" },
-    { title: "מערכת CRM", course: "ai-business-systems" },
-    { title: "מעקב חשבוניות ותשלומים", course: "ai-business-systems" },
+    { title: "מערכת CRM", course: "business-crm" },
+    { title: "מעקב חשבוניות ותשלומים", course: "business-payments" },
     { title: "דשבורד עסקי", course: "ai-business-systems" },
-    { title: "דף נחיתה", course: "ai-landing-page" },
+    { title: "דף נחיתה", course: "business-landing-page" },
   ],
 } as const;
 
@@ -89,8 +89,8 @@ export const GOALS: GoalLink[] = [
   { goal: "אני רוצה לנהל יותר לקוחות בפחות זמן.", courseSlug: "social-media-ai" },
   { goal: "אני רוצה ללמוד למבחנים ולנהל את הלימודים בעזרת AI.", courseSlug: "ai-for-students" },
   { goal: "אני רוצה ליצור סרטונים ותוכן ברמה גבוהה עם AI.", courseSlug: "ai-video-content" },
-  { goal: "אני רוצה לעשות סדר בלקוחות, בחשבוניות ובתשלומים.", courseSlug: "ai-business-systems" },
-  { goal: "אני רוצה לבנות דף נחיתה לעסק שלי.", courseSlug: "ai-landing-page" },
+  { goal: "אני רוצה לעשות סדר בלקוחות, בחשבוניות ובתשלומים.", courseSlug: "business-crm" },
+  { goal: "אני רוצה לבנות דף נחיתה לעסק שלי.", courseSlug: "business-landing-page" },
 ];
 
 export const GENERAL_FAQ = [
@@ -136,4 +136,4 @@ export const GENERAL_FAQ = [
   },
 ];
 
-export const COURSE_COUNT = 5;
+export const COURSE_COUNT = 4;

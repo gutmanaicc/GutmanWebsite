@@ -21,7 +21,7 @@ const MAX_PARTICLES = 48;
 const EMIT_SPEED = 0.55;
 
 /**
- * Lightweight Canvas 2D cursor trail — full capability only.
+ * Lightweight Canvas 2D cursor trail - full capability only.
  * pointer-events-none; pauses while the tab is hidden.
  */
 const CursorTrail = () => {

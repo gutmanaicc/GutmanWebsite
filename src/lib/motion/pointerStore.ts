@@ -11,7 +11,7 @@ export type PointerSnapshot = {
   nx: number;
   /** Normalized Y in [-0.5, 0.5] relative to viewport */
   ny: number;
-  /** Page scroll progress 0–1 */
+  /** Page scroll progress 0 - 1 */
   scrollP: number;
 };
 

@@ -4,7 +4,7 @@ import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion
 type Props = {
   children?: ReactNode;
   className?: string;
-  /** Parallax strength — positive moves with scroll, negative against. Typical 0.12–0.35 */
+  /** Parallax strength - positive moves with scroll, negative against. Typical 0.12 - 0.35 */
   speed?: number;
   /** Travel range in px across the element's scroll window */
   range?: number;

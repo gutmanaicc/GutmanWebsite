@@ -17,19 +17,19 @@ const Q2: Record<AudienceKey, { label: string; slug: string }[]> = {
   pro: [
     { label: "לנהל יותר לקוחות סושיאל בפחות זמן", slug: "social-media-ai" },
     { label: "לשלב AI בהפקת וידאו ותוכן", slug: "ai-video-content" },
-    { label: "לבנות דפי נחיתה ללקוחות או לעצמי", slug: "ai-landing-page" },
+    { label: "לבנות דפי נחיתה ללקוחות או לעצמי", slug: "business-landing-page" },
     { label: "מערכת מסודרת ללקוחות ותשלומים", slug: "ai-business-systems" },
   ],
   business: [
-    { label: "סדר בלקוחות, בחשבוניות ובתשלומים", slug: "ai-business-systems" },
-    { label: "דף נחיתה לעסק או לשירות שלי", slug: "ai-landing-page" },
+    { label: "בניית מערכת CRM לעסק", slug: "business-crm" },
+    { label: "מערכת למעקב תשלומים", slug: "business-payments" },
+    { label: "דף נחיתה לעסק או לשירות שלי", slug: "business-landing-page" },
     { label: "תוכן וסושיאל לעסק, בשיטה", slug: "social-media-ai" },
-    { label: "סרטונים ותוכן ויזואלי לעסק", slug: "ai-video-content" },
   ],
   student: [
     { label: "ללמוד למבחנים ולנהל את הלימודים עם AI", slug: "ai-for-students" },
     { label: "ליצור תוכן וסרטונים ברמה גבוהה", slug: "ai-video-content" },
-    { label: "לבנות דף נחיתה לפרויקט או רעיון", slug: "ai-landing-page" },
+    { label: "לבנות דף נחיתה לפרויקט או רעיון", slug: "business-landing-page" },
   ],
 };
 

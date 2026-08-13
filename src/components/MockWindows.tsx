@@ -57,7 +57,7 @@ export const StudyWindow = () => (
     <WindowChrome title="מערכת לימודים · סמסטר ב׳" />
     <div className="mw-body" aria-hidden="true">
       <span className="mw-row">מבוא לסטטיסטיקה · מבחן בעוד 12 יום<span className="st">תוכנית מוכנה</span></span>
-      <span className="mw-bubble me">תבנה לי מבחן תרגול מההרצאות של פרקים 3–5</span>
+      <span className="mw-bubble me">תבנה לי מבחן תרגול מההרצאות של פרקים 3 - 5</span>
     </div>
     <div className="mw-caption">
       <b>סביבת לימודים אישית</b>
@@ -67,7 +67,7 @@ export const StudyWindow = () => (
 );
 
 export const LandingWindow = () => (
-  <Link to="/courses/ai-landing-page" className="mock-window">
+  <Link to="/courses/business-landing-page" className="mock-window">
     <WindowChrome title="דף נחיתה · בבנייה" />
     <div className="mw-body" aria-hidden="true">
       <div className="mw-blocks">

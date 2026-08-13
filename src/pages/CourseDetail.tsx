@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import FAQAccordion from "../components/FAQAccordion";
 import RegisterForm from "../components/RegisterForm";
 import SectionHeader, { AccentWord } from "../components/SectionHeader";
 import Pressable from "../components/Pressable";
+import BackButton from "../components/BackButton";
 import { ParallaxLayer, MagneticCard, MagneticDepth } from "../components/motion";
 import {
   ArrowIcon,
@@ -21,7 +22,7 @@ import {
   UsersIcon,
   VideoIcon,
 } from "../components/icons";
-import { getCourse, type AudienceIcon } from "../data/courses";
+import { getChildCourses, getCourse, type AudienceIcon, type Course } from "../data/courses";
 import { SITE } from "../data/site";
 import { useRegisterModal } from "../context/RegisterModalContext";
 import { useReveal } from "../lib/useReveal";
@@ -158,16 +159,78 @@ const CurriculumAccordion = ({
   );
 };
 
+const SubTracksGrid = ({
+  parent,
+  tracks,
+  courseKey,
+}: {
+  parent: Course;
+  tracks: Course[];
+  courseKey: string;
+}) => {
+  const { openRegisterModal } = useRegisterModal();
+  return (
+    <MotionSection resetKey={`${courseKey}-subtracks`} className="py-10 sm:py-12">
+      <div className="container-site">
+        <MotionItem>
+          <SectionHeader
+            compact
+            kicker="מסלולי משנה"
+            title={
+              <>
+                בחרו את <AccentWord>התוצר</AccentWord> לעסק
+              </>
+            }
+            sub="שלושה מסלולים ממוקדים תחת מסלול לבעלי עסקים - כל אחד עם תוצר ברור בסוף."
+          />
+        </MotionItem>
+        <div className="mt-6 grid gap-3 sm:grid-cols-3">
+          {tracks.map((sub) => (
+            <MotionItem key={sub.slug}>
+              <article className="flex h-full flex-col rounded-2xl border border-line bg-white/90 p-4 shadow-sm">
+                <span className="text-[11px] font-semibold tracking-wide text-[#FF2D85]">{parent.shortTitle}</span>
+                <h3 className="mt-1.5 text-base font-bold text-ink">{sub.shortTitle}</h3>
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-muted">{sub.cardSubtitle}</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Link
+                    to={`/courses/${sub.slug}`}
+                    className="btn btn-small bg-[#191919] text-[#F4F4F2] hover:brightness-110"
+                  >
+                    לפרטי המסלול
+                    <ArrowIcon />
+                  </Link>
+                  <Pressable
+                    type="button"
+                    className="btn-ghost btn-small"
+                    rippleTone="pink"
+                    onClick={() =>
+                      openRegisterModal({ courseId: sub.slug, leadSource: `${sub.leadSource}-hub` })
+                    }
+                  >
+                    הרשמה
+                  </Pressable>
+                </div>
+              </article>
+            </MotionItem>
+          ))}
+        </div>
+      </div>
+    </MotionSection>
+  );
+};
+
 const CourseDetail = () => {
   const { slug = "" } = useParams();
   const course = getCourse(slug);
   const { openRegisterModal } = useRegisterModal();
   const reduced = useReducedMotion();
+  const parentCourse = course?.parentSlug ? getCourse(course.parentSlug) : undefined;
+  const subTracks = course && !course.parentSlug ? getChildCourses(course.slug) : [];
 
   useSeo({
     title: course ? `${course.title} | ${SITE.name}` : `מסלול | ${SITE.name}`,
     description: course?.tagline ?? "מסלול לימוד AI פרונטלי ומעשי.",
-    path: `/courses/${slug}`,
+    path: course ? `/courses/${course.slug}` : `/courses/${slug}`,
     schema: course ? [courseSchema(course), faqSchema(course.courseFaq)] : undefined,
   });
 
@@ -175,6 +238,9 @@ const CourseDetail = () => {
   useReveal([slug]);
 
   if (!course) return <NotFound />;
+  if (slug !== course.slug) {
+    return <Navigate to={`/courses/${course.slug}`} replace />;
+  }
 
   const valueLines = course.valueProposition.split("\n").filter(Boolean);
   const courseKey = course.slug;
@@ -196,75 +262,94 @@ const CourseDetail = () => {
         />
 
         <div className="container-site relative py-8 sm:py-10 lg:py-12">
-          <nav className="mb-3 text-sm text-muted" aria-label="breadcrumb">
-            <Link to="/courses" className="hover:text-ink">
-              מסלולים
-            </Link>
-            <span className="mx-2">/</span>
-            <span className="text-ink">{course.shortTitle}</span>
-          </nav>
+          <div className="mb-4 flex w-full justify-start sm:mb-5">
+            <BackButton />
+          </div>
 
-          <motion.div
-            key={`${courseKey}-hero`}
-            initial={reduced ? false : { opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <span className="stat-pill mb-2.5 inline-flex border-[#FF2D85]/25 bg-[#FF2D85]/5 text-[#FF2D85]">
-              {course.category}
-            </span>
-            <h1 className="max-w-3xl text-2xl font-bold tracking-tight text-ink sm:text-3xl lg:text-4xl">
-              {course.title}
-            </h1>
-            <div className="mt-3 max-w-2xl space-y-0.5 text-base leading-snug text-muted sm:text-lg">
-              {valueLines.map((line) => (
-                <p key={line}>{line}</p>
-              ))}
-            </div>
+          <div className="mx-auto flex max-w-4xl flex-col items-center justify-center text-center">
+            <nav className="mb-3 text-sm text-muted" aria-label="breadcrumb">
+              <Link to="/courses" className="hover:text-ink">
+                מסלולים
+              </Link>
+              {parentCourse && (
+                <>
+                  <span className="mx-2">/</span>
+                  <Link to={`/courses/${parentCourse.slug}`} className="hover:text-ink">
+                    {parentCourse.shortTitle}
+                  </Link>
+                </>
+              )}
+              <span className="mx-2">/</span>
+              <span className="text-ink">{course.shortTitle}</span>
+            </nav>
 
-            <div className="course-hero-meta mt-4">
-              <div className="course-hero-meta-item">
-                <ClockIcon size={14} />
-                <div>
-                  <span className="course-hero-meta-label">משך</span>
-                  <span className="course-hero-meta-value">{course.heroMeta.duration}</span>
+            <motion.div
+              key={`${courseKey}-hero`}
+              className="flex w-full flex-col items-center"
+              initial={reduced ? false : { opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <span className="stat-pill mb-2.5 inline-flex border-[#FF2D85]/25 bg-[#FF2D85]/5 text-[#FF2D85]">
+                {course.category}
+              </span>
+              <h1 className="max-w-3xl text-2xl font-bold tracking-tight text-ink sm:text-3xl lg:text-4xl">
+                {course.title}
+              </h1>
+              <div className="mt-3 max-w-2xl space-y-0.5 text-base leading-snug text-muted sm:text-lg">
+                {valueLines.map((line) => (
+                  <p key={line}>{line}</p>
+                ))}
+              </div>
+
+              <div className="course-hero-meta mt-4 w-full max-w-xl justify-center">
+                <div className="course-hero-meta-item text-start">
+                  <ClockIcon size={14} />
+                  <div>
+                    <span className="course-hero-meta-label">משך</span>
+                    <span className="course-hero-meta-value">{course.heroMeta.duration}</span>
+                  </div>
+                </div>
+                <div className="course-hero-meta-item text-start">
+                  <UsersIcon size={14} />
+                  <div>
+                    <span className="course-hero-meta-label">פורמט</span>
+                    <span className="course-hero-meta-value">{course.heroMeta.format}</span>
+                  </div>
+                </div>
+                <div className="course-hero-meta-item text-start">
+                  <FlagIcon size={14} />
+                  <div>
+                    <span className="course-hero-meta-label">התוצר</span>
+                    <span className="course-hero-meta-value">{course.heroMeta.outcome}</span>
+                  </div>
                 </div>
               </div>
-              <div className="course-hero-meta-item">
-                <UsersIcon size={14} />
-                <div>
-                  <span className="course-hero-meta-label">פורמט</span>
-                  <span className="course-hero-meta-value">{course.heroMeta.format}</span>
-                </div>
-              </div>
-              <div className="course-hero-meta-item">
-                <FlagIcon size={14} />
-                <div>
-                  <span className="course-hero-meta-label">התוצר</span>
-                  <span className="course-hero-meta-value">{course.heroMeta.outcome}</span>
-                </div>
-              </div>
-            </div>
 
-            <div className="mt-4 flex flex-wrap gap-2.5">
-              <Pressable
-                type="button"
-                className="btn btn-small cursor-pointer bg-[#FF2D85] text-white shadow-pill hover:brightness-105"
-                rippleTone="pink"
-                onClick={() => openRegisterModal({ courseId: course.slug, leadSource: course.leadSource })}
-              >
-                שמרו לי מקום
-                <ArrowIcon />
-              </Pressable>
-              <Pressable as="a" href="#curriculum" className="btn-ghost btn-small" rippleTone="pink">
-                לתוכנית הלימודים
-              </Pressable>
-            </div>
-          </motion.div>
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-2.5">
+                <Pressable
+                  type="button"
+                  className="btn btn-small cursor-pointer bg-[#FF2D85] text-white shadow-pill hover:brightness-105"
+                  rippleTone="pink"
+                  onClick={() => openRegisterModal({ courseId: course.slug, leadSource: course.leadSource })}
+                >
+                  שמרו לי מקום
+                  <ArrowIcon />
+                </Pressable>
+                <Pressable as="a" href="#curriculum" className="btn-ghost btn-small" rippleTone="pink">
+                  סילבוס
+                </Pressable>
+              </div>
+            </motion.div>
+          </div>
         </div>
       </section>
 
-      {/* Target audience — lightweight rows */}
+      {subTracks.length > 0 && (
+        <SubTracksGrid parent={course} tracks={subTracks} courseKey={courseKey} />
+      )}
+
+      {/* Target audience - lightweight rows */}
       <MotionSection resetKey={`${courseKey}-audience`} className="py-10 sm:py-12">
         <div className="container-site">
           <MotionItem>
@@ -327,7 +412,7 @@ const CourseDetail = () => {
         </div>
       </MotionSection>
 
-      {/* Deliverables — featured bento */}
+      {/* Deliverables - featured bento */}
       <MotionSection resetKey={`${courseKey}-deliverables`} className="relative py-10 sm:py-12">
         <div className="pointer-events-none absolute inset-0 grid-canvas opacity-25" aria-hidden />
         <div className="container-site relative">
@@ -340,7 +425,7 @@ const CourseDetail = () => {
                   מה תצאו <AccentWord>איתו</AccentWord> מהמסלול
                 </>
               }
-              sub="תוצרים אמיתיים שנבנים במהלך המסלול — לא רק ידע תיאורטי."
+              sub="תוצרים אמיתיים שנבנים במהלך המסלול - לא רק ידע תיאורטי."
             />
           </MotionItem>
 
@@ -424,7 +509,7 @@ const CourseDetail = () => {
                     מוכנים להתחיל ?
                   </h2>
                   <p className="mt-2 max-w-md text-sm leading-relaxed text-white/80">
-                    השאירו פרטים ונחזור אליכם עם מועדים ופרטי המסלול — בלי התחייבות.
+                    השאירו פרטים ונחזור אליכם עם מועדים ופרטי המסלול - בלי התחייבות.
                   </p>
                   <ul className="mt-3 space-y-1.5 text-sm text-white/85">
                     <li className="flex gap-2">
@@ -458,7 +543,7 @@ const CourseDetail = () => {
         </div>
       </MotionSection>
 
-      {/* FAQ — bottom of page */}
+      {/* FAQ - bottom of page */}
       <MotionSection resetKey={`${courseKey}-faq`} className="bg-white/40 py-10 sm:py-12">
         <div className="container-site max-w-3xl">
           <MotionItem>

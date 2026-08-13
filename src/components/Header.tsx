@@ -1,9 +1,9 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import Logo from "./Logo";
-import { COURSES } from "../data/courses";
 import { useRegisterModal } from "../context/RegisterModalContext";
 import CoursesNavDropdown from "./CoursesNavDropdown";
+import MobileTracksAccordion from "./MobileTracksAccordion";
 import Pressable from "./Pressable";
 
 type NavItem = {
@@ -23,7 +23,7 @@ const NAV: NavItem[] = [
   { label: "הרשמה", action: "register" },
 ];
 
-/** Soft floating capsule — light-blue glow + translucent fill */
+/** Soft floating capsule - light-blue glow + translucent fill */
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   [
     "relative inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[15px] font-medium text-ink",
@@ -62,7 +62,6 @@ const Header = () => {
 
   const handleRegister = () => {
     setOpen(false);
-    // On home: smooth-scroll to #registration-form + focus. Elsewhere: open modal.
     openRegister({ leadSource: "nav-register", preferScroll: true });
   };
 
@@ -85,6 +84,10 @@ const Header = () => {
     }
 
     if (!item.to) return null;
+
+    if (item.coursesMenu && mobile) {
+      return <MobileTracksAccordion key="mobile-tracks" onNavigate={() => setOpen(false)} />;
+    }
 
     if (item.coursesMenu && !mobile) {
       return <CoursesNavDropdown key={item.to} linkClassName={navLinkClass} />;
@@ -175,26 +178,12 @@ const Header = () => {
           />
           <nav
             id="mobile-nav"
-            className="fixed inset-x-4 top-[5.25rem] z-50 rounded-2xl border border-line bg-white/95 p-3 shadow-float backdrop-blur-md md:hidden"
+            className="fixed inset-x-4 top-[5.25rem] z-50 max-h-[min(78vh,720px)] overflow-y-auto rounded-2xl border border-line bg-white/95 p-3 shadow-float backdrop-blur-md md:hidden"
             aria-label="ניווט מובייל"
             dir="rtl"
           >
             <div className="flex flex-col gap-1">
               {NAV.map((item) => renderNavLink(item, true))}
-              <div className="mt-1 border-t border-line pt-2" dir="rtl">
-                <p className="px-4 pb-1 text-xs font-medium text-muted">מסלולים</p>
-                {COURSES.map((course) => (
-                  <NavLink
-                    key={course.slug}
-                    to={`/courses/${course.slug}`}
-                    className="block rounded-xl px-4 py-2.5 text-sm font-medium text-ink hover:bg-canvas"
-                    onClick={() => setOpen(false)}
-                  >
-                    {course.shortTitle}
-                    <span className="mr-2 text-xs font-normal text-muted">{course.category}</span>
-                  </NavLink>
-                ))}
-              </div>
             </div>
             <Pressable
               type="button"

@@ -39,7 +39,7 @@ const Scene = () => (
 );
 
 /**
- * R3F hero canvas — only imported via React.lazy from HeroBackdrop.
+ * R3F hero canvas - only imported via React.lazy from HeroBackdrop.
  * pointer-events-none so UI above stays fully interactive.
  */
 const HeroScene = () => (

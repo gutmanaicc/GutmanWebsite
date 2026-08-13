@@ -6,7 +6,7 @@
   --card-edge: #2a2a2e;
 }
 
-/* Teaser-only reset — do not use a global * reset (leaks into the marketing site) */
+/* Teaser-only reset - do not use a global * reset (leaks into the marketing site) */
 body[data-theme="teaser"],
 body[data-theme="teaser"] * {
   margin: 0;

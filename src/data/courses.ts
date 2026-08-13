@@ -31,6 +31,7 @@ import type {
   TargetAudienceProfile,
 } from "./coursePages";
 import { COURSE_PAGE_CONTENT } from "./coursePages";
+import { COURSE_SLUG_ALIASES } from "./navTracks";
 
 type CourseCore = {
   slug: string;
@@ -39,7 +40,7 @@ type CourseCore = {
   category: string;
   audience: string;
   tagline: string;
-  /** Short high-impact line for course cards (1–2 lines). */
+  /** Short high-impact line for course cards (1 - 2 lines). */
   cardSubtitle: string;
   /** Two compact highlight pills shown on course cards. */
   cardPills: [CourseCardPill, CourseCardPill];
@@ -70,6 +71,8 @@ type CourseCore = {
   ctaText: string;
   leadSource: string;
   note?: string;
+  /** When set, this course is a sub-track under a parent track (e.g. business owners). */
+  parentSlug?: string;
 };
 
 export type Course = CourseCore & {
@@ -118,7 +121,7 @@ export const COURSES_CORE: CourseCore[] = [
     category: "שיווק ותוכן",
     audience: "מנהלי ומנהלות סושיאל, מנהלי קהילות וסוכנויות תוכן שמנהלים כמה לקוחות במקביל",
     tagline: "בונים לכל לקוח עובד AI משלו, ומנהלים יותר לקוחות בפחות שעות ובלי לוותר על איכות.",
-    cardSubtitle: "עובד AI לכל לקוח — יותר לקוחות, פחות שעות, בלי לוותר על איכות.",
+    cardSubtitle: "עובד AI לכל לקוח - יותר לקוחות, פחות שעות, בלי לוותר על איכות.",
     cardPills: [
       { icon: "bolt", label: "תוצר: עובד AI מוכן" },
       { icon: "users", label: "קבוצה קטנה" },
@@ -377,11 +380,11 @@ export const COURSES_CORE: CourseCore[] = [
   {
     slug: "ai-video-content",
     title: "AI לעורכי וידאו וליוצרי תוכן",
-    shortTitle: "וידאו ותוכן",
+    shortTitle: "עורכי וידאו ויוצרי תוכן",
     category: "קריאייטיב ווידאו",
     audience: "עורכי ועורכות וידאו, יוצרי ויוצרות תוכן ואנשי קריאייטיב שרוצים לשלב AI בתהליך ההפקה",
     tagline: "מרעיון ועד תוצר: בונים תהליך הפקה מבוסס AI שמייצר תוכן ברמה מסחרית, שוב ושוב.",
-    cardSubtitle: "מהבריף ועד סרטון מסחרי — תהליך הפקה עם AI שאפשר לשחזר.",
+    cardSubtitle: "מהבריף ועד סרטון מסחרי - תהליך הפקה עם AI שאפשר לשחזר.",
     cardPills: [
       { icon: "spark", label: "תוצר: סרטון / קמפיין" },
       { icon: "users", label: "קבוצה קטנה" },
@@ -510,14 +513,14 @@ export const COURSES_CORE: CourseCore[] = [
   },
   {
     slug: "ai-business-systems",
-    title: "AI לבעלי עסקים. מערכת לניהול העסק והלקוחות",
-    shortTitle: "בעלי עסקים",
+    title: "מסלול לבעלי עסקים - מערכות AI לעסק",
+    shortTitle: "מסלול לבעלי עסקים",
     category: "ניהול עסק",
     audience: "בעלי ובעלות עסקים, עצמאיים ונותני שירות שרוצים סדר בלקוחות, בכספים ובמשימות",
-    tagline: "מפסיקים לנהל את העסק מהודעות, פתקים וזיכרון. בונים CRM ומערכת מעקב תשלומים שמותאמים בדיוק לעסק שלכם.",
-    cardSubtitle: "CRM ומעקב תשלומים לעסק שלכם — פותחים ויודעים במה לטפל.",
+    tagline: "שלושה מסלולי משנה מעשיים: CRM, מעקב תשלומים, ודף נחיתה - בוחרים את התוצר שהעסק שלכם צריך עכשיו.",
+    cardSubtitle: "CRM, מעקב תשלומים או דף נחיתה - בוחרים מסלול משנה ויוצאים עם מערכת חיה.",
     cardPills: [
-      { icon: "bolt", label: "תוצר: CRM פעיל" },
+      { icon: "bolt", label: "3 מסלולי משנה" },
       { icon: "users", label: "קבוצה קטנה" },
     ],
     problem: [
@@ -642,13 +645,199 @@ export const COURSES_CORE: CourseCore[] = [
     note: "המערכת שנבנית במסלול היא שכבת ניהול פנימית. היא אינה מחליפה רואה חשבון, יועץ מס או תוכנת הנהלת חשבונות רשמית.",
   },
   {
-    slug: "ai-landing-page",
+    slug: "business-crm",
+    parentSlug: "ai-business-systems",
+    title: "בניית מערכת CRM מותאמת אישית לעסק שלך",
+    shortTitle: "בניית מערכת CRM",
+    category: "ניהול עסק",
+    audience: "בעלי עסקים ועצמאיים שרוצים מרכז לקוחות ולידים במקום אחד",
+    tagline: "בניית מערכת CRM מותאמת אישית לעסק שלך - מפנייה ראשונה ועד לקוח חוזר.",
+    cardSubtitle: "CRM חי עם הלקוחות האמיתיים שלכם - סטטוסים, שלבים ומשימות המשך.",
+    cardPills: [
+      { icon: "bolt", label: "תוצר: CRM פעיל" },
+      { icon: "users", label: "קבוצה קטנה" },
+    ],
+    problem: [
+      "לידים נשכחים בוואטסאפ, הצעות מחיר נשארות פתוחות, ואין תמונה ברורה של סטטוס כל לקוח.",
+      "המידע החשוב ביותר של העסק מפוזר בין אנשי קשר, פתקים וזיכרון - בלי תהליך קבוע מפנייה ועד סגירה.",
+    ],
+    outcome:
+      "CRM מותאם למסע הלקוח שלכם: לידים, לקוחות, שלבי מכירה, תיעוד שיחות ומשימות המשך במקום אחד.",
+    finalDeliverable: "מערכת CRM פעילה עם הלקוחות והלידים האמיתיים שלכם, מוכנה לעבודה שוטפת.",
+    capabilities: [
+      "ריכוז פרטי לקוחות ולידים",
+      "מעקב אחרי מקור פנייה וסטטוס",
+      "הגדרת שלבים בתהליך המכירה",
+      "תיעוד שיחות ומשימות המשך",
+      "שימוש ב-AI לסיכום שיחות והודעות",
+    ],
+    topics: [
+      "מיפוי מסע הלקוח",
+      "הגדרת שלבים וסטטוסים",
+      "בניית מאגר לקוחות ולידים",
+      "כללי עבודה יומיים",
+      "AI לסיכום שיחות",
+    ],
+    syllabus: [
+      {
+        title: "מיפוי מסע הלקוח",
+        learn: "פירוק התהליך מפנייה ראשונה ועד לקוח חוזר לשלבים ברורים.",
+        practice: "ממפים את מסע הלקוח האמיתי של העסק.",
+        build: "מפת תהליך כבסיס ל-CRM.",
+        takeaway: "תמונה ברורה של איך הלקוחות באמת זזים אצלכם.",
+      },
+      {
+        title: "בניית ה-CRM",
+        learn: "הגדרת שלבים, סטטוסים וכללי עבודה.",
+        practice: "מקימים את המערכת ומזינים לקוחות ולידים אמיתיים.",
+        build: "CRM חי שמשקף את מצב העסק.",
+        takeaway: "מרכז לקוחות שעובד מהיום הראשון.",
+      },
+      {
+        title: "שגרת עבודה ו-AI",
+        learn: "משימות, תזכורות ושימוש ב-AI לסיכום שיחות וכתיבת הודעות.",
+        practice: "מריצים תרחישים אמיתיים על הלידים שלכם.",
+        build: "שגרת בוקר לניהול לידים.",
+        takeaway: "תהליך שלא מאבד פניות בין הכיסאות.",
+      },
+    ],
+    suitability: [
+      "בעלי עסקים עם לידים ולקוחות מרובים",
+      "עצמאיים שניהולם היום בוואטסאפ ובטבלאות",
+      "מי שרוצה תהליך מכירה ברור ומדיד",
+    ],
+    notSuitableFor: [
+      "מי שמחפש הרצאה תאורטית בלי להקים מערכת",
+      "מי שלא מוכן לעבוד על נתונים אמיתיים של העסק",
+    ],
+    experienceLevel: "לא נדרש רקע טכני. נדרש עסק פעיל או פעילות עצמאית",
+    logistics: {
+      format: "מסלול פרונטלי מעשי בקבוצה קטנה",
+      sessions: "",
+      sessionLength: "",
+      location: "",
+      groupSize: "",
+      equipment: "מחשב נייד",
+      support: "ליווי צמוד במהלך המפגשים",
+      materials: "תבניות CRM ותהליכים כתובים",
+      nextCohort: "",
+    },
+    faq: [
+      {
+        q: "אני לא טכנולוגי. אצליח לבנות CRM?",
+        a: "כן. עובדים בכלים ידידותיים, שלב אחרי שלב, על הנתונים האמיתיים של העסק שלכם.",
+      },
+      {
+        q: "יש לי כבר אקסל עם לקוחות. למה CRM?",
+        a: "טבלה שומרת נתונים. CRM מנהל תהליך: סטטוסים, תזכורות ומבט יומי על מה לטפל.",
+      },
+    ],
+    visual: "business",
+    ctaText: "רוצה לבנות CRM לעסק",
+    leadSource: "course-business-crm",
+  },
+  {
+    slug: "business-payments",
+    parentSlug: "ai-business-systems",
+    title: "מערכת למעקב תשלומים וחשבוניות",
+    shortTitle: "מערכת למעקב תשלומים",
+    category: "ניהול עסק",
+    audience: "בעלי עסקים שרוצים לדעת בכל רגע מי שילם, מי חייב ומה פתוח",
+    tagline: "בונים מערכת מעקב תשלומים שמותאמת לעסק שלכם - חיבור בין לקוח, עסקה ותשלום.",
+    cardSubtitle: "מעקב חשבוניות ותשלומים פעיל - תשובה מיידית למי שילם ומי חייב.",
+    cardPills: [
+      { icon: "bolt", label: "תוצר: מעקב תשלומים" },
+      { icon: "target", label: "קבוצה קטנה" },
+    ],
+    problem: [
+      "לא ברור מי שילם ומי עדיין חייב - המידע מפוזר בין מיילים, וואטסאפ וקבצים.",
+      "אין תזכורות מסודרות לתשלומים פתוחים, ואין חיבור ברור בין לקוח, עסקה וחשבונית.",
+    ],
+    outcome:
+      "מערכת מעקב כספי תפעולי: סטטוסי תשלום, תזכורות, וחיבור מלא בין לקוח לעסקה.",
+    finalDeliverable: "מערכת מעקב חשבוניות ותשלומים פעילה, מוכנה לעבודה שוטפת.",
+    capabilities: [
+      "מעקב אחרי חשבוניות וקבלות",
+      "זיהוי תשלומים שטרם התקבלו",
+      "תזכורות לתשלומים פתוחים",
+      "חיבור בין לקוח, עסקה ותשלום",
+      "סיכום חודשי לפי לקוח או שירות",
+    ],
+    topics: [
+      "מיפוי זרימת הכסף בעסק",
+      "סטטוסי תשלום ותזכורות",
+      "חיבור לקוח - עסקה - תשלום",
+      "דשבורד כספי בסיסי",
+      "שגרת מעקב שבועית",
+    ],
+    syllabus: [
+      {
+        title: "מיפוי זרימת הכסף",
+        learn: "איך מפרקים את תהליך התשלום לשלבים ברורים ולסטטוסים.",
+        practice: "ממפים את זרימת הכסף האמיתית בעסק.",
+        build: "מפת תהליך תשלומים.",
+        takeaway: "בהירות על איפה כסף נתקע היום.",
+      },
+      {
+        title: "בניית מערכת המעקב",
+        learn: "הקמת מעקב חשבוניות ותשלומים עם סטטוסים ותזכורות.",
+        practice: "מזינים עסקאות אמיתיות ובודקים מקצה לקצה.",
+        build: "מערכת מעקב תשלומים פעילה.",
+        takeaway: "תשובה מיידית: מי שילם, מי חייב ומה פתוח.",
+      },
+      {
+        title: "דשבורד ושגרה",
+        learn: "מסך בוקר כספי ושגרת מעקב שלא נופלת בין הכיסאות.",
+        practice: "מריצים שבוע עבודה מדומה על הנתונים שלכם.",
+        build: "דשבורד ותהליך תחזוקה.",
+        takeaway: "שליטה תפעולית בכסף בלי לחכות לסוף החודש.",
+      },
+    ],
+    suitability: [
+      "בעלי עסקים עם עסקאות ותשלומים חוזרים",
+      "עצמאיים שמתקשים לעקוב אחרי חובות פתוחים",
+      "מי שרוצה שכבת ניהול פנימית לפני הנהלת חשבונות",
+    ],
+    notSuitableFor: [
+      "מי שמחפש תחליף לרואה חשבון או תוכנת הנהלת חשבונות רשמית",
+      "מי שלא מוכן להזין נתונים אמיתיים של העסק",
+    ],
+    experienceLevel: "לא נדרש רקע טכני. נדרש עסק פעיל או פעילות עצמאית",
+    logistics: {
+      format: "מסלול פרונטלי מעשי בקבוצה קטנה",
+      sessions: "",
+      sessionLength: "",
+      location: "",
+      groupSize: "",
+      equipment: "מחשב נייד",
+      support: "ליווי צמוד במהלך המפגשים",
+      materials: "תבניות מעקב ותהליכים כתובים",
+      nextCohort: "",
+    },
+    faq: [
+      {
+        q: "זה מחליף לי את רואה החשבון?",
+        a: "לא. זו שכבת ניהול פנימית למעקב תפעולי - לא הנהלת חשבונות רשמית ולא הפקת מסמכים לפי חוק.",
+      },
+      {
+        q: "אפשר לחבר את זה ל-CRM?",
+        a: "כן. המסלול בנוי כך שתוכלו לחבר לקוח, עסקה ותשלום - וגם להמשיך למסלול ה-CRM אם עדיין אין לכם מרכז לקוחות.",
+      },
+    ],
+    visual: "business",
+    ctaText: "רוצה מעקב תשלומים מסודר",
+    leadSource: "course-business-payments",
+    note: "המערכת שנבנית במסלול היא שכבת ניהול פנימית. היא אינה מחליפה רואה חשבון או תוכנת הנהלת חשבונות רשמית.",
+  },
+  {
+    slug: "business-landing-page",
+    parentSlug: "ai-business-systems",
     title: "בניית דף נחיתה עם AI",
-    shortTitle: "דף נחיתה",
+    shortTitle: "בניית דף נחיתה",
     category: "בניית נכסים דיגיטליים",
     audience: "בעלי עסקים, עצמאיים, אנשי שיווק, אנשי קריאייטיב ונותני שירות. לא צריך להיות מפתחים",
     tagline: "בונים בעצמכם דף נחיתה מקצועי, רספונסיבי ומוכן לפרסום, בלי תלות במעצב או במפתח.",
-    cardSubtitle: "דף נחיתה מקצועי באוויר — בלי מעצב, בלי מפתח, בלי המתנה.",
+    cardSubtitle: "דף נחיתה מקצועי באוויר - בלי מעצב, בלי מפתח, בלי המתנה.",
     cardPills: [
       { icon: "bolt", label: "תוצר: דף נחיתה באוויר" },
       { icon: "users", label: "קבוצה קטנה" },
@@ -776,10 +965,32 @@ export const COURSES_CORE: CourseCore[] = [
     ],
     visual: "landing",
     ctaText: "רוצה לבנות דף נחיתה",
-    leadSource: "course-ai-landing-page",
+    leadSource: "course-business-landing-page",
   },
 ];
 
 export const COURSES: Course[] = COURSES_CORE.map(enrichCourse);
 
-export const getCourse = (slug: string) => COURSES.find((c) => c.slug === slug);
+/** Top-level tracks only (no parentSlug) - used for listings, sticky showcase, COURSE_COUNT. */
+export const PRIMARY_COURSES: Course[] = COURSES.filter((c) => !c.parentSlug);
+
+export const getChildCourses = (parentSlug: string): Course[] =>
+  COURSES.filter((c) => c.parentSlug === parentSlug);
+
+export const getCourse = (slug: string) => {
+  const canonical = COURSE_SLUG_ALIASES[slug] ?? slug;
+  return COURSES.find((c) => c.slug === canonical);
+};
+
+/** Lead-form track picker - main tracks + business sub-tracks. */
+export const LEAD_TRACKS = [
+  { slug: "social-media-ai", label: "מנהלי סושיאל" },
+  { slug: "ai-for-students", label: "סטודנטים" },
+  { slug: "ai-video-content", label: "עורכי וידאו ויוצרי תוכן" },
+  { slug: "ai-business-systems", label: "מסלול לבעלי עסקים" },
+  { slug: "business-crm", label: "בניית מערכת CRM" },
+  { slug: "business-payments", label: "מערכת למעקב תשלומים" },
+  { slug: "business-landing-page", label: "בניית דף נחיתה" },
+] as const;
+
+export type LeadTrackSlug = (typeof LEAD_TRACKS)[number]["slug"] | "unsure" | "";

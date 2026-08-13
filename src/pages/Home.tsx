@@ -4,9 +4,8 @@ import FAQAccordion from "../components/FAQAccordion";
 import RegisterForm from "../components/RegisterForm";
 import SectionHeader, { AccentWord } from "../components/SectionHeader";
 import StickyCoursesShowcase from "../components/StickyCoursesShowcase";
-import Pressable from "../components/Pressable";
+import Hero from "../components/Hero";
 import { StaggerGroup, StaggerItem, MagneticCard, ScrollReveal3D } from "../components/motion";
-import HeroBackdrop from "../components/motion/hero/HeroBackdrop";
 import { GENERAL_FAQ, SITE } from "../data/site";
 import { useRegisterModal } from "../context/RegisterModalContext";
 import { acquirePointerStore } from "../lib/motion";
@@ -37,37 +36,7 @@ const Home = () => {
 
   return (
     <>
-      <section className="relative overflow-x-clip overflow-y-hidden">
-        <HeroBackdrop />
-        <div
-          className="pointer-events-none absolute inset-0 z-[1] grid-canvas opacity-70"
-          aria-hidden
-        />
-        <div className="container-site relative z-[2] flex flex-col items-center justify-center py-14 text-center sm:py-24 lg:py-32">
-          <div className="mx-auto flex w-full max-w-5xl flex-col items-center px-1 lg:max-w-6xl">
-            <div className="mb-6 flex flex-wrap items-center justify-center gap-2 sm:mb-8">
-              <span className="stat-pill">מסלולים מעשיים</span>
-              <span className="stat-pill">לימוד פרונטלי</span>
-              <span className="stat-pill">יוצאים עם תוצר</span>
-            </div>
-            <h1 className="text-[2rem] font-bold leading-[1.1] tracking-tight text-ink sm:text-5xl md:text-7xl lg:text-8xl">
-              {SITE.hero.title}{" "}
-              <AccentWord>{SITE.hero.titleAccent}</AccentWord>
-            </h1>
-            <p className="mx-auto mt-5 max-w-3xl text-base leading-relaxed text-muted sm:mt-6 sm:text-lg md:text-xl">
-              {SITE.hero.subtitle}
-            </p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:mt-10">
-              <Pressable as="link" to="/courses" className="btn-primary">
-                {SITE.hero.primaryCta}
-              </Pressable>
-              <Pressable as="a" href="#finder" className="btn-ghost" rippleTone="pink">
-                {SITE.hero.secondaryCta}
-              </Pressable>
-            </div>
-          </div>
-        </div>
-      </section>
+      <Hero />
 
       <section id="finder" className="py-12 sm:py-16 lg:py-20">
         <div className="container-site">
@@ -146,7 +115,7 @@ const Home = () => {
                 preselectedCourse={inlinePrefill.courseId}
                 initialGoal={inlinePrefill.initialGoal}
                 leadSource={inlinePrefill.leadSource ?? "home-lead"}
-                title="טופס הרשמה "
+                title="השאירו פרטים "
                 sub="אם עברתם דרך המנחה, המסלול כבר נבחר בשבילכם."
               />
             </ScrollReveal3D>

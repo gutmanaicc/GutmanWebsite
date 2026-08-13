@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>הצהרת נגישות | Gutman Academy</title>
+    <meta
+      name="description"
+      content="הצהרת נגישות של אתר Gutman Academy בהתאם לתקן הישראלי ת״י 5568 ולהנחיות WCAG 2.1 ברמת AA."
+    />
+    <link rel="icon" href="/favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --canvas: #f4f4f2;
+        --ink: #191919;
+        --pink: #ff2d85;
+        --muted: rgba(25, 25, 25, 0.68);
+        --line: rgba(25, 25, 25, 0.1);
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Heebo, Arial, sans-serif;
+        background: var(--canvas);
+        color: var(--ink);
+        line-height: 1.75;
+      }
+      .bg-grid {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.4;
+        background-image:
+          linear-gradient(rgba(25, 25, 25, 0.04) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(25, 25, 25, 0.04) 1px, transparent 1px);
+        background-size: 48px 48px;
+      }
+      .page {
+        position: relative;
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 2.5rem 1.25rem 4rem;
+      }
+      header { text-align: center; margin-bottom: 2rem; }
+      .logo { height: 40px; width: auto; }
+      .eyebrow {
+        margin: 1.1rem 0 0.4rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.14em;
+        color: var(--pink);
+      }
+      h1 {
+        margin: 0;
+        font-size: clamp(1.45rem, 4vw, 1.9rem);
+        font-weight: 700;
+        line-height: 1.25;
+      }
+      .meta { margin: 0.65rem 0 0; font-size: 0.875rem; color: var(--muted); }
+      .card {
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid var(--line);
+        border-radius: 1.5rem;
+        padding: 1.5rem 1.25rem 2rem;
+        box-shadow: 0 12px 40px -24px rgba(25, 25, 25, 0.35);
+      }
+      @media (min-width: 640px) {
+        .card { padding: 2rem 2.25rem 2.5rem; }
+      }
+      h2 { margin: 1.75rem 0 0.65rem; font-size: 1.1rem; }
+      h2:first-child { margin-top: 0; }
+      p, li { font-size: 0.95rem; color: var(--muted); }
+      p { margin: 0 0 0.85rem; }
+      ul { margin: 0 0 1rem; padding-inline-start: 1.25rem; }
+      li { margin-bottom: 0.35rem; }
+      a { color: var(--pink); }
+      .back {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        margin-top: 1.5rem;
+        padding: 0 1.25rem;
+        border-radius: 999px;
+        background: var(--ink);
+        color: #fff;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.875rem;
+      }
+      footer { margin-top: 2rem; text-align: center; font-size: 0.8rem; color: var(--muted); }
+    </style>
+  </head>
+  <body>
+    <div class="bg-grid" aria-hidden="true"></div>
+    <main class="page">
+      <header>
+        <img class="logo" src="/brand/logo-cutout.png" alt="Gutman Academy" height="40" />
+        <p class="eyebrow">נגישות</p>
+        <h1>הצהרת נגישות</h1>
+        <p class="meta">ת״י 5568 · WCAG 2.1 רמת AA · עודכן: אוגוסט 2026</p>
+      </header>
+
+      <article class="card">
+        <h2>מחויבות לנגישות</h2>
+        <p>
+          אתר <strong>Gutman Academy</strong> (gutmanai.com) מחויב להנגשת שירותיו
+          לכלל הציבור, לרבות אנשים עם מוגבלות, בהתאם לחוק שוויון זכויות לאנשים עם
+          מוגבלות, התשנ״ח - 1998, לתקנות שוויון זכויות לאנשים עם מוגבלות (התאמות
+          נגישות לשירות), התשע״ג - 2013, ולתקן הישראלי ת״י 5568 המבוסס על הנחיות
+          WCAG 2.1 ברמת AA.
+        </p>
+
+        <h2>התאמות באתר</h2>
+        <ul>
+          <li>תפריט נגישות צף עם שינוי גודל טקסט, ניגודיות, היפוך צבעים וגווני אפור.</li>
+          <li>הדגשת קישורים וכפתורים, גופן קריא, סמן מוגדל והדגשת מיקוד מקלדת.</li>
+          <li>אפשרות לעצירת אנימציות ותנועה באתר.</li>
+          <li>ניווט מקלדת ותמיכה בקוראי מסך ככל הניתן.</li>
+          <li>שמירת העדפות נגישות במכשיר המשתמש (localStorage).</li>
+        </ul>
+
+        <h2>מגבלות ידועות</h2>
+        <p>
+          אנו פועלים לשיפור מתמיד. אם נתקלתם ברכיב שאינו נגיש במלואו (למשל תוכן
+          צד־שלישי או קובץ חיצוני), נשמח שתעדכנו אותנו ונטפל בהקדם האפשרי.
+        </p>
+
+        <h2>רכז/ת נגישות</h2>
+        <p>
+          שם: רון גוטמן<br />
+          טלפון: <a href="tel:+972508185107" dir="ltr">050-8185107</a><br />
+          דוא״ל: <a href="mailto:gutmanaicc@gmail.com">gutmanaicc@gmail.com</a><br />
+          WhatsApp:
+          <a href="https://wa.me/972508185107" target="_blank" rel="noopener noreferrer">לחצו כאן</a>
+        </p>
+
+        <h2>פניות ובקשות התאמה</h2>
+        <p>
+          ניתן לפנות אלינו בכל שאלה, הצעה או בקשה להתאמת נגישות. נשתדל להשיב
+          בהקדם ובכל מקרה בהתאם למועדים הקבועים בדין.
+        </p>
+      </article>
+
+      <footer>
+        <p>© GutmanAI <span id="year"></span> · כל הזכויות שמורות</p>
+        <a class="back" href="/">חזרה לאתר</a>
+      </footer>
+    </main>
+    <script>
+      document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
+  </body>
+</html>

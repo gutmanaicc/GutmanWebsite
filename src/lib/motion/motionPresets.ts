@@ -1,13 +1,13 @@
 import type { Transition, Variants } from "framer-motion";
 
-/** Critically damped UI spring — matches RegisterModal panel. */
+/** Critically damped UI spring - matches RegisterModal panel. */
 export const springUi: Transition = {
   type: "spring",
   stiffness: 380,
   damping: 32,
 };
 
-/** Softer hover settle — cards, chips, focus chrome. */
+/** Softer hover settle - cards, chips, focus chrome. */
 export const springSoft: Transition = {
   type: "spring",
   stiffness: 280,
@@ -21,7 +21,7 @@ export const springPress: Transition = {
   damping: 34,
 };
 
-/** Elastic hover morph — subtle stretch/breathe, critically damped. */
+/** Elastic hover morph - subtle stretch/breathe, critically damped. */
 export const springMorph: Transition = {
   type: "spring",
   stiffness: 320,

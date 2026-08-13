@@ -8,7 +8,7 @@ type CssFallbackProps = {
   animated: boolean;
 };
 
-/** Performant CSS orbs — used for css3d/static and as Suspense placeholder. */
+/** Performant CSS orbs - used for css3d/static and as Suspense placeholder. */
 const CssHeroFallback = ({ animated }: CssFallbackProps) => {
   if (!animated) {
     return (
@@ -44,7 +44,7 @@ const CssHeroFallback = ({ animated }: CssFallbackProps) => {
 
 /**
  * Home-hero backdrop: lazy R3F on `full` capability, CSS fallbacks otherwise.
- * Never imports three/fiber at the top level — coarse/mobile skips the chunk.
+ * Never imports three/fiber at the top level - coarse/mobile skips the chunk.
  */
 const HeroBackdrop = () => {
   const level = useMotionCapability();
@@ -69,7 +69,7 @@ const HeroBackdrop = () => {
           <HeroScene />
         </div>
       </Suspense>
-      {/* Soft wash so text stays legible over the mesh — keep light so the grid reads through */}
+      {/* Soft wash so text stays legible over the mesh - keep light so the grid reads through */}
       <div className="absolute inset-0 bg-gradient-to-b from-canvas/25 via-transparent to-canvas/45" />
     </div>
   );

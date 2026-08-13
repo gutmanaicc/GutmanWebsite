@@ -14,9 +14,9 @@ type Props = {
   /** Spatial entrance direction. */
   from?: ScrollRevealFrom;
   /**
-   * quiet — restrained supporting sections
-   * default — standard unroll
-   * signature — louder moments
+   * quiet - restrained supporting sections
+   * default - standard unroll
+   * signature - louder moments
    */
   intensity?: "quiet" | "default" | "signature";
   as?: "div" | "article";
@@ -29,7 +29,7 @@ const INTENSITY_SCALE = {
 } as const;
 
 /**
- * Native-scroll multi-axis entrance — directional fly-in + rotateX unroll.
+ * Native-scroll multi-axis entrance - directional fly-in + rotateX unroll.
  * Static / reduced-motion → opacity cross-fade only.
  */
 const ScrollReveal3D = ({
