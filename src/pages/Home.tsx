@@ -5,6 +5,7 @@ import RegisterForm from "../components/RegisterForm";
 import SectionHeader, { AccentWord } from "../components/SectionHeader";
 import StickyCoursesShowcase from "../components/StickyCoursesShowcase";
 import Hero from "../components/Hero";
+import InstructorsShowcase from "../components/InstructorsShowcase";
 import { StaggerGroup, StaggerItem, MagneticCard, ScrollReveal3D } from "../components/motion";
 import { GENERAL_FAQ, SITE } from "../data/site";
 import { useRegisterModal } from "../context/RegisterModalContext";
@@ -122,6 +123,8 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      <InstructorsShowcase />
 
       <section className="bg-white py-12 sm:py-16 lg:py-20">
         <div className="container-site">

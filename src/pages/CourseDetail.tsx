@@ -6,6 +6,7 @@ import RegisterForm from "../components/RegisterForm";
 import SectionHeader, { AccentWord } from "../components/SectionHeader";
 import Pressable from "../components/Pressable";
 import BackButton from "../components/BackButton";
+import StudentWorksCarousel from "../components/StudentWorksCarousel";
 import { ParallaxLayer, MagneticCard, MagneticDepth } from "../components/motion";
 import {
   ArrowIcon,
@@ -23,6 +24,8 @@ import {
   VideoIcon,
 } from "../components/icons";
 import { getChildCourses, getCourse, type AudienceIcon, type Course } from "../data/courses";
+import { getInstructorsForCourse } from "../data/instructorsData";
+import { getStudentWorksForCourse } from "../data/studentWorksData";
 import { SITE } from "../data/site";
 import { useRegisterModal } from "../context/RegisterModalContext";
 import { useReveal } from "../lib/useReveal";
@@ -226,6 +229,8 @@ const CourseDetail = () => {
   const reduced = useReducedMotion();
   const parentCourse = course?.parentSlug ? getCourse(course.parentSlug) : undefined;
   const subTracks = course && !course.parentSlug ? getChildCourses(course.slug) : [];
+  const courseInstructors = course ? getInstructorsForCourse(course.slug) : [];
+  const studentWorks = course ? getStudentWorksForCourse(course.slug) : [];
 
   useSeo({
     title: course ? `${course.title} | ${SITE.name}` : `מסלול | ${SITE.name}`,
@@ -411,6 +416,68 @@ const CourseDetail = () => {
           </MotionItem>
         </div>
       </MotionSection>
+
+      {courseInstructors.length > 0 && (
+        <MotionSection resetKey={`${courseKey}-instructors`} className="py-10 sm:py-12">
+          <div className="container-site">
+            <MotionItem>
+              <SectionHeader
+                compact
+                kicker="המנחים"
+                title={
+                  <>
+                    הכירו את <AccentWord>המנחה</AccentWord>
+                  </>
+                }
+                sub="המנחים שמובילים את המסלול - עם ביוגרפיה מותאמת לתחום שלכם."
+              />
+            </MotionItem>
+            <div
+              className={`mt-6 grid gap-5 ${
+                courseInstructors.length > 1 ? "md:grid-cols-2" : "md:grid-cols-1 md:max-w-2xl"
+              }`}
+            >
+              {courseInstructors.map(({ instructor, bio }) => (
+                <MotionItem key={instructor.id}>
+                  <article className="flex flex-col overflow-hidden rounded-3xl border border-line bg-white shadow-sm sm:flex-row">
+                    <div className="sm:w-44 sm:shrink-0">
+                      <img
+                        src={instructor.image}
+                        alt={instructor.name}
+                        className="h-52 w-full object-cover sm:h-full"
+                        loading="lazy"
+                      />
+                    </div>
+                    <div className="flex flex-1 flex-col justify-center p-5 text-right sm:p-6">
+                      <span className="text-[11px] font-semibold tracking-wide text-[#FF2D85]">
+                        {instructor.role}
+                      </span>
+                      <h3 className="mt-1 text-lg font-bold text-[#191919]">{instructor.name}</h3>
+                      <p className="mt-3 text-sm leading-relaxed text-zinc-600">{bio}</p>
+                      <div className="mt-3 flex flex-wrap gap-1.5">
+                        {instructor.roleTags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="rounded-full border border-[#FF2D85]/25 bg-[#FF2D85]/5 px-2.5 py-1 text-[11px] font-semibold text-[#FF2D85]"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </article>
+                </MotionItem>
+              ))}
+            </div>
+          </div>
+        </MotionSection>
+      )}
+
+      {studentWorks.length > 0 && (
+        <div className="bg-[#F4F4F2]/60">
+          <StudentWorksCarousel works={studentWorks} />
+        </div>
+      )}
 
       {/* Deliverables - featured bento */}
       <MotionSection resetKey={`${courseKey}-deliverables`} className="relative py-10 sm:py-12">
