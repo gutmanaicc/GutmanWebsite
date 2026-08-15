@@ -14,11 +14,14 @@ type NavItem = {
   action?: "register";
   /** Desktop hover dropdown of courses */
   coursesMenu?: boolean;
+  /** Superscript proof count rendered next to the label */
+  count?: string;
 };
 
 const NAV: NavItem[] = [
   { to: "/", label: "ראשי", end: true },
   { to: "/courses", label: "מסלולים", coursesMenu: true },
+  { to: "/reviews", label: "ביקורות", count: "100+" },
   { to: "/about", label: "אודות" },
   { label: "הרשמה", action: "register" },
 ];
@@ -36,7 +39,17 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
       : "",
   ].join(" ");
 
-const NavLabel = ({ label }: { label: string }) => <span>{label}</span>;
+/** Label + orbix-style superscript count, e.g. מסלולים⁽⁵⁾ */
+const NavLabel = ({ label, count }: { label: string; count?: string }) => (
+  <span className="inline-flex items-start gap-0.5">
+    {label}
+    {count && (
+      <sup className="mt-px text-[10px] font-semibold leading-none text-ink/45" dir="ltr" aria-hidden>
+        ({count})
+      </sup>
+    )}
+  </span>
+);
 
 const Header = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -78,7 +91,7 @@ const Header = () => {
           }
           onClick={handleRegister}
         >
-          <NavLabel label={item.label} />
+          <NavLabel label={item.label} count={item.count} />
         </button>
       );
     }
@@ -106,7 +119,7 @@ const Header = () => {
         }
         onClick={() => mobile && setOpen(false)}
       >
-        <NavLabel label={item.label} />
+        <NavLabel label={item.label} count={item.count} />
       </NavLink>
     );
   };

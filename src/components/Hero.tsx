@@ -1,12 +1,16 @@
 import Pressable from "./Pressable";
 import ReviewsRatingBadge from "./ReviewsRatingBadge";
 import { AccentWord } from "./SectionHeader";
+import { WhatsAppIcon } from "./icons";
 import HeroBackdrop from "./motion/hero/HeroBackdrop";
 import { SITE } from "../data/site";
+import { getInstructor } from "../data/instructorsData";
 
 /**
  * Full-viewport home hero: brand headline, punchy hook, social-proof → /reviews, CTAs.
  */
+const ron = getInstructor("ron-gutman");
+
 const Hero = () => (
   <section className="relative flex min-h-[calc(100dvh-80px)] flex-col overflow-x-clip overflow-y-hidden">
     <HeroBackdrop />
@@ -34,9 +38,32 @@ const Hero = () => (
         </div>
 
         <div className="mt-7 flex flex-wrap items-center justify-center gap-3 sm:mt-9">
-          <Pressable as="link" to="/courses" className="btn-primary">
+          <Pressable as="link" to="/courses" className="btn-primary ps-6 pe-2">
             {SITE.hero.primaryCta}
+            {ron && (
+              <img
+                src={ron.image}
+                alt=""
+                aria-hidden
+                className="h-8 w-8 shrink-0 rounded-full object-cover object-top ring-2 ring-white/25"
+                loading="eager"
+                draggable={false}
+              />
+            )}
           </Pressable>
+
+          <Pressable
+            as="a"
+            href={SITE.contact.whatsapp}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-ghost"
+            rippleTone="pink"
+          >
+            <WhatsAppIcon size={18} className="shrink-0 text-[#25D366]" />
+            דברו איתנו בוואטסאפ
+          </Pressable>
+
           <Pressable as="a" href="#finder" className="btn-ghost" rippleTone="pink">
             {SITE.hero.secondaryCta}
           </Pressable>

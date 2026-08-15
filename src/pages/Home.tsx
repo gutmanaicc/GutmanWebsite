@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import ChatFinder from "../components/ChatFinder";
 import FAQAccordion from "../components/FAQAccordion";
+import HomeProof from "../components/HomeProof";
 import RegisterForm from "../components/RegisterForm";
 import SectionHeader, { AccentWord } from "../components/SectionHeader";
 import StickyCoursesShowcase from "../components/StickyCoursesShowcase";
@@ -101,6 +102,8 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      <HomeProof />
 
       <section id="registration-form" className="scroll-mt-24 py-12 sm:py-16 lg:py-24">
         <div className="container-site">
