@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        canvas: "#0e0e0f",
+        canvas: "#0d0c11",
         bone: "#f2f1ec",
         paper: "#f4f4f2",
         ink: "#191919",
@@ -14,8 +14,8 @@ export default {
         line: "#e3e3df",
       },
       fontFamily: {
-        sans: ["Heebo", "Tahoma", "Arial", "sans-serif"],
-        heading: ["Heebo", "Tahoma", "Arial", "sans-serif"],
+        sans: ["Assistant", "Helvetica Neue", "Arial", "sans-serif"],
+        heading: ["Assistant", "Helvetica Neue", "Arial", "sans-serif"],
         serif: ["'Frank Ruhl Libre'", "Georgia", "serif"],
       },
       letterSpacing: {

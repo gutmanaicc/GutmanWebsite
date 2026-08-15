@@ -128,8 +128,10 @@ const Header = () => {
   return (
     <>
       <header
-        className={`sticky top-0 z-50 w-full border-b bg-canvas/95 backdrop-blur-sm transition-[border-color] duration-300 ${
-          scrolled ? "border-white/10" : "border-transparent"
+        className={`sticky top-0 z-50 w-full border-b transition-[background-color,border-color,backdrop-filter] duration-500 ${
+          scrolled
+            ? "border-white/10 bg-canvas/95 backdrop-blur-sm"
+            : "border-transparent bg-transparent"
         }`}
       >
 
@@ -140,10 +142,10 @@ const Header = () => {
           <div className="flex min-w-0 flex-1 items-center justify-start">
             <Link
               to="/"
-              className="inline-flex min-h-11 items-center transition-opacity hover:opacity-90 active:scale-[0.98]"
+              className="inline-flex min-h-11 shrink items-center transition-opacity hover:opacity-90 active:scale-[0.98]"
               aria-label="Gutman Academy, לעמוד הראשי"
             >
-              <Logo height={36} className="max-h-9 w-auto sm:max-h-10" />
+              <Logo height={36} className="max-h-7 w-auto sm:max-h-10" />
             </Link>
           </div>
 
@@ -154,10 +156,10 @@ const Header = () => {
             {NAV.map((item) => renderNavLink(item))}
           </nav>
 
-          <div className="flex flex-1 items-center justify-end gap-2 sm:gap-2.5">
+          <div className="flex shrink-0 items-center justify-end gap-2 sm:flex-1 sm:gap-2.5">
             <Pressable
               type="button"
-              className="navbar-lead-cta inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-full bg-bone px-4 text-sm font-medium text-ink transition-[transform,background-color] duration-200 hover:-translate-y-0.5 hover:bg-white sm:min-h-11 sm:px-5"
+              className="navbar-lead-cta inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-full bg-bone px-3.5 text-[13px] font-medium text-ink transition-[transform,background-color] duration-200 hover:-translate-y-0.5 hover:bg-white sm:min-h-11 sm:px-5 sm:text-sm"
               onClick={() => openRegisterModal({ leadSource: "navbar-cta" })}
             >
               <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />

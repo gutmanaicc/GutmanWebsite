@@ -95,7 +95,7 @@ const Layout = () => {
       </a>
       <ScrollManager />
       <Header />
-      <main id="main-content">
+      <main id="main-content" className="relative z-[2]">
         <PageTransition />
       </main>
       <Footer />

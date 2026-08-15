@@ -7,7 +7,7 @@ import ProcessSection from "../components/ProcessSection";
 import RegisterForm from "../components/RegisterForm";
 import SectionHeader, { AccentWord } from "../components/SectionHeader";
 import StackingCourses from "../components/StackingCourses";
-import ScrubHero from "../components/ScrubHero";
+import NightHero from "../components/NightHero";
 import InstructorsShowcase from "../components/InstructorsShowcase";
 import Pressable from "../components/Pressable";
 import { WhatsAppIcon } from "../components/icons";
@@ -42,8 +42,9 @@ const Home = () => {
 
   return (
     <>
-      <ScrubHero />
+      <NightHero />
 
+      <div className="relative z-[2] bg-canvas">
       <Marquee items={MARQUEE_ITEMS} />
 
 
@@ -189,6 +190,7 @@ const Home = () => {
           </div>
         </div>
       </section>
+      </div>
     </>
   );
 };

@@ -9,7 +9,7 @@
 
   body {
     @apply bg-canvas text-bone font-sans antialiased overflow-x-hidden;
-    font-family: "Heebo", Tahoma, Arial, sans-serif;
+    font-family: "Assistant", "Helvetica Neue", Arial, sans-serif;
     font-feature-settings: "ss01" on;
   }
 
@@ -51,26 +51,28 @@
     opacity: 0.05;
   }
 
-  /* אין italic עברי אמיתי - סריף כבד עם skew, החתימה של השפה */
+  /* מילת ההדגשה בכותרת: אותו סריף תצוגה, בוורוד של המותג */
   .accent-serif {
-    @apply font-serif font-bold not-italic text-brand;
-    transform: skewX(-8deg);
+    @apply font-serif not-italic text-brand;
+    font-weight: 500;
     display: inline-block;
   }
 
-  /* סקאלת התצוגה - כותרות ענקיות במשקל בינוני, מרווח אותיות שלילי */
+  /* סקאלת התצוגה - סריף תצוגה במשקל בינוני, אווירי ורחב */
   .display-1 {
-    font-size: clamp(2.9rem, 8.5vw, 7rem);
-    line-height: 1.02;
-    letter-spacing: -0.035em;
-    font-weight: 600;
+    @apply font-serif;
+    font-size: clamp(2.6rem, 7.6vw, 6rem);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    font-weight: 500;
   }
 
   .display-2 {
-    font-size: clamp(2.1rem, 4.8vw, 4rem);
-    line-height: 1.06;
-    letter-spacing: -0.03em;
-    font-weight: 600;
+    @apply font-serif;
+    font-size: clamp(2rem, 4.4vw, 3.5rem);
+    line-height: 1.14;
+    letter-spacing: -0.015em;
+    font-weight: 500;
   }
 
   /* תווית סקשן ממוספרת: ‎(01) הוכחות. צבע יורש - עובד על כהה ועל בהיר. */
@@ -1030,68 +1032,6 @@
 }
 
 /* ============================================================
-   ScrubHero: מערכת הקריאות של הסקיל - סקרים גלובלי, סקרים
-   פר-רצועה שרוכב על --k, טוקן צל טקסט, וכניסות drift/weave.
-   חמשת שערי הסטטי זהים תו-בתו לרשימה שב-ScrubHero.tsx.
-   ============================================================ */
-.scrub-scrim {
-  pointer-events: none;
-  background: radial-gradient(ellipse 120% 90% at 50% 45%, rgba(10, 10, 14, 0) 35%, rgba(10, 10, 14, 0.62) 100%);
-}
-
-.scrub-band {
-  text-shadow:
-    0 1px 2px rgba(5, 5, 10, 0.95),
-    0 3px 12px rgba(5, 5, 10, 0.78),
-    0 10px 44px rgba(5, 5, 10, 0.8);
-}
-
-/* סקרים פר-רצועה: אליפסה על עמודת הטקסט עצמה, מעמיק עם --k */
-.scrub-band::before {
-  content: "";
-  position: absolute;
-  inset: -18%;
-  z-index: -1;
-  pointer-events: none;
-  opacity: calc(0.25 + 0.75 * var(--k, 1));
-  background: radial-gradient(ellipse 74% 62% at 50% 50%, rgba(5, 5, 10, 0.66) 0%, rgba(5, 5, 10, 0.44) 46%, rgba(5, 5, 10, 0) 76%);
-}
-
-/* כניסת drift-down לשורות: transform/opacity בלבד, רכוב על --k, הפיך */
-.scrub-line {
-  --lk: clamp(0, calc((var(--k, 0) - var(--li, 0) * 0.18) * 2.2), 1);
-  opacity: var(--lk);
-  transform: translateY(calc((1 - var(--lk)) * -22px));
-}
-
-/* ה-settle: שלוש הגעות מדורגות - כותרת, תת-שורה+דירוג, כפתורים */
-.settle-stage > h1 {
-  --sk: clamp(0, calc(var(--k, 0) * 2.2), 1);
-  opacity: var(--sk);
-  transform: translateY(calc((1 - var(--sk)) * 26px));
-}
-.settle-stage > p:first-of-type,
-.settle-stage > div:first-of-type {
-  --sk: clamp(0, calc((var(--k, 0) - 0.3) * 2.6), 1);
-  opacity: var(--sk);
-  transform: translateY(calc((1 - var(--sk)) * 22px));
-}
-.settle-stage > div:nth-of-type(2),
-.settle-stage > p:last-of-type {
-  --sk: clamp(0, calc((var(--k, 0) - 0.55) * 3.2), 1);
-  opacity: var(--sk);
-  transform: translateY(calc((1 - var(--sk)) * 18px));
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .scrub-line,
-  .settle-stage > * {
-    opacity: 1 !important;
-    transform: none !important;
-  }
-}
-
-/* ============================================================
    יעד נגיעה: פקדים קטנים (נקודות ניווט וכדומה) מקבלים אזור
    נגיעה של 44px דרך פסאודו-אלמנט, בלי לשנות את גודלם החזותי.
    ============================================================ */
@@ -1109,4 +1049,20 @@
     height: 44px;
     transform: translate(-50%, -50%);
   }
+}
+
+/* סמן ההקלדה בהירו */
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* הווידאו של ההירו קבוע מאחורי הדף, אז כל מה שאחריו חייב רקע אטום */
+main > :not(section:first-child) {
+  position: relative;
 }
