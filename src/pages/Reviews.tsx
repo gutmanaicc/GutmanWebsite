@@ -74,9 +74,6 @@ const Reviews = () => {
                 viewport={{ once: true, margin: "-60px" }}
                 transition={{ duration: 0.5, delay: (i % 3) * 0.06, ease: [0.22, 1, 0.36, 1] }}
               >
-                {item.author && (
-                  <span className="section-label mb-3 text-bone/40">{item.author}</span>
-                )}
                 <p className="text-lg font-semibold leading-snug tracking-tight text-bone">
                   {item.quote}
                 </p>

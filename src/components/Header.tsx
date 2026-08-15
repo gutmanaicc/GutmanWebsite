@@ -22,7 +22,7 @@ type NavItem = {
 const NAV: NavItem[] = [
   { to: "/", label: "ראשי", end: true },
   { to: "/courses", label: "מסלולים", coursesMenu: true },
-  { to: "/reviews", label: "ביקורות", count: "100+" },
+  { to: "/reviews", label: "ביקורות" },
   { to: "/about", label: "אודות" },
   { label: "הרשמה", action: "register" },
 ];

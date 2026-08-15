@@ -33,7 +33,11 @@ const NightHero = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoReady, setVideoReady] = useState(false);
 
-  /* הווידאו מתגלה בדעיכה מעל התמונה רק ברגע שהוא באמת מנגן */
+  /**
+   * הווידאו מתגלה בדעיכה מעל התמונה רק ברגע שהוא באמת מנגן. יש סביבות
+   * (iframe בלי allow-autoplay, חיסכון בסוללה) שחוסמות ניגון אוטומטי עד
+   * למחווה של המשתמש, ולכן כל אינטראקציה ראשונה מנסה שוב.
+   */
   useEffect(() => {
     if (reduced) return;
     const video = videoRef.current;
@@ -41,10 +45,24 @@ const NightHero = () => {
 
     const reveal = () => setVideoReady(true);
     video.addEventListener("playing", reveal);
-    const play = video.play();
-    if (play) play.catch(() => undefined);
 
-    return () => video.removeEventListener("playing", reveal);
+    const attempt = () => {
+      const play = video.play();
+      if (play) play.catch(() => undefined);
+    };
+    attempt();
+
+    const events = ["pointerdown", "touchstart", "keydown", "wheel", "scroll"] as const;
+    const retry = () => {
+      if (video.paused) attempt();
+      else events.forEach((e) => window.removeEventListener(e, retry));
+    };
+    events.forEach((e) => window.addEventListener(e, retry, { passive: true }));
+
+    return () => {
+      video.removeEventListener("playing", reveal);
+      events.forEach((e) => window.removeEventListener(e, retry));
+    };
   }, [reduced]);
 
   const { scrollYProgress } = useScroll({

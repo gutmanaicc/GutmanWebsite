@@ -12,13 +12,13 @@ main .text-muted {
   color: #a5a49c;
 }
 
-main :is([class*="bg-white"], [class*="bg-bone"], [class*="bg-\[\#F4F4F2\]"], .card-line, .course-glass-card, .course-deliverable-card, .course-hero-meta, .mock-window, .stat-pill, .lead-form) :is(.text-ink, .text-\[\#191919\]),
+main :is([class*="bg-white"], [class*="bg-bone"], [class*="bg-\[\#F4F4F2\]"], .surface-light, .card-line, .course-glass-card, .course-deliverable-card, .course-hero-meta, .mock-window, .stat-pill, .lead-form) :is(.text-ink, .text-\[\#191919\]),
 main :is(.text-ink, .text-\[\#191919\])[class*="bg-white"],
 main :is(.text-ink, .text-\[\#191919\])[class*="bg-bone"] {
   color: #191919;
 }
 
-main :is([class*="bg-white"], [class*="bg-bone"], [class*="bg-\[\#F4F4F2\]"], .card-line, .course-glass-card, .course-deliverable-card, .course-hero-meta, .mock-window, .stat-pill, .lead-form) .text-muted {
+main :is([class*="bg-white"], [class*="bg-bone"], [class*="bg-\[\#F4F4F2\]"], .surface-light, .card-line, .course-glass-card, .course-deliverable-card, .course-hero-meta, .mock-window, .stat-pill, .lead-form) .text-muted {
   color: #6b6b6b;
 }
 

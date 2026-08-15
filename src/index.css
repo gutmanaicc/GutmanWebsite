@@ -873,6 +873,32 @@
     }
   }
 
+  /* עמודי מסמכים: רשימות וקישורים בתוך גוף הטקסט */
+  .legal-body ul {
+    @apply space-y-2 pr-5;
+    list-style: none;
+  }
+
+  .legal-body li {
+    @apply relative;
+  }
+
+  .legal-body li::before {
+    content: "";
+    position: absolute;
+    right: -1.05rem;
+    top: 0.68em;
+    width: 4px;
+    height: 4px;
+    border-radius: 999px;
+    background: #ff5f9e;
+    opacity: 0.75;
+  }
+
+  .legal-body a {
+    @apply text-brand underline underline-offset-4 transition-opacity hover:opacity-80;
+  }
+
   /* Reveal */
   [data-reveal]:not(.revealed) {
     @apply translate-y-4 opacity-0;

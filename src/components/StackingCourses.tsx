@@ -25,7 +25,7 @@ const StackingCourses = () => {
           <div key={slide.id} className="sticky" style={{ top: `calc(4.25rem + ${i * 1.1}rem)` }}>
             <article
               className={`overflow-hidden rounded-[2rem] border shadow-[0_-12px_40px_-24px_rgba(25,25,25,0.35)] sm:rounded-[2.5rem] ${
-                dark ? "border-white/12" : "border-transparent"
+                dark ? "border-white/12" : "surface-light border-transparent"
               }`}
               style={{ background: slide.bg, color: slide.fg }}
             >

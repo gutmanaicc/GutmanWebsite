@@ -79,7 +79,7 @@ export const INSTRUCTORS: Instructor[] = [
     shortName: "עידן",
     role: "מנחה סדנת הסטודנטים",
     roleTags: ["הנחיה", "ליווי מעשי", "תהליכי עבודה"],
-    image: "/images/instructors/Idan_Mantzur.png",
+    image: "/images/instructors/Idan_Mantzur.jpg",
     credentials: [
       "מנחה ומלווה במסלולי האקדמיה",
       "התמחות בהטמעת תהליכי AI בעבודה יומיומית",

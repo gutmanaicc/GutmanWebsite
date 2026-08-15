@@ -11,7 +11,7 @@ import NightHero from "../components/NightHero";
 import InstructorsShowcase from "../components/InstructorsShowcase";
 import Pressable from "../components/Pressable";
 import { WhatsAppIcon } from "../components/icons";
-import { StaggerGroup, StaggerItem, MagneticCard, ScrollReveal3D } from "../components/motion";
+import { StaggerGroup, StaggerItem, ScrollReveal3D } from "../components/motion";
 import { GENERAL_FAQ, SITE } from "../data/site";
 import { useRegisterModal } from "../context/RegisterModalContext";
 import { acquirePointerStore } from "../lib/motion";
@@ -81,34 +81,44 @@ const Home = () => {
             title={<>לומדים <AccentWord>בזמן אמת</AccentWord></>}
             sub="האקדמיה בנויה סביב עבודה מעשית, פידבק מיידי, ותוצר שיוצא איתכם הביתה."
           />
-          <StaggerGroup className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" stagger={0.05}>
+          {/* לוחות כהים על הקנבס: מספר זעיר, קו שיער שנמתח בהובר, וזוהר ורוד */}
+          <StaggerGroup
+            className="mt-12 grid gap-px overflow-hidden rounded-[1.5rem] bg-white/10 sm:grid-cols-2 lg:grid-cols-3"
+            stagger={0.06}
+          >
             {SITE.whyFrontal.map((item, i) => (
               <StaggerItem key={item.title} className="h-full">
                 <ScrollReveal3D
                   className="h-full"
                   from={WHY_FROM[i % WHY_FROM.length]}
-                  intensity="default"
-                  fromRotateX={9}
-                  fromY={32}
+                  intensity="quiet"
+                  fromRotateX={6}
+                  fromY={26}
                 >
-                  <MagneticCard
-                    as="article"
-                    className="relative h-full overflow-hidden rounded-[1.5rem] border border-white/12 bg-white p-6 pt-7 text-ink shadow-card"
-                    tilt={6}
-                    scale={1.02}
-                    lift={-6}
-                    unroll={false}
-                  >
+                  <article className="why-tile group relative flex h-full flex-col bg-canvas p-7 text-bone transition-colors duration-500 sm:p-9">
                     <span
-                      className="pointer-events-none absolute left-5 top-4 text-4xl font-semibold leading-none tracking-tightest text-brand"
+                      className="pointer-events-none absolute inset-x-0 top-0 h-px origin-right scale-x-0 bg-brand transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100"
+                      aria-hidden
+                    />
+                    <span
+                      className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full opacity-0 blur-3xl transition-opacity duration-700 group-hover:opacity-100"
+                      style={{ background: "radial-gradient(circle, rgba(255,95,158,0.3) 0%, rgba(255,95,158,0) 70%)" }}
+                      aria-hidden
+                    />
+
+                    <span
+                      className="text-[11px] font-medium tracking-[0.22em] text-bone/30 transition-colors duration-500 group-hover:text-brand"
                       dir="ltr"
                       aria-hidden
                     >
                       {String(i + 1).padStart(2, "0")}
                     </span>
-                    <h3 className="text-lg font-semibold tracking-tight">{item.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-muted">{item.text}</p>
-                  </MagneticCard>
+
+                    <h3 className="mt-7 font-serif text-xl font-medium leading-snug tracking-tight sm:text-[1.4rem]">
+                      {item.title}
+                    </h3>
+                    <p className="mt-3 text-[15px] leading-relaxed text-bone/50">{item.text}</p>
+                  </article>
                 </ScrollReveal3D>
               </StaggerItem>
             ))}

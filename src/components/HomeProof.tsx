@@ -32,13 +32,8 @@ const QuoteRow = ({ item, index }: { item: Testimonial; index: number }) => {
         aria-expanded={open}
         className="w-full py-8 text-right sm:py-10"
       >
-        <span className="flex flex-col gap-4 sm:flex-row sm:items-baseline sm:gap-10">
-          <span className="shrink-0 sm:w-40">
-            {item.author && (
-              <span className="section-label text-bone/45">{item.author}</span>
-            )}
-          </span>
-          <span className="flex-1">
+        <span className="block">
+          <span className="block">
             <span className="block text-[clamp(1.35rem,2.6vw,2.1rem)] font-semibold leading-[1.25] tracking-tight text-bone">
               {item.quote}
             </span>

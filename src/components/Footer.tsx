@@ -1,4 +1,5 @@
 import { Instagram, Phone } from "lucide-react";
+import { Link } from "react-router-dom";
 import Logo from "./Logo";
 import { WhatsAppIcon } from "./icons";
 import { SITE } from "../data/site";
@@ -51,22 +52,23 @@ const Footer = () => (
       <div className="mt-10 flex w-full max-w-lg flex-col items-center justify-center gap-1 border-t border-white/10 pt-6 text-xs text-white/45">
         <span>© GutmanAI {new Date().getFullYear()} · כל הזכויות שמורות</span>
         <span>gutmanai.com</span>
-        <a
-          href="/terms-and-privacy.html"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-2 inline-flex min-h-11 items-center justify-center px-3 text-xs text-zinc-400 underline underline-offset-4 transition-colors hover:text-[#FF2D85] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF2D85]"
-        >
-          מדיניות האתר ותנאי שימוש
-        </a>
-        <a
-          href="/accessibility-statement.html"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex min-h-11 items-center justify-center px-3 text-xs text-zinc-400 underline underline-offset-4 transition-colors hover:text-[#FF2D85] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF2D85]"
-        >
-          הצהרת נגישות
-        </a>
+        <div className="mt-2 flex flex-wrap items-center justify-center gap-x-2">
+          <Link
+            to="/privacy"
+            className="inline-flex min-h-11 items-center justify-center px-3 text-xs text-white/45 underline underline-offset-4 transition-colors hover:text-brand focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          >
+            תנאי שימוש ומדיניות פרטיות
+          </Link>
+          <span className="text-white/20" aria-hidden>
+            ·
+          </span>
+          <Link
+            to="/accessibility"
+            className="inline-flex min-h-11 items-center justify-center px-3 text-xs text-white/45 underline underline-offset-4 transition-colors hover:text-brand focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          >
+            הצהרת נגישות
+          </Link>
+        </div>
       </div>
     </div>
   </footer>

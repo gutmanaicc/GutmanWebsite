@@ -7,7 +7,7 @@ const InstructorCard = ({ instructor }: { instructor: Instructor }) => (
     <img
       src={instructor.image}
       alt={instructor.name}
-      className="h-32 w-32 rounded-full object-cover object-top ring-1 ring-white/15 sm:h-36 sm:w-36"
+      className="h-32 w-32 rounded-full object-cover object-center ring-1 ring-white/15 sm:h-36 sm:w-36"
       loading="lazy"
       draggable={false}
     />

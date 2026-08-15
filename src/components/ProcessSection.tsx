@@ -1,20 +1,82 @@
 import { useRef } from "react";
-import { motion, useScroll, useSpring, useReducedMotion } from "framer-motion";
+import { motion, useScroll, useSpring, useTransform, useReducedMotion, type MotionValue } from "framer-motion";
 import SectionHeader, { AccentWord } from "./SectionHeader";
 import { SITE } from "../data/site";
 
 /**
- * "איך זה עובד" בסגנון ה-Timeline של orbix: קו אנכי בצד הפתיחה (ימין ב-RTL)
- * שמתמלא בוורוד עם הגלילה, עיגולי שלב שנדלקים, ותוכן שנכנס בהדרגה.
+ * "איך זה עובד" כטיימליין שנחשף בגלילה: קו ורוד בצד הפתיחה (ימין ב-RTL)
+ * שנמתח עם הגלילה, וכל שלב עולה מהחושך בדיוק ברגע שהקו מגיע אליו.
+ * הכל נגזר מאותו scrollYProgress, כך שהקו והתוכן נעים ביחד ולא בנפרד.
  */
+
+const STEPS = SITE.howItWorks;
+/** חלון הגילוי של כל שלב לאורך ההתקדמות, עם חפיפה קלה בין שכנים */
+const bandFor = (i: number) => {
+  const span = 1 / STEPS.length;
+  const start = i * span;
+  return [start, start + span * 0.55] as const;
+};
+
+type StepProps = {
+  step: (typeof STEPS)[number];
+  index: number;
+  progress: MotionValue<number>;
+  reduced: boolean;
+};
+
+const Step = ({ step, index, progress, reduced }: StepProps) => {
+  const [from, to] = bandFor(index);
+  const opacity = useTransform(progress, [from, to], [0, 1]);
+  const y = useTransform(progress, [from, to], [42, 0]);
+  const blur = useTransform(progress, [from, to], [8, 0]);
+  const filter = useTransform(blur, (b) => `blur(${b}px)`);
+  /* העיגול נדלק מעט אחרי שהקו חוצה אותו */
+  const dotScale = useTransform(progress, [from, from + (to - from) * 0.6], [0.5, 1]);
+  const dotBg = useTransform(progress, [from, to], ["#0d0c11", "#ff5f9e"]);
+  const dotColor = useTransform(progress, [from, to], ["#6b6b6b", "#ffffff"]);
+  const dotBorder = useTransform(progress, [from, to], ["rgba(255,255,255,0.18)", "#ff5f9e"]);
+
+  const motionStyle = reduced ? undefined : { opacity, y, filter };
+
+  return (
+    <motion.li
+      className="relative grid gap-3 py-9 pr-10 sm:grid-cols-[10rem_1fr] sm:gap-8 sm:py-12 sm:pr-14"
+      style={motionStyle}
+    >
+      <motion.span
+        className="absolute right-0 top-10 flex h-9 w-9 translate-x-1/2 items-center justify-center rounded-full border text-xs font-semibold sm:top-14"
+        dir="ltr"
+        style={
+          reduced
+            ? { background: "#ff5f9e", color: "#fff", borderColor: "#ff5f9e" }
+            : { scale: dotScale, backgroundColor: dotBg, color: dotColor, borderColor: dotBorder }
+        }
+        aria-hidden
+      >
+        {String(index + 1).padStart(2, "0")}
+      </motion.span>
+
+      <div>
+        <span className="section-label mb-2">שלב {String(index + 1).padStart(2, "0")}</span>
+        <h3 className="font-serif text-2xl font-medium leading-snug tracking-tight text-bone sm:text-[1.8rem]">
+          {step.title}
+        </h3>
+      </div>
+      <p className="max-w-xl text-base leading-relaxed text-bone/55 sm:pt-8 sm:text-lg">{step.text}</p>
+
+      <span className="absolute bottom-0 left-0 right-10 h-px bg-white/10 sm:right-14" aria-hidden />
+    </motion.li>
+  );
+};
+
 const ProcessSection = () => {
-  const reduced = useReducedMotion();
+  const reduced = Boolean(useReducedMotion());
   const listRef = useRef<HTMLOListElement>(null);
   const { scrollYProgress } = useScroll({
     target: listRef,
-    offset: ["start 0.85", "end 0.6"],
+    offset: ["start 0.9", "end 0.75"],
   });
-  const fill = useSpring(scrollYProgress, { stiffness: 90, damping: 24, mass: 0.6 });
+  const progress = useSpring(scrollYProgress, { stiffness: 110, damping: 26, mass: 0.5 });
 
   return (
     <section className="py-14 sm:py-20 lg:py-24">
@@ -30,54 +92,16 @@ const ProcessSection = () => {
         />
 
         <ol ref={listRef} className="relative mr-4 sm:mr-6">
-          {/* מסילת הקו + המילוי הנגלל */}
-          <span className="absolute right-0 top-2 bottom-2 w-px bg-white/12" aria-hidden />
+          {/* מסילה עמומה + מילוי ורוד שנמתח עם הגלילה */}
+          <span className="absolute right-0 top-2 bottom-2 w-px bg-white/10" aria-hidden />
           <motion.span
             className="absolute right-0 top-2 bottom-2 w-px origin-top bg-brand"
-            style={reduced ? { scaleY: 1 } : { scaleY: fill }}
+            style={reduced ? { scaleY: 1 } : { scaleY: progress }}
             aria-hidden
           />
 
-          {SITE.howItWorks.map((step, i) => (
-            <motion.li
-              key={step.title}
-              className="group relative grid gap-3 py-8 pr-10 sm:grid-cols-[10rem_1fr] sm:gap-8 sm:py-10 sm:pr-14"
-              initial={reduced ? false : { opacity: 0, y: 44, filter: "blur(6px)" }}
-              whileInView={reduced ? undefined : { opacity: 1, y: 0, filter: "blur(0px)" }}
-              viewport={{ once: false, amount: 0.55 }}
-              transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
-            >
-              {/* עיגול על הקו שנדלק כשמגיעים אליו */}
-              <motion.span
-                className="absolute right-0 top-9 flex h-9 w-9 translate-x-1/2 items-center justify-center rounded-full border border-white/20 bg-white text-xs font-semibold text-ink sm:top-11"
-                dir="ltr"
-                initial={reduced ? false : { scale: 0.6, opacity: 0 }}
-                whileInView={
-                  reduced
-                    ? undefined
-                    : { scale: 1, opacity: 1, borderColor: "#ff5f9e" }
-                }
-                viewport={{ once: false, amount: 0.8 }}
-                transition={{ duration: 0.5, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-                aria-hidden
-              >
-                {String(i + 1).padStart(2, "0")}
-              </motion.span>
-
-              <div>
-                <span className="section-label mb-2">
-                  שלב {String(i + 1).padStart(2, "0")}
-                </span>
-                <h3 className="text-xl font-semibold tracking-tight text-ink sm:text-2xl">
-                  {step.title}
-                </h3>
-              </div>
-              <p className="max-w-xl text-base leading-relaxed text-muted sm:pt-7 sm:text-lg">
-                {step.text}
-              </p>
-
-              <span className="absolute bottom-0 left-0 right-10 h-px bg-white/10 sm:right-14" aria-hidden />
-            </motion.li>
+          {STEPS.map((step, i) => (
+            <Step key={step.title} step={step} index={i} progress={progress} reduced={reduced} />
           ))}
         </ol>
       </div>
