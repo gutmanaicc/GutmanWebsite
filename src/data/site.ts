@@ -136,4 +136,4 @@ export const GENERAL_FAQ = [
   },
 ];
 
-export const COURSE_COUNT = 4;
+export const COURSE_COUNT = 5;

@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
 import { RegisterModalProvider } from "./context/RegisterModalContext";
+import { WaitlistModalProvider } from "./context/WaitlistModalContext";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Courses from "./pages/Courses";
@@ -17,6 +18,7 @@ const ComingSoon = lazy(() => import("./pages/ComingSoon"));
 
 const App = () => (
   <RegisterModalProvider>
+    <WaitlistModalProvider>
     <Suspense fallback={null}>
       <Routes>
         <Route path="/coming-soon" element={<ComingSoon />} />
@@ -33,6 +35,7 @@ const App = () => (
         </Route>
       </Routes>
     </Suspense>
+    </WaitlistModalProvider>
   </RegisterModalProvider>
 );
 

@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import FAQAccordion from "../components/FAQAccordion";
 import RegisterForm from "../components/RegisterForm";
 import SectionHeader, { AccentWord } from "../components/SectionHeader";
+import SyllabusBlocks from "../components/SyllabusBlocks";
 import Pressable from "../components/Pressable";
 import BackButton from "../components/BackButton";
 import StudentWorksCarousel from "../components/StudentWorksCarousel";
@@ -24,6 +25,7 @@ import {
   VideoIcon,
 } from "../components/icons";
 import { getChildCourses, getCourse, type AudienceIcon, type Course } from "../data/courses";
+import { getMarketingSyllabus } from "../data/syllabi";
 import { getInstructorsForCourse } from "../data/instructorsData";
 import { getStudentWorksForCourse } from "../data/studentWorksData";
 import { SITE } from "../data/site";
@@ -249,6 +251,7 @@ const CourseDetail = () => {
 
   const valueLines = course.valueProposition.split("\n").filter(Boolean);
   const courseKey = course.slug;
+  const marketingSyllabus = getMarketingSyllabus(course.slug);
 
   return (
     <div className="course-detail-page" key={courseKey}>
@@ -395,24 +398,28 @@ const CourseDetail = () => {
         </div>
       </MotionSection>
 
-      {/* Curriculum */}
+      {/* Syllabus - הגרסה השיווקית קודמת לפירוט המודולים הישן */}
       <MotionSection resetKey={`${courseKey}-curriculum`} id="curriculum" className="relative py-10 sm:py-12">
         <div className="pointer-events-none absolute inset-0 grid-canvas opacity-30" aria-hidden />
         <div className="container-site relative max-w-4xl">
           <MotionItem>
             <SectionHeader
               compact
-              kicker="מודולים"
+              kicker="סילבוס"
               title={
                 <>
-                  תוכנית <AccentWord>הלימודים</AccentWord>
+                  מה <AccentWord>לומדים</AccentWord> בסדנה
                 </>
               }
-              sub={course.methodName ?? "כל מודול מסתיים בתוצר מעשי."}
+              sub={marketingSyllabus ? undefined : course.methodName ?? "כל מודול מסתיים בתוצר מעשי."}
             />
           </MotionItem>
           <MotionItem>
-            <CurriculumAccordion courseKey={courseKey} modules={course.curriculum} />
+            {marketingSyllabus ? (
+              <SyllabusBlocks syllabus={marketingSyllabus} />
+            ) : (
+              <CurriculumAccordion courseKey={courseKey} modules={course.curriculum} />
+            )}
           </MotionItem>
         </div>
       </MotionSection>

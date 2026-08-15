@@ -1,5 +1,6 @@
 /**
- * Primary navigation track tree - 4 main tracks; business expands to 3 sub-tracks.
+ * עץ הניווט של הסדנאות הפעילות. סדנאות שבקרוב אינן מופיעות כאן, הן
+ * מוצגות רק בעמוד הסדנאות עם כפתור רשימת המתנה.
  */
 export type NavTrackChild = {
   slug: string;
@@ -34,14 +35,19 @@ export const BUSINESS_SUBTRACKS: NavTrackChild[] = [
 
 export const NAV_TRACKS: NavTrack[] = [
   {
+    slug: "ai-for-therapists",
+    label: "מטפלים ופסיכולוגים",
+    href: "/courses/ai-for-therapists",
+  },
+  {
+    slug: "ai-fashion",
+    label: "אופנה",
+    href: "/courses/ai-fashion",
+  },
+  {
     slug: "social-media-ai",
     label: "מנהלי סושיאל",
     href: "/courses/social-media-ai",
-  },
-  {
-    slug: "ai-for-students",
-    label: "סטודנטים",
-    href: "/courses/ai-for-students",
   },
   {
     slug: "ai-video-content",
@@ -49,10 +55,9 @@ export const NAV_TRACKS: NavTrack[] = [
     href: "/courses/ai-video-content",
   },
   {
-    slug: "ai-business-systems",
-    label: "מסלול לבעלי עסקים",
-    href: "/courses/ai-business-systems",
-    children: BUSINESS_SUBTRACKS,
+    slug: "ai-for-students",
+    label: "סטודנטים",
+    href: "/courses/ai-for-students",
   },
 ];
 

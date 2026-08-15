@@ -50,7 +50,8 @@ type CourseCore = {
   methodName?: string;
   capabilities: string[];
   topics: string[];
-  syllabus: SyllabusModule[];
+  /** פירוט אקדמי ישן. סדנאות חדשות מתוארות ב-MARKETING_SYLLABI בלבד. */
+  syllabus?: SyllabusModule[];
   suitability: string[];
   notSuitableFor: string[];
   experienceLevel: string;
@@ -107,13 +108,156 @@ function enrichCourse(core: CourseCore): Course {
     valueProposition: page.valueProposition,
     heroMeta: page.heroMeta,
     targetAudience: page.targetAudience,
-    curriculum: buildCurriculum(core.syllabus),
+    curriculum: buildCurriculum(core.syllabus ?? []),
     deliverables: page.deliverables,
     courseFaq: core.faq.map((item) => ({ question: item.q, answer: item.a })),
   };
 }
 
 export const COURSES_CORE: CourseCore[] = [
+  {
+    slug: "ai-for-therapists",
+    title: "AI למטפלים ופסיכולוגים",
+    shortTitle: "מטפלים ופסיכולוגים",
+    category: "טיפול ובריאות הנפש",
+    audience: "מטפלים, פסיכולוגים ואנשי מקצוע מעולמות בריאות הנפש",
+    tagline: "AI ככלי עבודה תומך בקליניקה, לא תחליף למטפל",
+    cardSubtitle: "לחסוך זמן, לעשות סדר ולהעמיק את העבודה המקצועית, בלי להחליף את המטפל.",
+    cardPills: [
+      { icon: "users", label: "קבוצה קטנה" },
+      { icon: "target", label: "תוצר: שיטת עבודה לקליניקה" },
+    ],
+    problem: [
+      "הרבה מהזמן המקצועי נבלע בסידור מידע, הכנת חומרים ותיעוד בין מפגשים.",
+      "כלי AI נראים מבטיחים, אבל לא ברור איך משלבים אותם בעבודה טיפולית בצורה אחראית.",
+    ],
+    outcome:
+      "שיטת עבודה פרקטית שמשלבת AI בתוך הקליניקה בצורה מסודרת, יעילה ומותאמת לצרכים שלכם.",
+    finalDeliverable: "סביבת עבודה מבוססת AI שמותאמת לשיטת העבודה שלכם",
+    capabilities: [
+      "לסכם מידע, לארגן תכנים ולהכין חומרי עבודה",
+      "לבנות מאגרי ידע מקצועיים",
+      "לנהל מידע, מעקב ומשימות בין פגישות",
+      "ליצור סביבת AI שמכירה את שיטת העבודה שלכם",
+      "לרכז מידע, משימות וכלים לכל תהליך טיפולי במקום אחד",
+    ],
+    topics: [
+      "עבודה חכמה עם מידע ותוכן טיפולי",
+      "תיעוד, מעקב וסדר בין מפגשים",
+      "בניית סביבת AI מותאמת למטפל",
+      "מחברת דיגיטלית חכמה לכל מטופל",
+    ],
+    suitability: [
+      "מטפלים ופסיכולוגים בקליניקה פרטית או במסגרת ארגונית",
+      "אנשי מקצוע מעולמות בריאות הנפש",
+      "מי שרוצה לעשות סדר בעבודה השוטפת סביב המפגשים",
+    ],
+    notSuitableFor: [
+      "מי שמחפש כלי שיחליף את העבודה הטיפולית עצמה",
+      "מי שמחפש הרצאה תאורטית בלי לעבוד בפועל",
+    ],
+    experienceLevel: "מתאים גם למי שעוד לא עבד עם כלי AI",
+    logistics: {
+      format: "סדנה פרונטלית מעשית בקבוצה קטנה",
+      sessions: "",
+      sessionLength: "",
+      location: "",
+      groupSize: "",
+      equipment: "מחשב נייד",
+      support: "ליווי צמוד במהלך המפגשים",
+      materials: "תבניות עבודה והוראות כתובות",
+      nextCohort: "",
+    },
+    faq: [
+      {
+        q: "ה-AI מחליף את העבודה הטיפולית?",
+        a: "לא. הסדנה עוסקת ב-AI ככלי עבודה תומך בלבד: חיסכון בזמן, סדר בחומרים והעמקה של העבודה המקצועית. העבודה הטיפולית נשארת שלכם.",
+      },
+      {
+        q: "אני לא טכנולוגי במיוחד. זה מתאים לי?",
+        a: "כן. הסדנה מתאימה גם למי שעוד לא עבד עם כלי AI, ועובדים בה שלב אחר שלב בהנחיה צמודה.",
+      },
+      {
+        q: "מה לגבי מידע רגיש של מטופלים?",
+        a: "בניית סביבת העבודה נעשית מתוך תשומת לב למה נכנס למערכת ומה לא. נעבור על זה במהלך הסדנה.",
+      },
+    ],
+    visual: "students",
+    ctaText: "רוצה לשלב AI בקליניקה",
+    leadSource: "course-ai-for-therapists",
+  },
+  {
+    slug: "ai-fashion",
+    title: "בינה מלאכותית באופנה. מהשראה לקמפיין מוגמר",
+    shortTitle: "אופנה",
+    category: "קריאייטיב ואופנה",
+    audience: "צלמי אופנה ויוצרי תוכן",
+    tagline: "מרעיון ראשוני לקמפיין אופנה שלם",
+    cardSubtitle: "חמישה מפגשים שבסופם קמפיין אופנה אישי שבניתם, מהקונספט ועד הווידאו.",
+    cardPills: [
+      { icon: "spark", label: "5 מפגשים" },
+      { icon: "target", label: "תוצר: קמפיין אופנה" },
+    ],
+    problem: [
+      "יש רעיון והשראות, אבל הדרך מהם לקמפיין עם שפה ויזואלית אחידה לא ברורה.",
+      "כלי AI מייצרים תמונה יפה, אבל קשה לשמור על עקביות של דמויות וסגנון לאורך קמפיין שלם.",
+    ],
+    outcome:
+      "קמפיין אופנה אישי שבניתם בעצמכם, משלב ההשראה והקונספט ועד לתמונות ולווידאו הסופיים.",
+    finalDeliverable: "קמפיין אופנה מוגמר, כולל תמונות ווידאו",
+    capabilities: [
+      "לחפש השראות ולבנות קונספט לקמפיין",
+      "לנתח מותג ולבנות Moodboard מקצועי",
+      "ליצור דוגמנים ודמויות עקביות ב-AI",
+      "לשמור על שפה ויזואלית אחידה לאורך הקמפיין",
+      "להפוך את העולם הוויזואלי לתוכן בתנועה",
+    ],
+    topics: [
+      "לחשוב כמו קמפיין",
+      "מהמותג לשפה ויזואלית",
+      "יוצרים את הקמפיין ב-AI",
+      "מתמונה לווידאו",
+      "פרויקט סיום וליטוש",
+    ],
+    suitability: [
+      "צלמי ומצלמות אופנה",
+      "יוצרי תוכן בעולמות האופנה והמותגים",
+      "מי שרוצה לצאת עם קמפיין מוגמר ולא רק עם תמונות בודדות",
+    ],
+    notSuitableFor: [
+      "מי שמחפש רשימת כלים בלי לבנות קמפיין בפועל",
+      "מי שלא מתכוון להציג פרויקט סיום ולקבל עליו פידבק",
+    ],
+    experienceLevel: "מתאים גם למתחילים וגם למי שכבר עובד עם כלי AI",
+    logistics: {
+      format: "סדנה פרונטלית מעשית בקבוצה קטנה",
+      sessions: "5 מפגשים",
+      sessionLength: "",
+      location: "",
+      groupSize: "",
+      equipment: "מחשב נייד",
+      support: "פידבק מקצועי על פרויקט הסיום",
+      materials: "תבניות עבודה והוראות כתובות",
+      nextCohort: "",
+    },
+    faq: [
+      {
+        q: "צריך ניסיון קודם בכלי AI?",
+        a: "לא. הסדנה מתאימה גם למתחילים, ובונים בה את הקמפיין שלב אחר שלב.",
+      },
+      {
+        q: "עם מה יוצאים בסוף?",
+        a: "עם קמפיין אופנה אישי שבניתם במהלך הסדנה, מהקונספט וה-Moodboard ועד לתמונות ולווידאו.",
+      },
+      {
+        q: "יש פרויקט סיום?",
+        a: "כן. במפגש החמישי כל משתתף מציג את הקמפיין שבנה, מקבל פידבק מקצועי ומבצע את הליטושים האחרונים.",
+      },
+    ],
+    visual: "video",
+    ctaText: "רוצה לבנות קמפיין אופנה",
+    leadSource: "course-ai-fashion",
+  },
   {
     slug: "social-media-ai",
     title: "AI למנהלי ומנהלות סושיאל",
@@ -971,8 +1115,23 @@ export const COURSES_CORE: CourseCore[] = [
 
 export const COURSES: Course[] = COURSES_CORE.map(enrichCourse);
 
-/** Top-level tracks only (no parentSlug) - used for listings, sticky showcase, COURSE_COUNT. */
+/** Top-level tracks only (no parentSlug). */
 export const PRIMARY_COURSES: Course[] = COURSES.filter((c) => !c.parentSlug);
+
+/** הסדנאות הפתוחות להרשמה, בסדר התצוגה באתר. */
+export const ACTIVE_COURSE_SLUGS = [
+  "ai-for-therapists",
+  "ai-fashion",
+  "social-media-ai",
+  "ai-video-content",
+  "ai-for-students",
+] as const;
+
+export const ACTIVE_COURSES: Course[] = ACTIVE_COURSE_SLUGS.map((slug) => {
+  const course = COURSES.find((c) => c.slug === slug);
+  if (!course) throw new Error(`ACTIVE_COURSE_SLUGS references a missing slug: ${slug}`);
+  return course;
+});
 
 export const getChildCourses = (parentSlug: string): Course[] =>
   COURSES.filter((c) => c.parentSlug === parentSlug);
@@ -984,13 +1143,11 @@ export const getCourse = (slug: string) => {
 
 /** Lead-form track picker - main tracks + business sub-tracks. */
 export const LEAD_TRACKS = [
+  { slug: "ai-for-therapists", label: "מטפלים ופסיכולוגים" },
+  { slug: "ai-fashion", label: "אופנה" },
   { slug: "social-media-ai", label: "מנהלי סושיאל" },
-  { slug: "ai-for-students", label: "סטודנטים" },
   { slug: "ai-video-content", label: "עורכי וידאו ויוצרי תוכן" },
-  { slug: "ai-business-systems", label: "מסלול לבעלי עסקים" },
-  { slug: "business-crm", label: "בניית מערכת CRM" },
-  { slug: "business-payments", label: "מערכת למעקב תשלומים" },
-  { slug: "business-landing-page", label: "בניית דף נחיתה" },
+  { slug: "ai-for-students", label: "סטודנטים" },
 ] as const;
 
 export type LeadTrackSlug = (typeof LEAD_TRACKS)[number]["slug"] | "unsure" | "";

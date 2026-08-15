@@ -36,6 +36,94 @@ export type CoursePageContent = {
 
 /** Rich page-level content keyed by course slug. Curriculum + FAQ are derived from syllabus/faq. */
 export const COURSE_PAGE_CONTENT: Record<string, CoursePageContent> = {
+  "ai-for-therapists": {
+    valueProposition:
+      "AI ככלי עבודה תומך בקליניקה, לא תחליף למטפל.\nחוסכים זמן, עושים סדר ומעמיקים את העבודה המקצועית.",
+    heroMeta: {
+      duration: "מועדים ייסגרו בקרוב",
+      format: "פרונטלי · קבוצה קטנה",
+      outcome: "שיטת עבודה לקליניקה",
+    },
+    targetAudience: [
+      {
+        title: "מטפלים ופסיכולוגים",
+        description: "אנשי מקצוע בקליניקה פרטית או במסגרת ארגונית שרוצים לעשות סדר בעבודה סביב המפגשים.",
+        icon: "users",
+      },
+      {
+        title: "אנשי מקצוע בבריאות הנפש",
+        description: "מי שעובד עם מידע, חומרי עבודה ומעקב שוטף ומחפש דרך מסודרת יותר לנהל אותם.",
+        icon: "briefcase",
+      },
+      {
+        title: "מי שעוד לא עבד עם AI",
+        description: "הסדנה מתחילה מהבסיס ומתקדמת שלב אחר שלב, בהנחיה צמודה.",
+        icon: "graduation",
+      },
+    ],
+    deliverables: [
+      {
+        title: "סביבת AI מותאמת",
+        description: "מערכת שמכירה את שיטת העבודה, הכלים והגישה המקצועית שלכם.",
+        icon: "layers",
+      },
+      {
+        title: "מחברת דיגיטלית לכל מטופל",
+        description: "סביבת עבודה נפרדת ומסודרת שמרכזת מידע, משימות וכלים במקום אחד.",
+        icon: "target",
+      },
+      {
+        title: "שיטת עבודה פרקטית",
+        description: "תהליכים לתיעוד, מעקב וסדר בין מפגשים שאפשר להמשיך לעבוד לפיהם.",
+        icon: "bolt",
+      },
+    ],
+  },
+
+  "ai-fashion": {
+    valueProposition:
+      "מרעיון ראשוני לקמפיין אופנה שלם, בעזרת AI.\nחמישה מפגשים שבסופם קמפיין מוגמר שבניתם בעצמכם.",
+    heroMeta: {
+      duration: "5 מפגשים",
+      format: "פרונטלי · קבוצה קטנה",
+      outcome: "קמפיין אופנה מוגמר",
+    },
+    targetAudience: [
+      {
+        title: "צלמי ומצלמות אופנה",
+        description: "מי שכבר מצלם ורוצה להוסיף שכבת AI לתהליך הקריאייטיב וההפקה.",
+        icon: "video",
+      },
+      {
+        title: "יוצרי תוכן",
+        description: "יוצרים בעולמות האופנה והמותגים שרוצים לבנות קמפיין עם שפה ויזואלית אחידה.",
+        icon: "spark",
+      },
+      {
+        title: "מי שרוצה תוצר ולא רק כלים",
+        description: "הסדנה מסתיימת בפרויקט שמוצג ומקבל פידבק מקצועי.",
+        icon: "target",
+      },
+    ],
+    deliverables: [
+      {
+        title: "Moodboard מקצועי",
+        description: "ניתוח המותג וה-Brand DNA שלו, שמגדיר את הכיוון של הקמפיין.",
+        icon: "layers",
+      },
+      {
+        title: "תמונות הקמפיין",
+        description: "דוגמנים ודמויות עקביות ושפה ויזואלית אחידה לאורך כל הקמפיין.",
+        icon: "spark",
+      },
+      {
+        title: "וידאו לקמפיין",
+        description: "תנועות מצלמה, שוטים ועריכה בסיסית שהופכים את העולם הוויזואלי לתוכן בתנועה.",
+        icon: "video",
+      },
+    ],
+  },
+
   "social-media-ai": {
     valueProposition:
       "בונים לכל לקוח עובד AI שמכיר את הטון, הקהל והמטרות שלו.\nמנהלים יותר לקוחות בפחות שעות - בלי לוותר על איכות.",

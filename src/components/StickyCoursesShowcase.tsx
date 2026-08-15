@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, useMotionValueEvent, useScroll } from "framer-motion";
 import { ArrowLeft, ArrowUpLeft } from "lucide-react";
-import { PRIMARY_COURSES, type Course } from "../data/courses";
+import { ACTIVE_COURSES, type Course } from "../data/courses";
 import { springSoft, useMotionCapability } from "../lib/motion";
 import { useRegisterModal } from "../context/RegisterModalContext";
 import { getMockWindowForVisual } from "./MockWindows";
@@ -84,7 +84,7 @@ const SHOWCASE_META: Record<string, ShowcaseMeta> = {
   },
 };
 
-export function buildStickyCourseSlides(courses: Course[] = PRIMARY_COURSES): StickyCourseSlide[] {
+export function buildStickyCourseSlides(courses: Course[] = ACTIVE_COURSES): StickyCourseSlide[] {
   return courses.map((course, index) => {
     const theme = SLIDE_THEMES[index % SLIDE_THEMES.length];
     const meta = SHOWCASE_META[course.slug];

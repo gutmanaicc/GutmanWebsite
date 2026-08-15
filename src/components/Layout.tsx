@@ -8,6 +8,7 @@ import Preloader from "./Preloader";
 import { Consent } from "./Consent";
 import AccessibilityMenu from "./AccessibilityMenu";
 import RegisterModal from "./RegisterModal";
+import WaitlistModal from "./WaitlistModal";
 import { CursorTrail, ParallaxGridCanvas } from "./motion";
 import { REGISTRATION_FORM_ID, scrollToRegistrationForm } from "../lib/registration";
 
@@ -101,6 +102,7 @@ const Layout = () => {
       <Footer />
     </div>
     <RegisterModal />
+    <WaitlistModal />
     <Consent />
     <AccessibilityMenu />
   </div>
