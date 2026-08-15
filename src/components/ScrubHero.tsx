@@ -29,7 +29,7 @@ const HERO_VH = 520;
 /* חמשת שערי הסטטי - זהים תו-בתו ל-CSS שב-index.css */
 const GATES = [
   "(max-width: 720px)",
-  "(orientation: portrait) and (max-width: 1024px)",
+  "(orientation: portrait) and (max-width: 1024px) and (pointer: coarse)",
   "(orientation: portrait) and (pointer: coarse)",
   "(orientation: landscape) and (pointer: coarse) and (max-height: 560px)",
   "(prefers-reduced-motion: reduce)",
@@ -301,9 +301,6 @@ const ScrubHero = () => {
           דברו איתנו בוואטסאפ
         </Pressable>
       </div>
-      <p className="mt-7 text-xs font-medium text-bone/40">
-        ההירו הזה נוצר ב-AI. זה מה שתלמדו לעשות.
-      </p>
     </div>
   );
 

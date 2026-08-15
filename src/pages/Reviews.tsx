@@ -29,22 +29,17 @@ const TestimonialCard = ({
     aria-hidden={!active}
     className={`group flex w-full flex-col overflow-hidden rounded-2xl bg-[#191919] text-right transition-[border-color,box-shadow,transform] duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2D85]/50 ${
       active
-        ? "border border-[#FF2D85]/50 shadow-[0_0_22px_rgba(255,45,133,0.32)]"
-        : "border border-white/10 shadow-[0_10px_28px_-20px_rgba(0,0,0,0.55)]"
+        ? "border border-white/25"
+        : "border border-white/10"
     }`}
   >
     <div className="flex flex-col gap-1.5 p-3.5 pb-2.5 sm:p-4 sm:pb-3">
-      <span className="inline-flex w-fit rounded-full bg-[#FF2D85]/15 px-2.5 py-1 text-xs font-semibold text-[#FF2D85]">
+      <span className="inline-flex w-fit items-center gap-1.5 text-[11px] font-semibold tracking-[0.14em] text-[#F4F4F2]/45">
+        <span className="h-1 w-1 rounded-full bg-[#FF2D85]" aria-hidden />
         {item.tag}
       </span>
       <p className="text-sm font-bold leading-snug text-[#F4F4F2]">
-        <span className="text-[#FF2D85]" aria-hidden>
-          “
-        </span>
         {item.quote}
-        <span className="text-[#FF2D85]" aria-hidden>
-          ”
-        </span>
       </p>
       <p className="line-clamp-2 text-xs leading-relaxed text-[#F4F4F2]/65">{item.text}</p>
     </div>

@@ -1,52 +1,75 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { motion, useReducedMotion } from "framer-motion";
 import SectionHeader, { AccentWord } from "./SectionHeader";
 import StudentWorksCarousel from "./StudentWorksCarousel";
-import { ScrollReveal3D, StaggerGroup, StaggerItem } from "./motion";
 import { ArrowIcon } from "./icons";
 import { STUDENT_WORKS } from "../data/studentWorksData";
 import { TESTIMONIALS, type Testimonial } from "../data/testimonialsData";
 
-/** Screenshots that read best at card size; the full set lives on /reviews. */
-const FEATURED = TESTIMONIALS.slice(0, 6);
-
-const ProofCard = ({ item }: { item: Testimonial }) => (
-  <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#191919] text-right shadow-[0_18px_40px_-28px_rgba(0,0,0,0.65)] transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1.5 hover:shadow-[0_32px_60px_-30px_rgba(0,0,0,0.75)] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
-    <div className="flex flex-col gap-1.5 p-4 pb-3">
-      <span className="inline-flex w-fit rounded-full bg-[#FF2D85]/15 px-2.5 py-1 text-xs font-semibold text-[#FF2D85]">
-        {item.tag}
-      </span>
-      <p className="text-sm font-bold leading-snug text-[#F4F4F2]">
-        <span className="text-[#FF2D85]" aria-hidden>
-          “
-        </span>
-        {item.quote}
-        <span className="text-[#FF2D85]" aria-hidden>
-          ”
-        </span>
-      </p>
-      <p className="line-clamp-3 text-xs leading-relaxed text-[#F4F4F2]/65">{item.text}</p>
-    </div>
-
-    <div className="mx-4 mb-4 mt-auto overflow-hidden rounded-xl bg-zinc-900">
-      <img
-        src={item.image}
-        alt={`צילום ביקורת: ${item.quote}`}
-        className="h-32 w-full object-cover object-top transition-transform duration-500 ease-out group-hover:scale-[1.06] motion-reduce:transition-none sm:h-36"
-        loading="lazy"
-        draggable={false}
-      />
-    </div>
-  </article>
-);
+/** ההודעות שקוראות הכי טוב בגודל ציטוט; המלאי המלא חי ב-/reviews. */
+const FEATURED = TESTIMONIALS.slice(0, 5);
 
 /**
- * Home-page proof block: real student screenshots + the works they built.
- * Both data sets already power /reviews and the course pages; this surfaces
- * them before the lead form, so the ask lands after the evidence.
+ * קיר ציטוטים במקום רשת כרטיסים: הציטוט עצמו הוא הטיפוגרפיה, הצילום
+ * נחשף רק למי שרוצה לראות את ההודעה המקורית. פחות מסחרי, יותר עדות.
  */
+const QuoteRow = ({ item, index }: { item: Testimonial; index: number }) => {
+  const reduced = useReducedMotion();
+  const [open, setOpen] = useState(false);
+
+  return (
+    <motion.li
+      className="group border-b border-white/10"
+      initial={reduced ? false : { opacity: 0, y: 26 }}
+      whileInView={reduced ? undefined : { opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-70px" }}
+      transition={{ duration: 0.6, delay: index * 0.05, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="w-full py-8 text-right sm:py-10"
+      >
+        <span className="flex flex-col gap-4 sm:flex-row sm:items-baseline sm:gap-10">
+          <span className="section-label shrink-0 text-bone/45 sm:w-40">{item.tag}</span>
+          <span className="flex-1">
+            <span className="block text-[clamp(1.35rem,2.6vw,2.1rem)] font-semibold leading-[1.25] tracking-tight text-bone">
+              {item.quote}
+            </span>
+            <span className="mt-3 block max-w-2xl text-sm leading-relaxed text-bone/55 sm:text-base">
+              {item.text}
+            </span>
+            <span className="mt-4 inline-flex items-center gap-2 text-xs font-medium text-bone/40 transition-colors group-hover:text-brand">
+              {open ? "סגירת ההודעה" : "לצפייה בהודעה המקורית"}
+              <ArrowIcon size={13} />
+            </span>
+          </span>
+        </span>
+      </button>
+
+      <motion.div
+        className="overflow-hidden"
+        initial={false}
+        animate={{ height: open ? "auto" : 0, opacity: open ? 1 : 0 }}
+        transition={{ duration: reduced ? 0 : 0.45, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <img
+          src={item.image}
+          alt={`צילום ההודעה: ${item.quote}`}
+          className="mb-8 w-full max-w-lg rounded-xl border border-white/10"
+          loading="lazy"
+          draggable={false}
+        />
+      </motion.div>
+    </motion.li>
+  );
+};
+
 const HomeProof = () => (
   <>
-    <section className="py-12 sm:py-16 lg:py-20">
+    <section className="py-14 sm:py-20 lg:py-24">
       <div className="container-site">
         <SectionHeader
           index="04"
@@ -59,22 +82,14 @@ const HomeProof = () => (
           sub="הודעות אמיתיות שקיבלנו ממשתתפים אחרי המסלולים, בלי עריכה ובלי שכתוב."
         />
 
-        <StaggerGroup className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" stagger={0.05}>
-          {FEATURED.map((item) => (
-            <StaggerItem key={item.id} className="h-full">
-              <ScrollReveal3D className="h-full" intensity="quiet" fromRotateX={7} fromY={26}>
-                <ProofCard item={item} />
-              </ScrollReveal3D>
-            </StaggerItem>
+        <ul className="border-t border-white/10">
+          {FEATURED.map((item, i) => (
+            <QuoteRow key={item.id} item={item} index={i} />
           ))}
-        </StaggerGroup>
+        </ul>
 
-        <div className="mt-8 flex justify-center">
-          <Link
-            to="/reviews"
-            className="btn-ghost inline-flex items-center gap-2"
-            aria-label="לכל הביקורות"
-          >
+        <div className="mt-10 flex justify-center">
+          <Link to="/reviews" className="btn-ghost inline-flex items-center gap-2">
             לכל הביקורות
             <ArrowIcon size={16} />
           </Link>
