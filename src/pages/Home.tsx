@@ -8,7 +8,7 @@ import RegisterForm from "../components/RegisterForm";
 import SectionHeader, { AccentWord } from "../components/SectionHeader";
 import StatsBand from "../components/StatsBand";
 import StackingCourses from "../components/StackingCourses";
-import Hero from "../components/Hero";
+import ScrubHero from "../components/ScrubHero";
 import InstructorsShowcase from "../components/InstructorsShowcase";
 import Pressable from "../components/Pressable";
 import { WhatsAppIcon } from "../components/icons";
@@ -52,7 +52,7 @@ const Home = () => {
 
   return (
     <>
-      <Hero />
+      <ScrubHero />
 
       <Marquee items={MARQUEE_ITEMS} />
 
