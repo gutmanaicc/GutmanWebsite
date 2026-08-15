@@ -4,6 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Lenis from "lenis";
 import Header from "./Header";
 import Footer from "./Footer";
+import Preloader from "./Preloader";
 import { Consent } from "./Consent";
 import AccessibilityMenu from "./AccessibilityMenu";
 import RegisterModal from "./RegisterModal";
@@ -78,8 +79,11 @@ const Layout = () => {
 
   return (
   <div className="relative min-h-screen bg-canvas">
+    <Preloader />
     <ParallaxGridCanvas />
     <CursorTrail />
+    {/* גרעין פילם - טקסטורת סטודיו מעל הכול, מתחת למודאלים */}
+    <div className="film-grain pointer-events-none fixed inset-0 z-[30]" aria-hidden />
     {/* קווי עמודות דקיקים לאורך כל העמוד, בסגנון orbix */}
     <div className="page-lines pointer-events-none fixed inset-0 z-0 hidden lg:block" aria-hidden />
     <div className="relative z-[1]">

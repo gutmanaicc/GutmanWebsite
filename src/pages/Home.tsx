@@ -56,6 +56,25 @@ const Home = () => {
 
       <Marquee items={MARQUEE_ITEMS} />
 
+      {/* מרקיזת פוסטר: מילים ענקיות בקווי מתאר, החתימה של אתרי סטודיו */}
+      <div className="marquee !border-b-0 !py-8 sm:!py-12" dir="ltr" aria-hidden>
+        <div className="marquee-track" dir="rtl" style={{ animationDuration: "50s" }}>
+          {[0, 1].map((dup) => (
+            <div key={dup} className="flex shrink-0 items-center gap-10">
+              {["בינה מלאכותית", "פרונטלי", "תוצר אמיתי", "שיטה שנשארת"].map((word) => (
+                <span
+                  key={word}
+                  className="flex items-center gap-10 whitespace-nowrap text-[clamp(3.5rem,8vw,7.5rem)] font-bold leading-none tracking-tightest"
+                >
+                  <span className="outline-text">{word}</span>
+                  <span className="text-brand text-[0.35em]">✦</span>
+                </span>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+
       <section id="finder" className="py-14 sm:py-20 lg:py-24">
         <div className="container-site">
           <div className="grid gap-8 lg:grid-cols-2 lg:items-start lg:gap-12">
@@ -106,7 +125,7 @@ const Home = () => {
                 >
                   <MagneticCard
                     as="article"
-                    className="relative h-full overflow-hidden rounded-[1.5rem] border border-line bg-white p-6 pt-7 shadow-card"
+                    className="relative h-full overflow-hidden rounded-[1.5rem] border border-white/12 bg-white p-6 pt-7 text-ink shadow-card"
                     tilt={6}
                     scale={1.02}
                     lift={-6}
@@ -158,33 +177,35 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="border-t border-line bg-white/60 py-14 sm:py-16 lg:py-20">
+      <section className="py-14 sm:py-16 lg:py-20">
         <div className="container-site">
+          <div className="rounded-[2rem] bg-bone px-5 py-12 text-ink sm:rounded-[2.5rem] sm:px-10 sm:py-16">
           <SectionHeader kicker="שאלות" title="שאלות נפוצות" center />
           <ScrollReveal3D from="up" intensity="quiet" fromRotateX={6} fromY={20}>
             <FAQAccordion items={[...GENERAL_FAQ]} />
           </ScrollReveal3D>
+          </div>
         </div>
       </section>
 
-      {/* סגירה כהה בסגנון orbix: הקנבס מתעגל ומתהפך לשחור וזורם ישר לתוך הפוטר */}
-      <section className="mt-10 rounded-t-[3rem] bg-ink py-24 text-center sm:mt-14 sm:py-32">
+      {/* סגירה הפוכה: על האתר השחור, הבלוק הסוגר הוא שנהב שמתעגל מעל הפוטר */}
+      <section className="mt-10 rounded-t-[3rem] bg-bone py-24 text-center text-ink sm:mt-14 sm:py-32">
         <div className="container-site flex flex-col items-center">
-          <span className="section-label mb-5" style={{ color: "rgba(255,255,255,0.5)" }}>
+          <span className="section-label mb-5">
             <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
             {SITE.hebrewName}
           </span>
-          <h2 className="display-1 max-w-4xl text-white">
+          <h2 className="display-1 max-w-4xl">
             לא רק ללמוד. <AccentWord>לדעת.</AccentWord>
           </h2>
-          <p className="mt-6 max-w-xl text-base leading-relaxed text-white/60 sm:text-lg">
+          <p className="mt-6 max-w-xl text-base leading-relaxed text-ink/60 sm:text-lg">
             מגיעים עם העסק, הלימודים או הפרויקט שלכם. יוצאים עם תוצר שעובד ושיטה שנשארת.
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3.5">
             <Pressable
               as="link"
               to="/courses"
-              className="btn bg-white text-ink shadow-pill hover:bg-white/90"
+              className="btn bg-ink text-white hover:bg-black"
             >
               {SITE.hero.primaryCta}
             </Pressable>
@@ -193,7 +214,7 @@ const Home = () => {
               href={SITE.contact.whatsapp}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn border border-white/25 text-white hover:border-white/50"
+              className="btn border border-ink/25 text-ink hover:border-ink/50"
               rippleTone="pink"
             >
               <WhatsAppIcon size={19} className="shrink-0 text-[#25D366]" />

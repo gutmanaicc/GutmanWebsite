@@ -31,7 +31,7 @@ const ProcessSection = () => {
 
         <ol ref={listRef} className="relative mr-4 sm:mr-6">
           {/* מסילת הקו + המילוי הנגלל */}
-          <span className="absolute right-0 top-2 bottom-2 w-px bg-line" aria-hidden />
+          <span className="absolute right-0 top-2 bottom-2 w-px bg-white/12" aria-hidden />
           <motion.span
             className="absolute right-0 top-2 bottom-2 w-px origin-top bg-brand"
             style={reduced ? { scaleY: 1 } : { scaleY: fill }}
@@ -49,7 +49,7 @@ const ProcessSection = () => {
             >
               {/* עיגול על הקו שנדלק כשמגיעים אליו */}
               <motion.span
-                className="absolute right-0 top-9 flex h-9 w-9 translate-x-1/2 items-center justify-center rounded-full border border-line bg-white text-xs font-semibold text-ink shadow-card sm:top-11"
+                className="absolute right-0 top-9 flex h-9 w-9 translate-x-1/2 items-center justify-center rounded-full border border-white/20 bg-white text-xs font-semibold text-ink sm:top-11"
                 dir="ltr"
                 initial={reduced ? false : { scale: 0.6, opacity: 0 }}
                 whileInView={
@@ -76,7 +76,7 @@ const ProcessSection = () => {
                 {step.text}
               </p>
 
-              <span className="absolute bottom-0 left-0 right-10 h-px bg-line sm:right-14" aria-hidden />
+              <span className="absolute bottom-0 left-0 right-10 h-px bg-white/10 sm:right-14" aria-hidden />
             </motion.li>
           ))}
         </ol>

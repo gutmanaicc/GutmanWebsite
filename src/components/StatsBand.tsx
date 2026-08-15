@@ -42,15 +42,15 @@ const Counter = ({ value, suffix }: { value: number; suffix?: string }) => {
 const StatsBand = ({ stats }: { stats: Stat[] }) => (
   <section className="py-10 sm:py-14">
     <div className="container-site">
-      {/* בלוק כהה מעוגל - רגע ההיפוך של הקנבס, כמו ה-who-we-are של orbix */}
-      <div className="overflow-hidden rounded-[2rem] bg-ink text-white shadow-[0_40px_80px_-40px_rgba(25,25,25,0.55)] sm:rounded-[2.5rem]">
-        <dl className="grid grid-cols-1 divide-y divide-white/10 sm:grid-cols-3 sm:divide-y-0 sm:divide-x sm:divide-x-reverse">
+      {/* בלוק שנהב מעוגל - רגע ההיפוך של הקנבס השחור */}
+      <div className="overflow-hidden rounded-[2rem] bg-bone text-ink sm:rounded-[2.5rem]">
+        <dl className="grid grid-cols-1 divide-y divide-ink/10 sm:grid-cols-3 sm:divide-y-0 sm:divide-x sm:divide-x-reverse">
           {stats.map((stat) => (
             <div key={stat.label} className="flex flex-col items-center gap-1 px-6 py-12 text-center sm:py-16">
-              <dd className="order-1 text-[clamp(3.25rem,7vw,5.5rem)] font-semibold leading-none tracking-tightest text-white">
+              <dd className="order-1 text-[clamp(3.25rem,7vw,5.5rem)] font-semibold leading-none tracking-tightest text-ink">
                 <Counter value={stat.value} suffix={stat.suffix} />
               </dd>
-              <dt className="order-2 mt-3 text-sm font-medium text-white/55">{stat.label}</dt>
+              <dt className="order-2 mt-3 text-sm font-medium text-ink/55">{stat.label}</dt>
             </div>
           ))}
         </dl>

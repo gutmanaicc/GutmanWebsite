@@ -8,7 +8,7 @@
   }
 
   body {
-    @apply bg-canvas text-ink font-sans antialiased overflow-x-hidden;
+    @apply bg-canvas text-bone font-sans antialiased overflow-x-hidden;
     font-family: "Heebo", Tahoma, Arial, sans-serif;
     font-feature-settings: "ss01" on;
   }
@@ -23,7 +23,7 @@
   }
 
   ::selection {
-    @apply bg-brand/25 text-ink;
+    @apply bg-brand/40 text-white;
   }
 }
 
@@ -34,15 +34,21 @@
 
   .grid-canvas {
     background-image:
-      linear-gradient(to right, rgba(25, 25, 25, 0.055) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(25, 25, 25, 0.055) 1px, transparent 1px);
+      linear-gradient(to right, rgba(242, 241, 236, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(242, 241, 236, 0.05) 1px, transparent 1px);
     background-size: 48px 48px;
   }
 
-  /* קווי עמודות דקיקים על כל הקנבס, בסגנון orbix. דסקטופ בלבד. */
+  /* קווי עמודות דקיקים על כל הקנבס הכהה. דסקטופ בלבד. */
   .page-lines {
-    background-image: linear-gradient(to left, rgba(25, 25, 25, 0.05) 1px, transparent 1px);
+    background-image: linear-gradient(to left, rgba(242, 241, 236, 0.045) 1px, transparent 1px);
     background-size: 25% 100%;
+  }
+
+  /* גרעין פילם עדין על כל האתר - טקסטורה של סטודיו */
+  .film-grain {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+    opacity: 0.05;
   }
 
   /* אין italic עברי אמיתי - סריף כבד עם skew, החתימה של השפה */
@@ -67,14 +73,22 @@
     font-weight: 600;
   }
 
-  /* תווית סקשן ממוספרת: ‎(01) הוכחות */
+  /* תווית סקשן ממוספרת: ‎(01) הוכחות. צבע יורש - עובד על כהה ועל בהיר. */
   .section-label {
-    @apply inline-flex items-center gap-2 text-xs font-semibold tracking-[0.18em] text-muted;
+    @apply inline-flex items-center gap-2 text-xs font-semibold tracking-[0.18em];
+    color: color-mix(in srgb, currentColor 62%, transparent);
   }
 
   .section-label-num {
-    @apply font-medium tracking-normal text-ink/50;
+    @apply font-medium tracking-normal;
+    color: color-mix(in srgb, currentColor 75%, transparent);
     font-variant-numeric: tabular-nums;
+  }
+
+  /* טקסט קווי-מתאר ענק למרקיזות פוסטר */
+  .outline-text {
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(242, 241, 236, 0.35);
   }
 
   /* כרטיס נייר עם קו שיער - היחידה הבסיסית של השפה */
@@ -100,7 +114,7 @@
 
   /* מרקיזה - רצועת טקסט נעה בין קווי שיער */
   .marquee {
-    @apply overflow-hidden border-y border-line py-5 sm:py-6;
+    @apply overflow-hidden border-y border-white/10 py-5 sm:py-6;
     mask-image: linear-gradient(to left, transparent, black 8%, black 92%, transparent);
     -webkit-mask-image: linear-gradient(to left, transparent, black 8%, black 92%, transparent);
   }
@@ -138,29 +152,26 @@
     @apply relative inline-flex min-h-12 items-center justify-center gap-2.5 overflow-hidden rounded-full px-7 py-3 text-[15px] font-medium transition-[transform,box-shadow,background-color] duration-200 active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100;
   }
 
-  /* גלולה מרחפת - צל רך דרמטי, מתרוממת בהובר */
+  /* גלולה מרחפת על קנבס כהה: שנהב מלא. הוורוד נשאר לנקודות ולסריף בלבד. */
   .btn-primary {
-    @apply btn bg-ink text-white shadow-pill hover:bg-black;
+    @apply btn bg-bone text-ink hover:bg-white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45), 0 22px 44px -14px rgba(0, 0, 0, 0.6);
   }
 
   .btn-brand {
-    @apply btn bg-brand text-white shadow-pill hover:brightness-105;
+    @apply btn bg-brand text-white hover:brightness-105;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45), 0 22px 44px -14px rgba(0, 0, 0, 0.6);
   }
 
   .btn-ghost {
-    @apply btn border border-line bg-white text-ink shadow-card hover:border-ink/20;
+    @apply btn border border-white/20 bg-white/[0.04] text-bone hover:border-white/45 hover:bg-white/[0.08];
   }
 
   @media (hover: hover) and (pointer: fine) {
     .btn-primary:hover,
-    .btn-brand:hover {
-      transform: translateY(-2px);
-      @apply shadow-pill-lg;
-    }
-
+    .btn-brand:hover,
     .btn-ghost:hover {
       transform: translateY(-2px);
-      @apply shadow-card-hover;
     }
   }
 
@@ -390,7 +401,7 @@
   }
 
   .course-card-pill {
-    @apply inline-flex items-center gap-1.5 rounded-full border border-line bg-canvas px-3 py-1.5 text-xs font-medium text-ink transition-[transform,box-shadow,border-color] duration-200 ease-out;
+    @apply inline-flex items-center gap-1.5 rounded-full border border-line bg-paper px-3 py-1.5 text-xs font-medium text-ink transition-[transform,box-shadow,border-color] duration-200 ease-out;
   }
 
   .course-card-pill svg {
@@ -655,7 +666,7 @@
   }
 
   .chat-msg.bot {
-    @apply bg-canvas text-ink;
+    @apply bg-paper text-ink;
   }
 
   .chat-msg.user {
@@ -671,7 +682,7 @@
   }
 
   .chat-choice {
-    @apply min-h-11 rounded-xl border border-line bg-white px-4 py-3 text-right text-sm font-medium text-ink transition-[colors,border-color,box-shadow,transform] hover:border-[#FF2D85]/35 hover:bg-canvas hover:shadow-[0_0_0_1px_rgba(255,45,133,0.12)] active:scale-[0.97];
+    @apply min-h-11 rounded-xl border border-line bg-white px-4 py-3 text-right text-sm font-medium text-ink transition-[colors,border-color,box-shadow,transform] hover:border-[#FF2D85]/35 hover:bg-paper hover:shadow-[0_0_0_1px_rgba(255,45,133,0.12)] active:scale-[0.97];
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -723,7 +734,7 @@
   }
 
   .mw-bubble {
-    @apply block rounded-xl bg-canvas px-3 py-2 text-[11px] leading-relaxed text-ink;
+    @apply block rounded-xl bg-paper px-3 py-2 text-[11px] leading-relaxed text-ink;
   }
 
   .mw-bubble.me {
@@ -731,7 +742,7 @@
   }
 
   .mw-row {
-    @apply flex items-center justify-between gap-2 rounded-lg bg-canvas px-3 py-2 text-[11px];
+    @apply flex items-center justify-between gap-2 rounded-lg bg-paper px-3 py-2 text-[11px];
   }
 
   .mw-row .st {

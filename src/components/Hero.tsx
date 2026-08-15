@@ -3,7 +3,6 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Pressable from "./Pressable";
 import ReviewsRatingBadge from "./ReviewsRatingBadge";
 import { WhatsAppIcon } from "./icons";
-import HeroBackdrop from "./motion/hero/HeroBackdrop";
 import { SITE } from "../data/site";
 import { getInstructor } from "../data/instructorsData";
 
@@ -87,9 +86,9 @@ const RotatingEyebrow = () => {
   }, [reduced]);
 
   return (
-    <span className="inline-flex min-h-[2.6rem] items-center gap-2.5 overflow-hidden rounded-full border border-line bg-white px-4 py-2 shadow-card">
+    <span className="inline-flex min-h-[2.6rem] items-center gap-2.5 overflow-hidden rounded-full border border-white/15 bg-white/[0.05] px-4 py-2">
       <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand" aria-hidden />
-      <span className="relative inline-grid text-[13px] font-medium text-ink/75">
+      <span className="relative inline-grid text-[13px] font-medium text-bone/70">
         <AnimatePresence mode="popLayout" initial={false}>
           <motion.span
             key={index}
@@ -97,7 +96,7 @@ const RotatingEyebrow = () => {
             initial={reduced ? false : { y: "110%", opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={reduced ? undefined : { y: "-110%", opacity: 0 }}
-            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.55, ease: EASE }}
           >
             {EYEBROW_CLAIMS[index]}
           </motion.span>
@@ -108,90 +107,88 @@ const RotatingEyebrow = () => {
 };
 
 /**
- * הירו במלוא גובה המסך בשפת orbix: תווית מיקום, כותרת ענקית שנחשפת
- * מילה-מילה עם מילת סריף נטויה, הוכחה חברתית, וזוג גלולות מרחפות.
+ * הירו פוסטר על שחור: כותרת בגודל קיר צמודה לצד הפתיחה, תג מתחלף,
+ * שורת פעולה, ורצועת שוריל וידאו מעבודות התלמידים בתחתית.
  */
 const Hero = () => (
-  <section className="relative flex min-h-[calc(100dvh-4.25rem)] flex-col overflow-x-clip overflow-y-hidden">
-    <div className="absolute inset-0 opacity-55">
-      <HeroBackdrop />
-    </div>
+  <section className="relative flex min-h-[calc(100dvh-4.25rem)] flex-col overflow-x-clip">
+    {/* הבהוב ורוד עמום של המותג בפינת הקנבס */}
+    <div
+      className="pointer-events-none absolute -top-32 left-[-15%] h-[32rem] w-[32rem] rounded-full opacity-[0.13] blur-3xl"
+      style={{ background: "radial-gradient(circle, #FF2D85 0%, transparent 65%)" }}
+      aria-hidden
+    />
 
-    <div className="container-site relative z-[2] flex flex-1 flex-col items-center justify-center py-12 text-center sm:py-16">
-      <div className="mx-auto flex w-full max-w-5xl flex-col items-center justify-center text-center">
-        <FadeIn delay={0.05}>
-          <RotatingEyebrow />
-        </FadeIn>
+    <div className="container-site relative z-[2] flex flex-1 flex-col justify-center py-12 sm:py-16">
+      <FadeIn delay={0.05} className="self-start">
+        <RotatingEyebrow />
+      </FadeIn>
 
-        <h1 className="display-1 mt-7 text-ink sm:mt-9">
-          <RevealLine text={SITE.hero.title} delayBase={0.18} />
-          <RevealLine text={SITE.hero.titleAccent} serif delayBase={0.42} />
-        </h1>
+      <h1 className="mt-8 text-[clamp(3rem,10.5vw,10rem)] font-semibold leading-[0.98] tracking-tightest text-bone sm:mt-10">
+        <RevealLine text={SITE.hero.title} delayBase={0.18} />
+        <RevealLine text={SITE.hero.titleAccent} serif delayBase={0.48} />
+      </h1>
 
-        <FadeIn delay={0.75} className="mx-auto mt-6 max-w-2xl sm:mt-7">
-          <p className="text-base font-normal leading-relaxed text-ink/70 sm:text-lg md:text-xl">
+      <div className="mt-9 flex flex-col gap-7 sm:mt-12 lg:flex-row lg:items-end lg:justify-between lg:gap-12">
+        <FadeIn delay={0.85} className="max-w-xl">
+          <p className="text-base font-normal leading-relaxed text-bone/60 sm:text-lg">
             {SITE.hero.subtitle}
           </p>
         </FadeIn>
 
-        <FadeIn delay={0.9} className="mt-7 sm:mt-8">
-          <ReviewsRatingBadge />
-        </FadeIn>
-
-        <FadeIn delay={1.0} className="mt-7 sm:mt-9">
-          <div className="flex flex-wrap items-center justify-center gap-3.5">
-            <Pressable as="link" to="/courses" className="btn-primary ps-7 pe-2.5">
-              {SITE.hero.primaryCta}
-              {ron && (
-                <img
-                  src={ron.image}
-                  alt=""
-                  aria-hidden
-                  className="h-9 w-9 shrink-0 rounded-full object-cover object-top ring-2 ring-white/25"
-                  loading="eager"
-                  draggable={false}
-                />
-              )}
-            </Pressable>
-
-            <Pressable
-              as="a"
-              href={SITE.contact.whatsapp}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-ghost"
-              rippleTone="pink"
-            >
-              <WhatsAppIcon size={19} className="shrink-0 text-[#25D366]" />
-              דברו איתנו בוואטסאפ
-            </Pressable>
+        <FadeIn delay={1.0} className="shrink-0">
+          <div className="flex flex-col items-start gap-4 lg:items-end">
+            <ReviewsRatingBadge />
+            <div className="flex flex-wrap items-center gap-3.5">
+              <Pressable as="link" to="/courses" className="btn-primary ps-7 pe-2.5">
+                {SITE.hero.primaryCta}
+                {ron && (
+                  <img
+                    src={ron.image}
+                    alt=""
+                    aria-hidden
+                    className="h-9 w-9 shrink-0 rounded-full object-cover object-top ring-2 ring-ink/15"
+                    loading="eager"
+                    draggable={false}
+                  />
+                )}
+              </Pressable>
+              <Pressable
+                as="a"
+                href={SITE.contact.whatsapp}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-ghost"
+                rippleTone="pink"
+              >
+                <WhatsAppIcon size={19} className="shrink-0 text-[#25D366]" />
+                דברו איתנו בוואטסאפ
+              </Pressable>
+            </div>
           </div>
-        </FadeIn>
-
-        <FadeIn delay={1.15} className="mt-6">
-          <a
-            href="#finder"
-            className="text-sm font-medium text-muted underline-offset-4 transition-colors hover:text-ink hover:underline"
-          >
-            {SITE.hero.secondaryCta}
-          </a>
         </FadeIn>
       </div>
     </div>
 
-    {/* רמז גלילה - קו דק שנושם */}
-    <div className="pointer-events-none relative z-[2] mb-6 flex justify-center" aria-hidden>
-      <motion.span
-        className="block h-10 w-px bg-ink/25"
-        initial={{ scaleY: 0.3, opacity: 0 }}
-        animate={{ scaleY: [0.3, 1, 0.3], opacity: 1 }}
-        transition={{
-          opacity: { delay: 1.4, duration: 0.5 },
-          scaleY: { delay: 1.4, duration: 2.2, repeat: Infinity, ease: "easeInOut" },
-        }}
-        style={{ transformOrigin: "top" }}
-      />
-    </div>
+    {/* רצועת שוריל: עבודת תלמידים אמיתית מתוך בנק העבודות באתר */}
+    <FadeIn delay={1.2} className="container-site relative z-[2] pb-8">
+      <div className="relative overflow-hidden rounded-[1.75rem] border border-white/10">
+        <video
+          src="/videos/Movie_1.mp4"
+          className="h-[38vh] w-full object-cover sm:h-[44vh]"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          aria-label="שוריל מתוך עבודות תלמידים"
+        />
+        <span className="absolute bottom-4 right-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/55 px-3.5 py-1.5 text-xs font-medium text-bone backdrop-blur-sm">
+          <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
+          מתוך עבודות התלמידים באתר
+        </span>
+      </div>
+    </FadeIn>
   </section>
 );
 

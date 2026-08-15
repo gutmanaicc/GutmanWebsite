@@ -13,7 +13,7 @@ const Marquee = ({ items, className = "" }: Props) => {
       {items.map((item, i) => (
         <span
           key={`${item}-${i}`}
-          className="flex items-center gap-14 whitespace-nowrap text-sm font-medium tracking-wide text-ink/70"
+          className="flex items-center gap-14 whitespace-nowrap text-sm font-medium tracking-wide text-bone/70"
         >
           {item}
           <span className="text-brand" aria-hidden>

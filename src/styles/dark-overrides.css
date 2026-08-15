@@ -1,0 +1,30 @@
+/* ============================================================
+   היפוך כהה גלובלי: טקסט "דיו" שיושב ישירות על הקנבס הכהה הופך
+   לשנהב; בתוך משטח בהיר (כרטיס לבן, גלולה, טופס) הוא נשאר כהה.
+   כך העמודים הפנימיים עוברים לשחור בלי לשכתב כל קומפוננטה.
+   ============================================================ */
+main .text-ink,
+main .text-\[\#191919\] {
+  color: #f2f1ec;
+}
+
+main .text-muted {
+  color: #a5a49c;
+}
+
+main :is([class*="bg-white"], [class*="bg-bone"], [class*="bg-\[\#F4F4F2\]"], .card-line, .course-glass-card, .course-deliverable-card, .course-hero-meta, .mock-window, .stat-pill, .lead-form) :is(.text-ink, .text-\[\#191919\]),
+main :is(.text-ink, .text-\[\#191919\])[class*="bg-white"],
+main :is(.text-ink, .text-\[\#191919\])[class*="bg-bone"] {
+  color: #191919;
+}
+
+main :is([class*="bg-white"], [class*="bg-bone"], [class*="bg-\[\#F4F4F2\]"], .card-line, .course-glass-card, .course-deliverable-card, .course-hero-meta, .mock-window, .stat-pill, .lead-form) .text-muted {
+  color: #6b6b6b;
+}
+
+/* משטחים בהירים שיושבים עכשיו על שחור מקבלים קו הפרדה עדין במקום צל כבד */
+main .card-line,
+main .course-glass-card,
+main .course-deliverable-card {
+  border-color: rgba(242, 241, 236, 0.14);
+}

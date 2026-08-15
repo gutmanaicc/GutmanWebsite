@@ -94,7 +94,7 @@ const About = () => {
                   <ScrollReveal3D className="h-full" fromRotateX={12} fromY={30}>
                     <MagneticCard
                       as="article"
-                      className="h-full rounded-[1.75rem] border border-white/40 bg-canvas p-5 shadow-card ring-1 ring-ink/5"
+                      className="h-full rounded-[1.75rem] border border-white/12 bg-white/[0.04] p-5"
                       tilt={6}
                       scale={1.02}
                       lift={-6}

@@ -31,11 +31,11 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   [
     "group/nav relative inline-flex items-center gap-1.5 px-3 py-2 text-[15px] font-medium",
     "transition-colors duration-200 ease-out",
-    "after:absolute after:bottom-0.5 after:right-3 after:left-3 after:h-px after:bg-ink",
+    "after:absolute after:bottom-0.5 after:right-3 after:left-3 after:h-px after:bg-bone",
     "after:origin-right after:transition-transform after:duration-300 after:ease-out",
     isActive
-      ? "text-ink after:scale-x-100"
-      : "text-ink/60 hover:text-ink after:scale-x-0 hover:after:scale-x-100",
+      ? "text-bone after:scale-x-100"
+      : "text-bone/55 hover:text-bone after:scale-x-0 hover:after:scale-x-100",
   ].join(" ");
 
 /** Label + orbix-style superscript count, e.g. מסלולים⁽⁵⁾ */
@@ -43,7 +43,7 @@ const NavLabel = ({ label, count }: { label: string; count?: string }) => (
   <span className="inline-flex items-start gap-0.5">
     {label}
     {count && (
-      <sup className="mt-px text-[10px] font-semibold leading-none text-ink/45" dir="ltr" aria-hidden>
+      <sup className="mt-px text-[10px] font-semibold leading-none text-bone/40" dir="ltr" aria-hidden>
         ({count})
       </sup>
     )}
@@ -85,7 +85,7 @@ const Header = () => {
           type="button"
           className={
             mobile
-              ? "block w-full rounded-full px-4 py-3 text-right text-base font-medium text-ink hover:bg-white/80"
+              ? "block w-full rounded-full px-4 py-3 text-right text-base font-medium text-bone/70 hover:bg-white/10 hover:text-bone"
               : navLinkClass({ isActive: false })
           }
           onClick={handleRegister}
@@ -113,7 +113,7 @@ const Header = () => {
         className={
           mobile
             ? ({ isActive }) =>
-                `block rounded-full px-4 py-3 text-base font-medium ${isActive ? "bg-white shadow-sm ring-1 ring-sky-200/50" : "text-ink hover:bg-white/80"}`
+                `block rounded-full px-4 py-3 text-base font-medium ${isActive ? "bg-white/10 text-bone" : "text-bone/70 hover:bg-white/10 hover:text-bone"}`
             : navLinkClass
         }
         onClick={() => mobile && setOpen(false)}
@@ -126,8 +126,8 @@ const Header = () => {
   return (
     <>
       <header
-        className={`sticky top-0 z-50 w-full border-b bg-canvas transition-[border-color,box-shadow] duration-300 ${
-          scrolled ? "border-line shadow-[0_1px_0_rgba(25,25,25,0.03)]" : "border-transparent"
+        className={`sticky top-0 z-50 w-full border-b bg-canvas/95 backdrop-blur-sm transition-[border-color] duration-300 ${
+          scrolled ? "border-white/10" : "border-transparent"
         }`}
       >
 
@@ -155,7 +155,7 @@ const Header = () => {
           <div className="flex flex-1 items-center justify-end gap-2 sm:gap-2.5">
             <Pressable
               type="button"
-              className="navbar-lead-cta inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-full bg-ink px-4 text-sm font-medium text-white shadow-pill transition-[transform,box-shadow,background-color] duration-200 hover:-translate-y-0.5 hover:bg-black hover:shadow-pill-lg sm:min-h-11 sm:px-5"
+              className="navbar-lead-cta inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-full bg-bone px-4 text-sm font-medium text-ink transition-[transform,background-color] duration-200 hover:-translate-y-0.5 hover:bg-white sm:min-h-11 sm:px-5"
               onClick={() => openRegisterModal({ leadSource: "navbar-cta" })}
             >
               <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
@@ -164,7 +164,7 @@ const Header = () => {
 
             <button
               type="button"
-              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-line bg-white text-ink shadow-sm transition hover:shadow-md sm:h-11 sm:w-11 md:hidden"
+              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.06] text-bone transition hover:border-white/40 sm:h-11 sm:w-11 md:hidden"
               onClick={() => setOpen((o) => !o)}
               aria-expanded={open}
               aria-controls="mobile-nav"
@@ -182,13 +182,13 @@ const Header = () => {
         <>
           <button
             type="button"
-            className="fixed inset-0 z-40 bg-ink/20 md:hidden"
+            className="fixed inset-0 z-40 bg-black/50 md:hidden"
             aria-label="סגירת תפריט"
             onClick={() => setOpen(false)}
           />
           <nav
             id="mobile-nav"
-            className="fixed inset-x-4 top-[5.25rem] z-50 max-h-[min(78vh,720px)] overflow-y-auto rounded-2xl border border-line bg-white/95 p-3 shadow-float backdrop-blur-md md:hidden"
+            className="fixed inset-x-4 top-[5.25rem] z-50 max-h-[min(78vh,720px)] overflow-y-auto rounded-2xl border border-white/12 bg-[#141416]/95 p-3 shadow-float backdrop-blur-md md:hidden"
             aria-label="ניווט מובייל"
             dir="rtl"
           >

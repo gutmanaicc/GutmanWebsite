@@ -4,10 +4,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        canvas: "#f4f4f2",
+        canvas: "#0e0e0f",
+        bone: "#f2f1ec",
+        paper: "#f4f4f2",
         ink: "#191919",
         brand: "#ff5f9e",
         muted: "#6b6b6b",
+        dust: "#a5a49c",
         line: "#e3e3df",
       },
       fontFamily: {
