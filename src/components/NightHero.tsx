@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { SITE } from "../data/site";
@@ -6,13 +6,16 @@ import { SITE } from "../data/site";
 /**
  * הירו בלילה: ציור מלא מסך של שדה פורח מתחת לשמי כוכבים, עם טיפוגרפיית
  * תצוגה סריפית במרכז. התמונה חיה - לופ פלינדרום שקט של עשב שנע ומסכים
- * שנושמים, שנפתח מעל התמונה הסטטית רק כשהוא מוכן לנגן. הרקע נע לאט יותר
- * מהתוכן בגלילה, והכותרת עולה מטשטוש לחדות. תנועה מופחתת נשארת סטטית.
+ * שנושמים.
+ *
+ * הלופ הוא WebP מונפש ולא אלמנט וידאו, בכוונה: תמונה מונפשת לא כפופה
+ * למדיניות הניגון האוטומטי של הדפדפן, ולכן היא רצה גם בתוך iframe שבו
+ * autoplay חסום. קודם נטענת תמונה סטטית קלה לצביעה מיידית, והלופ נפתח
+ * מעליה בדעיכה כשהוא מפוענח. תנועה מופחתת נשארת עם התמונה הסטטית בלבד.
  */
 
 const IMAGE = "/images/hero-night.jpg";
-const VIDEO_WEBM = "/videos/hero-night.webm";
-const VIDEO_MP4 = "/videos/hero-night.mp4";
+const LOOP = "/images/hero-night-loop.webp";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -30,40 +33,7 @@ const rise = (delay: number) => ({
 const NightHero = () => {
   const reduced = useReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [videoReady, setVideoReady] = useState(false);
-
-  /**
-   * הווידאו מתגלה בדעיכה מעל התמונה רק ברגע שהוא באמת מנגן. יש סביבות
-   * (iframe בלי allow-autoplay, חיסכון בסוללה) שחוסמות ניגון אוטומטי עד
-   * למחווה של המשתמש, ולכן כל אינטראקציה ראשונה מנסה שוב.
-   */
-  useEffect(() => {
-    if (reduced) return;
-    const video = videoRef.current;
-    if (!video) return;
-
-    const reveal = () => setVideoReady(true);
-    video.addEventListener("playing", reveal);
-
-    const attempt = () => {
-      const play = video.play();
-      if (play) play.catch(() => undefined);
-    };
-    attempt();
-
-    const events = ["pointerdown", "touchstart", "keydown", "wheel", "scroll"] as const;
-    const retry = () => {
-      if (video.paused) attempt();
-      else events.forEach((e) => window.removeEventListener(e, retry));
-    };
-    events.forEach((e) => window.addEventListener(e, retry, { passive: true }));
-
-    return () => {
-      video.removeEventListener("playing", reveal);
-      events.forEach((e) => window.removeEventListener(e, retry));
-    };
-  }, [reduced]);
+  const [loopReady, setLoopReady] = useState(false);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -94,22 +64,15 @@ const NightHero = () => {
           decoding="async"
         />
         {!reduced && (
-          <video
-            ref={videoRef}
+          <img
+            src={LOOP}
+            alt=""
             className="absolute inset-0 h-full w-full object-cover object-bottom transition-opacity duration-[1200ms] ease-out"
-            style={{ opacity: videoReady ? 1 : 0 }}
-            poster={IMAGE}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            aria-hidden="true"
-            tabIndex={-1}
-          >
-            <source src={VIDEO_WEBM} type="video/webm" />
-            <source src={VIDEO_MP4} type="video/mp4" />
-          </video>
+            style={{ opacity: loopReady ? 1 : 0 }}
+            onLoad={() => setLoopReady(true)}
+            decoding="async"
+            aria-hidden
+          />
         )}
       </motion.div>
 
