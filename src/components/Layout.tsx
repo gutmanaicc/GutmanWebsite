@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Header from "./Header";
 import Footer from "./Footer";
 import { Consent } from "./Consent";
@@ -27,9 +28,33 @@ const ScrollManager = () => {
   return null;
 };
 
+/** מעבר עמוד עדין: העמוד הנכנס עולה ומתבהר, היוצא נמוג מהר. */
+const PageTransition = () => {
+  const { pathname } = useLocation();
+  const reduced = useReducedMotion();
+
+  if (reduced) return <Outlet />;
+
+  return (
+    <AnimatePresence mode="popLayout" initial={false}>
+      <motion.div
+        key={pathname}
+        initial={{ opacity: 0, y: 26 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, transition: { duration: 0.18, ease: "easeIn" } }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <Outlet />
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
 const Layout = () => (
   <div className="relative min-h-screen bg-canvas">
     <ParallaxGridCanvas />
+    {/* קווי עמודות דקיקים לאורך כל העמוד, בסגנון orbix */}
+    <div className="page-lines pointer-events-none fixed inset-0 z-0 hidden lg:block" aria-hidden />
     <div className="relative z-[1]">
       <a
         href="#main-content"
@@ -40,7 +65,7 @@ const Layout = () => (
       <ScrollManager />
       <Header />
       <main id="main-content">
-        <Outlet />
+        <PageTransition />
       </main>
       <Footer />
     </div>

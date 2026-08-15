@@ -49,6 +49,7 @@ const HomeProof = () => (
     <section className="py-12 sm:py-16 lg:py-20">
       <div className="container-site">
         <SectionHeader
+          index="04"
           kicker="הוכחות"
           title={
             <>

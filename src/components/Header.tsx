@@ -26,17 +26,16 @@ const NAV: NavItem[] = [
   { label: "הרשמה", action: "register" },
 ];
 
-/** Soft floating capsule - light-blue glow + translucent fill */
+/** לינק ניווט מערכתי: טקסט נקי עם קו תחתון שנמתח מהצד בהובר */
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   [
-    "relative inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[15px] font-medium text-ink",
-    "transition-[background-color,box-shadow,transform,color] duration-200 ease-out",
-    "hover:bg-white/75 hover:shadow-[0_8px_28px_-6px_rgba(96,165,250,0.45),0_2px_8px_rgba(15,23,42,0.06)]",
-    "hover:ring-1 hover:ring-sky-200/70",
-    "active:scale-[0.98]",
+    "group/nav relative inline-flex items-center gap-1.5 px-3 py-2 text-[15px] font-medium",
+    "transition-colors duration-200 ease-out",
+    "after:absolute after:bottom-0.5 after:right-3 after:left-3 after:h-px after:bg-ink",
+    "after:origin-right after:transition-transform after:duration-300 after:ease-out",
     isActive
-      ? "bg-white/80 shadow-[0_8px_28px_-6px_rgba(96,165,250,0.4),0_2px_8px_rgba(15,23,42,0.05)] ring-1 ring-sky-200/60"
-      : "",
+      ? "text-ink after:scale-x-100"
+      : "text-ink/60 hover:text-ink after:scale-x-0 hover:after:scale-x-100",
   ].join(" ");
 
 /** Label + orbix-style superscript count, e.g. מסלולים⁽⁵⁾ */
@@ -127,13 +126,10 @@ const Header = () => {
   return (
     <>
       <header
-        className={`sticky top-0 z-50 w-full transition-[background-color,box-shadow] duration-200 ${
-          scrolled
-            ? "bg-white/90 shadow-[0_1px_0_rgba(25,25,25,0.04)] backdrop-blur-md"
-            : "bg-white/70 backdrop-blur-sm"
+        className={`sticky top-0 z-50 w-full border-b bg-canvas transition-[border-color,box-shadow] duration-300 ${
+          scrolled ? "border-line shadow-[0_1px_0_rgba(25,25,25,0.03)]" : "border-transparent"
         }`}
       >
-        <div className="pointer-events-none absolute inset-0 grid-canvas opacity-40" aria-hidden />
 
         <div
           className="relative flex h-[4.25rem] w-full items-center px-5 sm:px-8 lg:px-12 xl:px-16"
@@ -159,9 +155,10 @@ const Header = () => {
           <div className="flex flex-1 items-center justify-end gap-2 sm:gap-2.5">
             <Pressable
               type="button"
-              className="navbar-lead-cta inline-flex min-h-10 shrink-0 items-center justify-center rounded-full bg-[#FF2D85] px-3.5 text-sm font-medium text-white shadow-[0_6px_18px_-6px_rgba(255,45,133,0.55)] transition-[filter,box-shadow] hover:brightness-105 hover:shadow-[0_8px_22px_-6px_rgba(255,45,133,0.6)] sm:min-h-11 sm:px-5"
+              className="navbar-lead-cta inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-full bg-ink px-4 text-sm font-medium text-white shadow-pill transition-[transform,box-shadow,background-color] duration-200 hover:-translate-y-0.5 hover:bg-black hover:shadow-pill-lg sm:min-h-11 sm:px-5"
               onClick={() => openRegisterModal({ leadSource: "navbar-cta" })}
             >
+              <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
               השאירו פרטים
             </Pressable>
 

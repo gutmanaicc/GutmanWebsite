@@ -11,13 +11,18 @@ export default {
         line: "#e3e3df",
       },
       fontFamily: {
-        sans: ["Tahoma", "Arial", "sans-serif"],
-        heading: ["Tahoma", "Arial", "sans-serif"],
-        serif: ["Tahoma", "Arial", "sans-serif"],
+        sans: ["Heebo", "Tahoma", "Arial", "sans-serif"],
+        heading: ["Heebo", "Tahoma", "Arial", "sans-serif"],
+        serif: ["'Frank Ruhl Libre'", "Georgia", "serif"],
+      },
+      letterSpacing: {
+        tightest: "-0.04em",
       },
       boxShadow: {
-        pill: "0 12px 40px -12px rgba(25, 25, 25, 0.35)",
-        card: "0 1px 0 rgba(25, 25, 25, 0.06), 0 8px 32px -8px rgba(25, 25, 25, 0.08)",
+        pill: "0 1px 2px rgba(25, 25, 25, 0.28), 0 18px 38px -12px rgba(25, 25, 25, 0.42)",
+        "pill-lg": "0 2px 4px rgba(25, 25, 25, 0.22), 0 30px 60px -16px rgba(25, 25, 25, 0.5)",
+        card: "0 1px 0 rgba(25, 25, 25, 0.04), 0 14px 44px -18px rgba(25, 25, 25, 0.14)",
+        "card-hover": "0 2px 0 rgba(25, 25, 25, 0.03), 0 36px 72px -28px rgba(25, 25, 25, 0.28)",
         float: "0 -4px 24px rgba(25, 25, 25, 0.08)",
       },
       animation: {

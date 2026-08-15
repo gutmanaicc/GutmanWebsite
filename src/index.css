@@ -9,11 +9,21 @@
 
   body {
     @apply bg-canvas text-ink font-sans antialiased overflow-x-hidden;
-    font-family: Tahoma, Arial, sans-serif;
+    font-family: "Heebo", Tahoma, Arial, sans-serif;
+    font-feature-settings: "ss01" on;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-heading;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
   }
 
   ::selection {
-    @apply bg-brand/20 text-ink;
+    @apply bg-brand/25 text-ink;
   }
 }
 
@@ -29,16 +39,106 @@
     background-size: 48px 48px;
   }
 
+  /* קווי עמודות דקיקים על כל הקנבס, בסגנון orbix. דסקטופ בלבד. */
+  .page-lines {
+    background-image: linear-gradient(to left, rgba(25, 25, 25, 0.05) 1px, transparent 1px);
+    background-size: 25% 100%;
+  }
+
+  /* אין italic עברי אמיתי - סריף כבד עם skew, החתימה של השפה */
   .accent-serif {
-    @apply font-serif font-extrabold italic text-brand;
-    transform: skewX(-6deg);
+    @apply font-serif font-bold not-italic text-brand;
+    transform: skewX(-8deg);
     display: inline-block;
   }
 
-  .btn {
-    @apply relative inline-flex min-h-11 items-center justify-center gap-2 overflow-hidden rounded-full px-6 py-2.5 text-sm font-semibold transition-transform duration-150 active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100;
+  /* סקאלת התצוגה - כותרות ענקיות במשקל בינוני, מרווח אותיות שלילי */
+  .display-1 {
+    font-size: clamp(2.9rem, 8.5vw, 7rem);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    font-weight: 600;
   }
 
+  .display-2 {
+    font-size: clamp(2.1rem, 4.8vw, 4rem);
+    line-height: 1.06;
+    letter-spacing: -0.03em;
+    font-weight: 600;
+  }
+
+  /* תווית סקשן ממוספרת: ‎(01) הוכחות */
+  .section-label {
+    @apply inline-flex items-center gap-2 text-xs font-semibold tracking-[0.18em] text-muted;
+  }
+
+  .section-label-num {
+    @apply font-medium tracking-normal text-ink/50;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* כרטיס נייר עם קו שיער - היחידה הבסיסית של השפה */
+  .card-line {
+    @apply rounded-[1.5rem] border border-line bg-white shadow-card;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .card-line:hover {
+      transform: translateY(-6px);
+      @apply shadow-card-hover;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card-line,
+    .card-line:hover {
+      transition: none;
+      transform: none;
+    }
+  }
+
+  /* מרקיזה - רצועת טקסט נעה בין קווי שיער */
+  .marquee {
+    @apply overflow-hidden border-y border-line py-5 sm:py-6;
+    mask-image: linear-gradient(to left, transparent, black 8%, black 92%, transparent);
+    -webkit-mask-image: linear-gradient(to left, transparent, black 8%, black 92%, transparent);
+  }
+
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    gap: 3.5rem;
+    padding-inline-end: 3.5rem;
+    animation: marquee-scroll 36s linear infinite;
+  }
+
+  .marquee:hover .marquee-track {
+    animation-play-state: paused;
+  }
+
+  @keyframes marquee-scroll {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(50%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track {
+      animation: none;
+      flex-wrap: wrap;
+      width: auto;
+    }
+  }
+
+  .btn {
+    @apply relative inline-flex min-h-12 items-center justify-center gap-2.5 overflow-hidden rounded-full px-7 py-3 text-[15px] font-medium transition-[transform,box-shadow,background-color] duration-200 active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100;
+  }
+
+  /* גלולה מרחפת - צל רך דרמטי, מתרוממת בהובר */
   .btn-primary {
     @apply btn bg-ink text-white shadow-pill hover:bg-black;
   }
@@ -48,7 +148,20 @@
   }
 
   .btn-ghost {
-    @apply btn border border-line bg-white/80 text-ink hover:bg-white;
+    @apply btn border border-line bg-white text-ink shadow-card hover:border-ink/20;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .btn-primary:hover,
+    .btn-brand:hover {
+      transform: translateY(-2px);
+      @apply shadow-pill-lg;
+    }
+
+    .btn-ghost:hover {
+      transform: translateY(-2px);
+      @apply shadow-card-hover;
+    }
   }
 
   /* Pressable CTA - ripple + label stacking; transform-origin keeps morph hit area stable */
@@ -164,11 +277,11 @@
 
   /* Course detail page */
   .course-glass-card {
-    @apply rounded-3xl border border-white/60 bg-white/75 shadow-card backdrop-blur-xl;
+    @apply rounded-3xl border border-line bg-white shadow-card;
   }
 
   .course-deliverable-card {
-    @apply rounded-[1.75rem] border border-white/40 bg-white/60 shadow-card ring-1 ring-ink/5 backdrop-blur-md;
+    @apply rounded-[1.75rem] border border-line bg-white shadow-card;
   }
 
   .course-deliverable-featured {
@@ -197,7 +310,7 @@
   }
 
   .course-hero-meta {
-    @apply flex flex-wrap items-stretch gap-1 rounded-2xl border border-white/60 bg-white/70 p-1 shadow-card backdrop-blur-xl sm:flex-nowrap;
+    @apply flex flex-wrap items-stretch gap-1 rounded-2xl border border-line bg-white p-1 shadow-card sm:flex-nowrap;
   }
 
   .course-hero-meta-item {

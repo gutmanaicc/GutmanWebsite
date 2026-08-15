@@ -1,5 +1,7 @@
 type Props = {
   kicker?: string;
+  /** מספר סקשן עילי בסגנון orbix: ‎(01)‎ */
+  index?: string;
   title: React.ReactNode;
   sub?: string;
   center?: boolean;
@@ -8,34 +10,33 @@ type Props = {
   compact?: boolean;
 };
 
-const SectionHeader = ({ kicker, title, sub, center, as = "h2", compact }: Props) => {
+const SectionHeader = ({ kicker, index, title, sub, center, as = "h2", compact }: Props) => {
   const Tag = as;
   return (
     <div
-      className={`${compact ? "mb-5 max-w-3xl" : "mb-10 max-w-3xl"}${center ? " mx-auto text-center" : ""}`}
+      className={`${compact ? "mb-5 max-w-3xl" : "mb-12 max-w-4xl sm:mb-14"}${center ? " mx-auto text-center" : ""}`}
       data-reveal
     >
       {kicker && (
-        <span
-          className={`inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted ${
-            compact ? "mb-1.5" : "mb-3"
-          }`}
-        >
+        <span className={`section-label ${compact ? "mb-2" : "mb-4"}`}>
+          {index && (
+            <span className="section-label-num" dir="ltr">
+              ({index})
+            </span>
+          )}
           <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden="true" />
           {kicker}
         </span>
       )}
-      <Tag
-        className={
-          compact
-            ? "text-2xl font-normal tracking-tight sm:text-3xl"
-            : "text-3xl font-normal tracking-tight sm:text-4xl lg:text-5xl"
-        }
-      >
+      <Tag className={compact ? "text-2xl font-semibold tracking-tight sm:text-3xl" : "display-2 text-ink"}>
         {title}
       </Tag>
       {sub && (
-        <p className={`leading-relaxed text-muted ${compact ? "mt-2 text-sm sm:text-base" : "mt-4 text-base sm:text-lg"}`}>
+        <p
+          className={`leading-relaxed text-muted ${
+            compact ? "mt-2 text-sm sm:text-base" : "mt-5 max-w-2xl text-base sm:text-lg"
+          }${center ? " mx-auto" : ""}`}
+        >
           {sub}
         </p>
       )}
