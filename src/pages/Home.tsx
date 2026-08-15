@@ -51,7 +51,6 @@ const Home = () => {
         <div className="container-site">
           <div className="grid gap-8 lg:grid-cols-2 lg:items-start lg:gap-12">
             <SectionHeader
-              index="01"
               kicker="המנחה"
               title={<>לא בטוחים? <AccentWord>נכוון</AccentWord> אתכם.</>}
               sub="שתי שאלות קצרות, והמנחה של האקדמיה ימליץ על המסלול שמתאים למטרה שלכם. בסוף, מעבירים אתכם ישר לטופס עם המסלול שכבר נבחר."
@@ -66,7 +65,6 @@ const Home = () => {
       <section className="pt-4 sm:pt-6">
         <div className="container-site pb-8 sm:pb-10">
           <SectionHeader
-            index="02"
             kicker="מסלולים"
             title={<>חמישה מסלולים. <AccentWord>תוצר</AccentWord> אחד לכל אחד.</>}
             sub={SITE.claim}
@@ -78,7 +76,6 @@ const Home = () => {
       <section className="py-14 sm:py-20 lg:py-24">
         <div className="container-site">
           <SectionHeader
-            index="03"
             kicker="למה פרונטלי"
             title={<>לומדים <AccentWord>בזמן אמת</AccentWord></>}
             sub="האקדמיה בנויה סביב עבודה מעשית, פידבק מיידי, ותוצר שיוצא איתכם הביתה."
@@ -129,7 +126,6 @@ const Home = () => {
           <div className="grid gap-8 lg:grid-cols-2 lg:items-center lg:gap-12">
             <SectionHeader
               as="h2"
-              index="06"
               kicker="הצעד הבא"
               title={<>מוכנים? <AccentWord>השאירו פרטים.</AccentWord></>}
               sub="נחזור אליכם עם כל הפרטים על המסלול, תאריכים כשייסגרו, ותשובות לכל שאלה. בלי ספאם."

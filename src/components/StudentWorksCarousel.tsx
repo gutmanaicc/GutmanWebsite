@@ -331,11 +331,16 @@ const StudentWorksCarousel = ({ works }: Props) => {
                 role="tab"
                 aria-selected={index === activeIndex}
                 aria-label={`סרטון ${index + 1}`}
-                className={`h-2.5 rounded-full transition-all ${
-                  index === activeIndex ? "w-6 bg-[#FF2D85]" : "w-2.5 bg-zinc-300 hover:bg-zinc-400"
-                }`}
+                className="flex h-11 w-6 items-center justify-center"
                 onClick={() => goTo(index)}
-              />
+              >
+                <span
+                  className={`block h-2.5 rounded-full transition-all ${
+                    index === activeIndex ? "w-6 bg-brand" : "w-2.5 bg-white/25"
+                  }`}
+                  aria-hidden
+                />
+              </button>
             ))}
           </div>
         </div>

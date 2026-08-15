@@ -140,7 +140,7 @@ const Header = () => {
           <div className="flex min-w-0 flex-1 items-center justify-start">
             <Link
               to="/"
-              className="inline-flex items-center transition-opacity hover:opacity-90 active:scale-[0.98]"
+              className="inline-flex min-h-11 items-center transition-opacity hover:opacity-90 active:scale-[0.98]"
               aria-label="Gutman Academy, לעמוד הראשי"
             >
               <Logo height={36} className="max-h-9 w-auto sm:max-h-10" />

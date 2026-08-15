@@ -60,7 +60,7 @@ const Courses = () => {
               type="button"
               role="tab"
               aria-selected={filter === ALL}
-              className={`cursor-pointer rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+              className={`inline-flex min-h-11 cursor-pointer items-center rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
                 filter === ALL ? "bg-ink text-white" : "border border-line bg-white text-muted hover:text-ink"
               }`}
               onClick={() => setFilter(ALL)}
@@ -73,7 +73,7 @@ const Courses = () => {
                 type="button"
                 role="tab"
                 aria-selected={filter === cat}
-                className={`cursor-pointer rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+                className={`inline-flex min-h-11 cursor-pointer items-center rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
                   filter === cat ? "bg-ink text-white" : "border border-line bg-white text-muted hover:text-ink"
                 }`}
                 onClick={() => setFilter(cat)}

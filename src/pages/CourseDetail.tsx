@@ -273,13 +273,13 @@ const CourseDetail = () => {
 
           <div className="mx-auto flex max-w-4xl flex-col items-center justify-center text-center">
             <nav className="mb-3 text-sm text-muted" aria-label="breadcrumb">
-              <Link to="/courses" className="hover:text-ink">
+              <Link to="/courses" className="inline-flex min-h-11 items-center hover:text-ink">
                 מסלולים
               </Link>
               {parentCourse && (
                 <>
                   <span className="mx-2">/</span>
-                  <Link to={`/courses/${parentCourse.slug}`} className="hover:text-ink">
+                  <Link to={`/courses/${parentCourse.slug}`} className="inline-flex min-h-11 items-center hover:text-ink">
                     {parentCourse.shortTitle}
                   </Link>
                 </>

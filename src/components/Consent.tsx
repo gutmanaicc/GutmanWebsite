@@ -47,7 +47,7 @@ export const Consent = () => {
               <button
                 type="button"
                 onClick={() => choose("declined")}
-                className="text-[13px] font-medium text-bone/45 underline-offset-4 transition-colors hover:text-bone hover:underline"
+                className="inline-flex min-h-11 items-center text-[13px] font-medium text-bone/45 underline-offset-4 transition-colors hover:text-bone hover:underline"
               >
                 לא תודה
               </button>
