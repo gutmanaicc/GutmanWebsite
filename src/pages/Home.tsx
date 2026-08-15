@@ -6,7 +6,6 @@ import Marquee from "../components/Marquee";
 import ProcessSection from "../components/ProcessSection";
 import RegisterForm from "../components/RegisterForm";
 import SectionHeader, { AccentWord } from "../components/SectionHeader";
-import StatsBand from "../components/StatsBand";
 import StackingCourses from "../components/StackingCourses";
 import ScrubHero from "../components/ScrubHero";
 import InstructorsShowcase from "../components/InstructorsShowcase";
@@ -14,21 +13,12 @@ import Pressable from "../components/Pressable";
 import { WhatsAppIcon } from "../components/icons";
 import { StaggerGroup, StaggerItem, MagneticCard, ScrollReveal3D } from "../components/motion";
 import { GENERAL_FAQ, SITE } from "../data/site";
-import { INSTRUCTORS } from "../data/instructorsData";
-import { STUDENT_WORKS } from "../data/studentWorksData";
 import { useRegisterModal } from "../context/RegisterModalContext";
 import { acquirePointerStore } from "../lib/motion";
 import { useReveal } from "../lib/useReveal";
 import { orgSchema, useSeo } from "../lib/seo";
 
 const WHY_FROM = ["left", "right", "up", "left", "right"] as const;
-
-/* כל המספרים אמיתיים: הביקורות הן ההצהרה הקיימת מההירו, השאר נספרים מהדאטה */
-const STATS = [
-  { value: 100, suffix: "+", label: "ביקורות של משתתפים" },
-  { value: INSTRUCTORS.length, label: "מנחים שמובילים את המסלולים" },
-  { value: STUDENT_WORKS.length, label: "עבודות תלמידים באתר" },
-];
 
 const MARQUEE_ITEMS = SITE.principles.map((p) => p.title);
 
@@ -56,24 +46,6 @@ const Home = () => {
 
       <Marquee items={MARQUEE_ITEMS} />
 
-      {/* מרקיזת פוסטר: מילים ענקיות בקווי מתאר, החתימה של אתרי סטודיו */}
-      <div className="marquee !border-b-0 !py-8 sm:!py-12" dir="ltr" aria-hidden>
-        <div className="marquee-track" dir="rtl" style={{ animationDuration: "50s" }}>
-          {[0, 1].map((dup) => (
-            <div key={dup} className="flex shrink-0 items-center gap-10">
-              {["בינה מלאכותית", "פרונטלי", "תוצר אמיתי", "שיטה שנשארת"].map((word) => (
-                <span
-                  key={word}
-                  className="flex items-center gap-10 whitespace-nowrap text-[clamp(3.5rem,8vw,7.5rem)] font-bold leading-none tracking-tightest"
-                >
-                  <span className="outline-text">{word}</span>
-                  <span className="text-brand text-[0.35em]">✦</span>
-                </span>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
 
       <section id="finder" className="py-14 sm:py-20 lg:py-24">
         <div className="container-site">
@@ -103,8 +75,6 @@ const Home = () => {
         <StackingCourses />
       </section>
 
-      <StatsBand stats={STATS} />
-
       <section className="py-14 sm:py-20 lg:py-24">
         <div className="container-site">
           <SectionHeader
@@ -132,7 +102,7 @@ const Home = () => {
                     unroll={false}
                   >
                     <span
-                      className="pointer-events-none absolute left-5 top-4 text-4xl font-semibold leading-none tracking-tightest text-ink/10"
+                      className="pointer-events-none absolute left-5 top-4 text-4xl font-semibold leading-none tracking-tightest text-brand"
                       dir="ltr"
                       aria-hidden
                     >

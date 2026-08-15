@@ -7,12 +7,12 @@ import { ArrowIcon } from "./icons";
 import { STUDENT_WORKS } from "../data/studentWorksData";
 import { TESTIMONIALS, type Testimonial } from "../data/testimonialsData";
 
-/** ההודעות שקוראות הכי טוב בגודל ציטוט; המלאי המלא חי ב-/reviews. */
+/** ההודעות שקוראות הכי חזק; המלאי המלא חי ב-/reviews. */
 const FEATURED = TESTIMONIALS.slice(0, 5);
 
 /**
- * קיר ציטוטים במקום רשת כרטיסים: הציטוט עצמו הוא הטיפוגרפיה, הצילום
- * נחשף רק למי שרוצה לראות את ההודעה המקורית. פחות מסחרי, יותר עדות.
+ * קיר עדויות: הציטוט האמיתי הוא הטיפוגרפיה, וצילום ההודעה המקורית
+ * נפתח רק למי שרוצה לאמת. כל מילה כאן תומללה מצילומי המסך עצמם.
  */
 const QuoteRow = ({ item, index }: { item: Testimonial; index: number }) => {
   const reduced = useReducedMotion();
@@ -33,7 +33,11 @@ const QuoteRow = ({ item, index }: { item: Testimonial; index: number }) => {
         className="w-full py-8 text-right sm:py-10"
       >
         <span className="flex flex-col gap-4 sm:flex-row sm:items-baseline sm:gap-10">
-          <span className="section-label shrink-0 text-bone/45 sm:w-40">{item.tag}</span>
+          <span className="shrink-0 sm:w-40">
+            {item.author && (
+              <span className="section-label text-bone/45">{item.author}</span>
+            )}
+          </span>
           <span className="flex-1">
             <span className="block text-[clamp(1.35rem,2.6vw,2.1rem)] font-semibold leading-[1.25] tracking-tight text-bone">
               {item.quote}
@@ -58,7 +62,7 @@ const QuoteRow = ({ item, index }: { item: Testimonial; index: number }) => {
         <img
           src={item.image}
           alt={`צילום ההודעה: ${item.quote}`}
-          className="mb-8 w-full max-w-lg rounded-xl border border-white/10"
+          className="mb-8 w-full max-w-sm rounded-xl border border-white/10"
           loading="lazy"
           draggable={false}
         />
@@ -73,13 +77,13 @@ const HomeProof = () => (
       <div className="container-site">
         <SectionHeader
           index="04"
-          kicker="הוכחות"
+          kicker="מה אומרים"
           title={
             <>
-              לא מבטיחים. <AccentWord>מראים.</AccentWord>
+              מילה במילה, <AccentWord>מההודעות שקיבלנו.</AccentWord>
             </>
           }
-          sub="הודעות אמיתיות שקיבלנו ממשתתפים אחרי המסלולים, בלי עריכה ובלי שכתוב."
+          sub="לא כתבנו את זה. אלה ההודעות עצמן, כפי שנשלחו אחרי המפגשים."
         />
 
         <ul className="border-t border-white/10">
@@ -90,7 +94,7 @@ const HomeProof = () => (
 
         <div className="mt-10 flex justify-center">
           <Link to="/reviews" className="btn-ghost inline-flex items-center gap-2">
-            לכל הביקורות
+            לכל ההודעות
             <ArrowIcon size={16} />
           </Link>
         </div>

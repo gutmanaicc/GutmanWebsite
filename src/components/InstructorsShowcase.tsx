@@ -1,57 +1,42 @@
-import { useState } from "react";
 import { INSTRUCTORS, type Instructor } from "../data/instructorsData";
 import SectionHeader, { AccentWord } from "./SectionHeader";
 
-const InstructorCard = ({ instructor }: { instructor: Instructor }) => {
-  const [expanded, setExpanded] = useState(false);
+const InstructorCard = ({ instructor }: { instructor: Instructor }) => (
+  <article className="flex h-full flex-col items-center rounded-3xl border border-white/12 bg-white/[0.03] p-7 text-center">
+    {/* דיוקן עגול בסגנון תמונת פרופיל, לא חצי כרטיס */}
+    <img
+      src={instructor.image}
+      alt={instructor.name}
+      className="h-32 w-32 rounded-full object-cover object-top ring-1 ring-white/15 sm:h-36 sm:w-36"
+      loading="lazy"
+      draggable={false}
+    />
 
-  return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-3xl border border-line bg-white shadow-sm transition-shadow hover:shadow-md">
-      <div className="relative aspect-[4/5] overflow-hidden bg-[#191919]">
-        <img
-          src={instructor.image}
-          alt={instructor.name}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-          loading="lazy"
-        />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#191919]/80 to-transparent" />
-        <div className="absolute bottom-3 right-3 flex flex-wrap gap-1.5">
-          {instructor.roleTags.slice(0, 2).map((tag) => (
-            <span
-              key={tag}
-              className="rounded-full border border-white/25 bg-[#191919]/55 px-2.5 py-1 text-[11px] font-semibold text-[#F4F4F2] backdrop-blur-sm"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-      </div>
+    <h3 className="mt-5 text-xl font-semibold tracking-tight text-bone">{instructor.name}</h3>
+    <p className="mt-1 text-sm font-medium text-brand">{instructor.role}</p>
 
-      <div className="flex flex-1 flex-col p-5 text-right">
-        <h3 className="text-lg font-bold tracking-tight text-[#191919]">{instructor.name}</h3>
-        <p className="mt-1 text-sm font-medium text-[#FF2D85]">{instructor.role}</p>
-        <p className={`mt-3 text-sm leading-relaxed text-zinc-600 ${expanded ? "" : "line-clamp-3"}`}>
-          {instructor.bio}
-        </p>
-        <ul className="mt-3 space-y-1">
-          {instructor.credentials.slice(0, expanded ? undefined : 2).map((cred) => (
-            <li key={cred} className="text-xs text-zinc-500">
-              · {cred}
-            </li>
-          ))}
-        </ul>
-        <button
-          type="button"
-          className="mt-4 inline-flex min-h-10 items-center justify-center self-start rounded-full border border-zinc-900/15 px-4 text-sm font-semibold text-[#191919] transition-colors hover:border-[#FF2D85] hover:text-[#FF2D85]"
-          onClick={() => setExpanded((v) => !v)}
-          aria-expanded={expanded}
+    <p className="mt-4 text-sm leading-relaxed text-bone/60">{instructor.bio}</p>
+
+    <ul className="mt-4 space-y-1.5">
+      {instructor.credentials.map((cred) => (
+        <li key={cred} className="text-xs leading-relaxed text-bone/40">
+          {cred}
+        </li>
+      ))}
+    </ul>
+
+    <div className="mt-5 flex flex-wrap justify-center gap-1.5">
+      {instructor.roleTags.map((tag) => (
+        <span
+          key={tag}
+          className="rounded-full border border-white/15 px-2.5 py-1 text-[11px] font-medium text-bone/55"
         >
-          {expanded ? "פחות פרטים" : "עוד על המנחה"}
-        </button>
-      </div>
-    </article>
-  );
-};
+          {tag}
+        </span>
+      ))}
+    </div>
+  </article>
+);
 
 /**
  * Team showcase for Home - Ron, Hadar, Idan with portraits and expandable bios.

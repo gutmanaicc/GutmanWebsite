@@ -210,28 +210,28 @@ const StudentWorksCarousel = ({ works }: Props) => {
               <button
                 type="button"
                 onClick={goRight}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-zinc-900/15 bg-white text-[#191919] transition-colors hover:border-[#FF2D85] hover:text-[#FF2D85]"
+                className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/25 bg-white/[0.06] text-bone transition-[transform,border-color,background-color] duration-200 hover:-translate-y-0.5 hover:border-white/60 hover:bg-white/15 active:scale-95"
                 aria-label="הסרטון מימין"
               >
-                <ChevronRight className="h-5 w-5" aria-hidden />
+                <ChevronRight className="h-6 w-6" aria-hidden />
               </button>
               <button
                 type="button"
                 onClick={goLeft}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-zinc-900/15 bg-white text-[#191919] transition-colors hover:border-[#FF2D85] hover:text-[#FF2D85]"
+                className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/25 bg-white/[0.06] text-bone transition-[transform,border-color,background-color] duration-200 hover:-translate-y-0.5 hover:border-white/60 hover:bg-white/15 active:scale-95"
                 aria-label="הסרטון משמאל"
               >
-                <ChevronLeft className="h-5 w-5" aria-hidden />
+                <ChevronLeft className="h-6 w-6" aria-hidden />
               </button>
             </div>
-            <p className="text-sm text-zinc-500">
+            <p className="text-sm font-medium text-bone/50" dir="ltr">
               {activeIndex + 1} / {works.length}
             </p>
           </div>
 
           <div
             ref={scrollerRef}
-            className="relative flex snap-x snap-mandatory gap-4 overflow-x-auto px-[max(1rem,calc(50%-min(36vw,140px)))] pb-3 [overflow-anchor:none] [scrollbar-width:none] [-ms-overflow-style:none] md:gap-5 md:px-[calc(50%-110px)] lg:px-[calc(50%-120px)] [&::-webkit-scrollbar]:hidden"
+            className="relative flex snap-x snap-mandatory scroll-p-4 gap-4 overflow-x-auto px-[max(1rem,calc((100%-min(92vw,1100px))/2))] pb-3 [overflow-anchor:none] [scrollbar-width:none] [-ms-overflow-style:none] md:gap-5 md:px-[max(1.5rem,calc((100%-1000px)/2))] lg:px-[max(2rem,calc((100%-1100px)/2))] [&::-webkit-scrollbar]:hidden"
             dir="rtl"
             style={{ scrollPaddingInline: "max(1rem, calc(50% - 140px))" }}
           >
@@ -308,16 +308,16 @@ const StudentWorksCarousel = ({ works }: Props) => {
                     )}
                   </button>
 
-                  <div className="bg-[#191919] px-3 py-3 text-right">
-                    <h3 className="truncate text-sm font-bold text-[#F4F4F2]">{work.title}</h3>
-                    <p className="mt-0.5 truncate text-xs text-[#F4F4F2]/60">{work.author}</p>
+                  <div className="bg-white/[0.04] px-3 py-3 text-right">
+                    <h3 className="truncate text-sm font-semibold text-bone">{work.title}</h3>
+                    <p className="mt-0.5 truncate text-xs text-bone/50">{work.author}</p>
                   </div>
                 </article>
               );
             })}
           </div>
 
-          {/* Pagination dots — same RTL order as slides (index 0 = rightmost) */}
+          {/* Pagination dots, same RTL order as slides (index 0 = rightmost) */}
           <div
             className="mt-4 flex items-center justify-center gap-2"
             dir="rtl"

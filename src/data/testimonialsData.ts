@@ -1,117 +1,88 @@
 /**
  * Student testimonials - screenshots under /public/images/testimonials/.
+ * הציטוטים והטקסטים תומללו מתוך צילומי המסך עצמם, מילה במילה.
  */
-
-export type TestimonialCategory = "all" | "business" | "social" | "video";
 
 export type Testimonial = {
   id: string;
-  category: Exclude<TestimonialCategory, "all">;
+  /** השורה שנושאת את העדות, מתוך ההודעה */
   quote: string;
+  /** ההמשך, כפי שנכתב */
   text: string;
+  /** מי כתב, כשהשם מופיע בצילום */
+  author?: string;
   image: string;
-  tag: string;
 };
-
-export const TESTIMONIAL_FILTERS: { id: TestimonialCategory; label: string }[] = [
-  { id: "all", label: "הכל" },
-  { id: "business", label: "בעלי עסקים" },
-  { id: "social", label: "מנהלי סושיאל" },
-  { id: "video", label: "עורכי וידאו" },
-];
 
 export const TESTIMONIALS: Testimonial[] = [
   {
-    id: "rec-1",
-    category: "business",
-    quote: "העליתי מחירים - והלקוחות נשארו",
-    text: "אחרי המסלול בניתי תהליך הצעת מחיר מסודר עם AI. תוך שבועות סגרתי עסקאות במחיר גבוה יותר בלי להתנצל.",
-    image: "/images/testimonials/Rec_1.jpg",
-    tag: "בעלי עסקים",
-  },
-  {
-    id: "rec-2",
-    category: "business",
-    quote: "מצגת בשווי אלפי שקלים - תוך שעות",
-    text: "יצאתי עם תהליך לבניית מצגות עסקיות. מה שהיה עולה לי אלפי שקלים וזמן המתנה - הפך לעבודה שאני שולטת בה בעצמי.",
-    image: "/images/testimonials/Rec_2.jpg",
-    tag: "בעלי עסקים",
-  },
-  {
-    id: "rec-3",
-    category: "business",
-    quote: "3,400 ₪ על מצגת? עכשיו אני בונה לבד",
-    text: "לפני המסלול שילמתי אלפים על מצגות. עכשיו יש לי תהליך AI מדויק שמוציא תוצר ברמה גבוהה - בלי תלות במעצב.",
-    image: "/images/testimonials/Rec_3.jpg",
-    tag: "בעלי עסקים",
-  },
-  {
-    id: "rec-4",
-    category: "social",
-    quote: "עובד AI אוטונומי לכל לקוח",
-    text: "בניתי לכל לקוח עובד שמכיר טון, קהל ומטרות. סוף סוף מנהלים יותר לקוחות בלי להסביר הכל מחדש בכל שיחה.",
-    image: "/images/testimonials/Rec_4.jpg",
-    tag: "מנהלי סושיאל",
-  },
-  {
-    id: "rec-5",
-    category: "social",
-    quote: "Claude חוסך לי שעות בכל שבוע",
-    text: "השיטה מהמסלול הפכה את העבודה עם Claude לשגרה: רעיונות, פוסטים ותסריטים בטון הנכון - בלי להתחיל מאפס.",
-    image: "/images/testimonials/Rec_5.jpg",
-    tag: "מנהלי סושיאל",
-  },
-  {
-    id: "rec-6",
-    category: "social",
-    quote: "סוכני תוכן שעובדים גם כשאני לא ליד",
-    text: "יצאתי עם סוכנים שממשיכים לייצר תוכן עקבי ללקוחות. פחות שחיקה, יותר איכות, ויותר שליטה על העומס.",
-    image: "/images/testimonials/Rec_6.jpg",
-    tag: "מנהלי סושיאל",
-  },
-  {
     id: "rec-7",
-    category: "video",
-    quote: "עורך וידאו שרץ פי כמה יותר מהר",
-    text: "תהליך ההפקה עם AI קיצר לי שלבים שלמים - מרעיון ושוטים ועד טיוטה ללקוח. הקצב השתנה לגמרי.",
+    quote: "אני לא רוצה להמליץ על רון גוטמן",
+    text: "כי מאז שהתחלתי ללמוד אצלו התמכרתי ל-AI ואני יוצרת דברים מטורפים, ומאז המחירים שלי עלו ואני מרוויחה יותר כסף. אז כל מי שלא רוצה כסף שלא ילך אליו, כי הוא מלמד טוב מדי ואז יש לך כלים לעשות את זה לבד. בקיצור לא מומלץ.",
     image: "/images/testimonials/Rec_7.jpg",
-    tag: "עורכי וידאו",
-  },
-  {
-    id: "rec-8",
-    category: "video",
-    quote: "מקונספט לסרטון - בשיטה שאפשר לשחזר",
-    text: "למדתי תהליך מסחרי עקבי: תסריט, שוטים ועריכה. לא עוד ניסוי וטעייה בכל פרויקט מחדש.",
-    image: "/images/testimonials/Rec_8.jpg",
-    tag: "עורכי וידאו",
-  },
-  {
-    id: "rec-9",
-    category: "video",
-    quote: "הלקוח קיבל תוצר ברמה אחרת",
-    text: "הסרטון שבניתי במסלול עלה ללקוח אמיתי. הפידבק היה מיידי - וגם הביטחון שלי בתהליך.",
-    image: "/images/testimonials/Rec_9.jpg",
-    tag: "עורכי וידאו",
-  },
-  {
-    id: "rec-10",
-    category: "business",
-    quote: "סדר בלקוחות ובתשלומים - סוף סוף",
-    text: "בניתי מערכת מעקב שמראה מי שילם ומי חייב. בבוקר פותחים ומבינים בדיוק במה לטפל.",
-    image: "/images/testimonials/Rec_10.jpg",
-    tag: "בעלי עסקים",
   },
   {
     id: "rec-11",
-    category: "social",
-    quote: "פחות שחיקה, יותר לקוחות",
-    text: "המסלול נתן לי שיטת עבודה ולא רק טיפים. העומס ירד, והיכולת לקחת לקוחות חדשים עלתה.",
+    quote: "הקורס הזה פשוט פתח לי את הראש",
+    text: "בהתחלה לא הייתי הכי בקטע של AI. הקורס גרם לי להבין ש-AI זה לא מפחיד או מסובך, להפך, זה עוזר המון, מייעל את העבודה ולוקח אותה רמה אחת קדימה. אהבתי את זה שהקורס מועבר במפגשים פיזיים. למרות השעה וחצי נסיעה כל פעם, זה היה שווה כל רגע.",
     image: "/images/testimonials/Rec_11.jpg",
-    tag: "מנהלי סושיאל",
+  },
+  {
+    id: "rec-9",
+    quote: "יש הרבה יותר ערך בתהליך מעמיק ואישי",
+    text: "סדנה של שעתיים יכולה לתת טעימה וכלים בסיסיים, אבל כדי באמת ללמוד איך לייעל את העסק ולעבוד עם AI בצורה שמתאימה לצרכים האישיים שלך, בעיניי יש הרבה יותר ערך בתהליך קצת יותר מעמיק ואישי. רון נותן יחס אישי, מסביר הכל בצורה ברורה ועוזר ממש ליישם את הדברים בפועל.",
+    image: "/images/testimonials/Rec_9.jpg",
+  },
+  {
+    id: "rec-1",
+    quote: "הנגשת לנו צעד צעד",
+    text: "רון יקר, תודה על היום. הנגשת לנו צעד צעד ואפילו מתקשה כמוני הצליחה ליצור שוט ויזואלי. תודה רבה אלוף!",
+    author: "טליה",
+    image: "/images/testimonials/Rec_1.jpg",
+  },
+  {
+    id: "rec-2",
+    quote: "היתה סדנה מעולה",
+    text: "כל הכבוד לך, בכל זאת לעשות סדנה כזו של שלוש שעות לבעלי עסקים מאותגרי קשב זה לא פשוט. תודה רבה.",
+    author: "Adiya Amedi",
+    image: "/images/testimonials/Rec_2.jpg",
+  },
+  {
+    id: "rec-3",
+    quote: "היכולת ללמוד ממש בתכלס",
+    text: "האווירה בכיתה היתה מעולה, והיכולת ללמוד ממש בתכלס איך לייצר סוכנים שעובדים בשבילך היא פשוט וואו. מעבר לכלים המטורפים, אתה פשוט מרצה מצוין.",
+    image: "/images/testimonials/Rec_3.jpg",
+  },
+  {
+    id: "rec-4",
+    quote: "תודה על הדחיפה לעולם הזה",
+    text: "אחרי הסדנה כבר אי אפשר לחזור אחורה. הכלים נשארים איתך.",
+    image: "/images/testimonials/Rec_4.jpg",
+  },
+  {
+    id: "rec-5",
+    quote: "העברת את החומר בצורה סופר ברורה",
+    text: "בקצב שמתאים לכולם, והיית כל כך סבלני. הכל הועבר בגובה העיניים, עם יחס אישי באמת יוצא דופן, ותמיד היית זמין בוואטסאפ לכל שאלה שצצה.",
+    image: "/images/testimonials/Rec_5.jpg",
+  },
+  {
+    id: "rec-6",
+    quote: "רון ממש מעשיר המון",
+    text: "תודה על כל הידע.",
+    author: "Ilana",
+    image: "/images/testimonials/Rec_6.jpg",
+  },
+  {
+    id: "rec-8",
+    quote: "אין איש מקצוע היום שלא חייב ללמוד AI",
+    text: "כדי לעמוד בקצב שהעולם מתקדם אליו, ואצלך זה המקום לעשות את זה. היה מושלם ופראייר מי שלא בא ללמוד אצלך.",
+    image: "/images/testimonials/Rec_8.jpg",
+  },
+  {
+    id: "rec-10",
+    quote: "רון יתותח, היה נדיר",
+    text: "למדתי המון. תודה רבה!",
+    author: "סוכנות שיווק Orela Media",
+    image: "/images/testimonials/Rec_10.jpg",
   },
 ];
-
-export function getTestimonialsByCategory(category: TestimonialCategory): Testimonial[] {
-  if (category === "all") return TESTIMONIALS;
-  return TESTIMONIALS.filter((t) => t.category === category);
-}

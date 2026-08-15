@@ -34,9 +34,6 @@ const StackingCourses = () => {
                   <span
                     className={`section-label ${dark ? "!text-white/50" : ""}`}
                   >
-                    <span className="section-label-num" dir="ltr" style={dark ? { color: "rgba(255,255,255,0.5)" } : undefined}>
-                      ({String(i + 1).padStart(2, "0")})
-                    </span>
                     {slide.format} · {slide.duration} · {slide.level}
                   </span>
 
@@ -75,10 +72,10 @@ const StackingCourses = () => {
                     </Pressable>
                     <Link
                       to={slide.href}
-                      className={`btn border ${
+                      className={`btn border-2 font-semibold ${
                         dark
-                          ? "border-white/25 text-white hover:border-white/50"
-                          : "border-ink/20 text-ink hover:border-ink/50"
+                          ? "border-white/45 text-white hover:border-white hover:bg-white/10"
+                          : "border-ink/45 text-ink hover:border-ink hover:bg-ink/5"
                       }`}
                     >
                       לסילבוס המלא

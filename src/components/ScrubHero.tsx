@@ -22,16 +22,13 @@ const pickVideoUrl = () => {
   return VIDEO_MP4;
 };
 const POSTER_URL = "/images/hero-poster.jpg";
-const ENDING_URL = "/images/hero-ending.jpg";
 /** גובה ההירו בגלילה: שוט יחיד של 6 שניות = ‎420vh */
 const HERO_VH = 520;
 
 /* חמשת שערי הסטטי - זהים תו-בתו ל-CSS שב-index.css */
 const GATES = [
   "(max-width: 720px)",
-  "(orientation: portrait) and (max-width: 1024px) and (pointer: coarse)",
-  "(orientation: portrait) and (pointer: coarse)",
-  "(orientation: landscape) and (pointer: coarse) and (max-height: 560px)",
+  "(pointer: coarse)",
   "(prefers-reduced-motion: reduce)",
 ];
 
@@ -310,7 +307,7 @@ const ScrubHero = () => {
         {/* שכבות הבמה: פוסטר, וידאו, סקרים גלובלי */}
         <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${statiq ? ENDING_URL : POSTER_URL})` }}
+          style={{ backgroundImage: `url(${POSTER_URL})` }}
           aria-hidden
         />
         {/* מרונדר תמיד כדי שה-ref יתקיים; הטעינה עצמה שמורה מאחורי השערים */}

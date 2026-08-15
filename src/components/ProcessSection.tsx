@@ -12,7 +12,7 @@ const ProcessSection = () => {
   const listRef = useRef<HTMLOListElement>(null);
   const { scrollYProgress } = useScroll({
     target: listRef,
-    offset: ["start 0.75", "end 0.55"],
+    offset: ["start 0.85", "end 0.6"],
   });
   const fill = useSpring(scrollYProgress, { stiffness: 90, damping: 24, mass: 0.6 });
 
@@ -42,10 +42,10 @@ const ProcessSection = () => {
             <motion.li
               key={step.title}
               className="group relative grid gap-3 py-8 pr-10 sm:grid-cols-[10rem_1fr] sm:gap-8 sm:py-10 sm:pr-14"
-              initial={reduced ? false : { opacity: 0, y: 36 }}
-              whileInView={reduced ? undefined : { opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-80px" }}
-              transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+              initial={reduced ? false : { opacity: 0, y: 44, filter: "blur(6px)" }}
+              whileInView={reduced ? undefined : { opacity: 1, y: 0, filter: "blur(0px)" }}
+              viewport={{ once: false, amount: 0.55 }}
+              transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
             >
               {/* עיגול על הקו שנדלק כשמגיעים אליו */}
               <motion.span
@@ -57,7 +57,7 @@ const ProcessSection = () => {
                     ? undefined
                     : { scale: 1, opacity: 1, borderColor: "#ff5f9e" }
                 }
-                viewport={{ once: true, margin: "-100px" }}
+                viewport={{ once: false, amount: 0.8 }}
                 transition={{ duration: 0.5, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
                 aria-hidden
               >

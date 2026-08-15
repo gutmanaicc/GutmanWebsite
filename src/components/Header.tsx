@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import Logo from "./Logo";
 import { useRegisterModal } from "../context/RegisterModalContext";
@@ -51,6 +52,7 @@ const NavLabel = ({ label, count }: { label: string; count?: string }) => (
 );
 
 const Header = () => {
+  const reduced = useReducedMotion();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const location = useLocation();
@@ -170,31 +172,69 @@ const Header = () => {
               aria-controls="mobile-nav"
               aria-label={open ? "סגירת תפריט" : "פתיחת תפריט"}
             >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                {open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
-              </svg>
+              <span className="relative block h-3.5 w-5" aria-hidden>
+                <motion.span
+                  className="absolute inset-x-0 top-0 block h-[2px] rounded-full bg-current"
+                  animate={open ? { rotate: 45, y: 6 } : { rotate: 0, y: 0 }}
+                  transition={{ duration: reduced ? 0 : 0.4, ease: [0.22, 1, 0.36, 1] }}
+                />
+                <motion.span
+                  className="absolute inset-x-0 top-1/2 block h-[2px] -translate-y-1/2 rounded-full bg-current"
+                  animate={open ? { opacity: 0, scaleX: 0.4 } : { opacity: 1, scaleX: 1 }}
+                  transition={{ duration: reduced ? 0 : 0.25 }}
+                />
+                <motion.span
+                  className="absolute inset-x-0 bottom-0 block h-[2px] rounded-full bg-current"
+                  animate={open ? { rotate: -45, y: -6 } : { rotate: 0, y: 0 }}
+                  transition={{ duration: reduced ? 0 : 0.4, ease: [0.22, 1, 0.36, 1] }}
+                />
+              </span>
             </button>
           </div>
         </div>
       </header>
 
-      {open && (
+      <AnimatePresence>
+        {open && (
         <>
-          <button
+          <motion.button
             type="button"
-            className="fixed inset-0 z-40 bg-black/50 md:hidden"
+            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-[2px] md:hidden"
             aria-label="סגירת תפריט"
             onClick={() => setOpen(false)}
+            initial={reduced ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={reduced ? undefined : { opacity: 0 }}
+            transition={{ duration: 0.3 }}
           />
-          <nav
+          <motion.nav
             id="mobile-nav"
-            className="fixed inset-x-4 top-[5.25rem] z-50 max-h-[min(78vh,720px)] overflow-y-auto rounded-2xl border border-white/12 bg-[#141416]/95 p-3 shadow-float backdrop-blur-md md:hidden"
+            className="fixed inset-x-4 top-[5.25rem] z-50 max-h-[min(78vh,720px)] origin-top overflow-y-auto rounded-2xl border border-white/12 bg-[#141416]/95 p-3 shadow-float backdrop-blur-md md:hidden"
             aria-label="ניווט מובייל"
             dir="rtl"
+            initial={reduced ? false : { opacity: 0, y: -14, scaleY: 0.94 }}
+            animate={{ opacity: 1, y: 0, scaleY: 1 }}
+            exit={reduced ? undefined : { opacity: 0, y: -10, scaleY: 0.96, transition: { duration: 0.2 } }}
+            transition={{ type: "spring", stiffness: 320, damping: 30, mass: 0.8 }}
           >
-            <div className="flex flex-col gap-1">
-              {NAV.map((item) => renderNavLink(item, true))}
-            </div>
+            <motion.div
+              className="flex flex-col gap-1"
+              initial="hidden"
+              animate="show"
+              variants={{ show: { transition: { staggerChildren: 0.055, delayChildren: 0.08 } } }}
+            >
+              {NAV.map((item) => (
+                <motion.div
+                  key={item.to ?? item.label}
+                  variants={{
+                    hidden: reduced ? {} : { opacity: 0, x: 22 },
+                    show: { opacity: 1, x: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } },
+                  }}
+                >
+                  {renderNavLink(item, true)}
+                </motion.div>
+              ))}
+            </motion.div>
             <Pressable
               type="button"
               className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[#FF2D85] px-5 text-sm font-medium text-white shadow-[0_6px_18px_-6px_rgba(255,45,133,0.55)]"
@@ -205,9 +245,10 @@ const Header = () => {
             >
               השאירו פרטים
             </Pressable>
-          </nav>
+          </motion.nav>
         </>
-      )}
+        )}
+      </AnimatePresence>
     </>
   );
 };
