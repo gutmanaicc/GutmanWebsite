@@ -10,7 +10,7 @@ import { TESTIMONIALS, type Testimonial } from "../data/testimonialsData";
 const FEATURED = TESTIMONIALS.slice(0, 6);
 
 const ProofCard = ({ item }: { item: Testimonial }) => (
-  <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#191919] text-right shadow-[0_18px_40px_-28px_rgba(0,0,0,0.65)]">
+  <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#191919] text-right shadow-[0_18px_40px_-28px_rgba(0,0,0,0.65)] transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1.5 hover:shadow-[0_32px_60px_-30px_rgba(0,0,0,0.75)] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
     <div className="flex flex-col gap-1.5 p-4 pb-3">
       <span className="inline-flex w-fit rounded-full bg-[#FF2D85]/15 px-2.5 py-1 text-xs font-semibold text-[#FF2D85]">
         {item.tag}
@@ -31,7 +31,7 @@ const ProofCard = ({ item }: { item: Testimonial }) => (
       <img
         src={item.image}
         alt={`צילום ביקורת: ${item.quote}`}
-        className="h-32 w-full object-cover object-top sm:h-36"
+        className="h-32 w-full object-cover object-top transition-transform duration-500 ease-out group-hover:scale-[1.06] motion-reduce:transition-none sm:h-36"
         loading="lazy"
         draggable={false}
       />

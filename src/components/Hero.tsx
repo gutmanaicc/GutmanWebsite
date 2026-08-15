@@ -1,4 +1,5 @@
-import { motion, useReducedMotion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Pressable from "./Pressable";
 import ReviewsRatingBadge from "./ReviewsRatingBadge";
 import { WhatsAppIcon } from "./icons";
@@ -67,6 +68,45 @@ const FadeIn = ({
 
 const ron = getInstructor("ron-gutman");
 
+/* הצהרות מתחלפות בתג ההירו - כולן מהקופי הקיים באתר */
+const EYEBROW_CLAIMS = [
+  SITE.claim,
+  "לומדים דרך בנייה, לא צפייה מהצד",
+  "מעל 100 ביקורות של משתתפים",
+];
+
+/** תג עם הצהרה מתחלפת כל כמה שניות, בסגנון הסליידר בהירו של orbix. */
+const RotatingEyebrow = () => {
+  const reduced = useReducedMotion();
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (reduced) return;
+    const t = window.setInterval(() => setIndex((i) => (i + 1) % EYEBROW_CLAIMS.length), 3800);
+    return () => window.clearInterval(t);
+  }, [reduced]);
+
+  return (
+    <span className="inline-flex min-h-[2.6rem] items-center gap-2.5 overflow-hidden rounded-full border border-line bg-white px-4 py-2 shadow-card">
+      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand" aria-hidden />
+      <span className="relative inline-grid text-[13px] font-medium text-ink/75">
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.span
+            key={index}
+            className="col-start-1 row-start-1 whitespace-nowrap"
+            initial={reduced ? false : { y: "110%", opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={reduced ? undefined : { y: "-110%", opacity: 0 }}
+            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {EYEBROW_CLAIMS[index]}
+          </motion.span>
+        </AnimatePresence>
+      </span>
+    </span>
+  );
+};
+
 /**
  * הירו במלוא גובה המסך בשפת orbix: תווית מיקום, כותרת ענקית שנחשפת
  * מילה-מילה עם מילת סריף נטויה, הוכחה חברתית, וזוג גלולות מרחפות.
@@ -80,10 +120,7 @@ const Hero = () => (
     <div className="container-site relative z-[2] flex flex-1 flex-col items-center justify-center py-12 text-center sm:py-16">
       <div className="mx-auto flex w-full max-w-5xl flex-col items-center justify-center text-center">
         <FadeIn delay={0.05}>
-          <span className="inline-flex items-center gap-2.5 rounded-full border border-line bg-white px-4 py-2 text-[13px] font-medium text-ink/75 shadow-card">
-            <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
-            {SITE.claim}
-          </span>
+          <RotatingEyebrow />
         </FadeIn>
 
         <h1 className="display-1 mt-7 text-ink sm:mt-9">

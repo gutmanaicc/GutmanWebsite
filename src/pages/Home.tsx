@@ -7,7 +7,7 @@ import ProcessSection from "../components/ProcessSection";
 import RegisterForm from "../components/RegisterForm";
 import SectionHeader, { AccentWord } from "../components/SectionHeader";
 import StatsBand from "../components/StatsBand";
-import StickyCoursesShowcase from "../components/StickyCoursesShowcase";
+import StackingCourses from "../components/StackingCourses";
 import Hero from "../components/Hero";
 import InstructorsShowcase from "../components/InstructorsShowcase";
 import Pressable from "../components/Pressable";
@@ -34,8 +34,6 @@ const MARQUEE_ITEMS = SITE.principles.map((p) => p.title);
 
 const Home = () => {
   const { inlinePrefill, setInlinePrefill } = useRegisterModal();
-  // Curtains are always 100dvh; prop kept for StickyCoursesShowcase API compat
-  const vhPerSlide = 100;
 
   useSeo({
     title: `${SITE.name} | ${SITE.tagline}`,
@@ -83,7 +81,7 @@ const Home = () => {
             sub={SITE.claim}
           />
         </div>
-        <StickyCoursesShowcase vhPerSlide={vhPerSlide} />
+        <StackingCourses />
       </section>
 
       <StatsBand stats={STATS} />
@@ -169,21 +167,25 @@ const Home = () => {
         </div>
       </section>
 
-      {/* סגירה גדולה בסגנון orbix: כותרת ענקית וזוג גלולות, רגע לפני הפוטר הכהה */}
-      <section className="border-t border-line py-20 text-center sm:py-28">
+      {/* סגירה כהה בסגנון orbix: הקנבס מתעגל ומתהפך לשחור וזורם ישר לתוך הפוטר */}
+      <section className="mt-10 rounded-t-[3rem] bg-ink py-24 text-center sm:mt-14 sm:py-32">
         <div className="container-site flex flex-col items-center">
-          <span className="section-label mb-5">
+          <span className="section-label mb-5" style={{ color: "rgba(255,255,255,0.5)" }}>
             <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
             {SITE.hebrewName}
           </span>
-          <h2 className="display-1 max-w-4xl text-ink">
+          <h2 className="display-1 max-w-4xl text-white">
             לא רק ללמוד. <AccentWord>לדעת.</AccentWord>
           </h2>
-          <p className="mt-6 max-w-xl text-base leading-relaxed text-muted sm:text-lg">
+          <p className="mt-6 max-w-xl text-base leading-relaxed text-white/60 sm:text-lg">
             מגיעים עם העסק, הלימודים או הפרויקט שלכם. יוצאים עם תוצר שעובד ושיטה שנשארת.
           </p>
-          <div className="mt-9 flex flex-wrap items-center justify-center gap-3.5">
-            <Pressable as="link" to="/courses" className="btn-primary">
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-3.5">
+            <Pressable
+              as="link"
+              to="/courses"
+              className="btn bg-white text-ink shadow-pill hover:bg-white/90"
+            >
               {SITE.hero.primaryCta}
             </Pressable>
             <Pressable
@@ -191,7 +193,7 @@ const Home = () => {
               href={SITE.contact.whatsapp}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-ghost"
+              className="btn border border-white/25 text-white hover:border-white/50"
               rippleTone="pink"
             >
               <WhatsAppIcon size={19} className="shrink-0 text-[#25D366]" />

@@ -1,13 +1,35 @@
 import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import Lenis from "lenis";
 import Header from "./Header";
 import Footer from "./Footer";
 import { Consent } from "./Consent";
 import AccessibilityMenu from "./AccessibilityMenu";
 import RegisterModal from "./RegisterModal";
-import { ParallaxGridCanvas } from "./motion";
+import { CursorTrail, ParallaxGridCanvas } from "./motion";
 import { REGISTRATION_FORM_ID, scrollToRegistrationForm } from "../lib/registration";
+
+/** גלילה חלקה עם אינרציה (lenis) - הבסיס של תחושת orbix. עכבר בלבד. */
+const useSmoothScroll = (disabled: boolean) => {
+  useEffect(() => {
+    if (disabled) return;
+    if (window.matchMedia("(pointer: coarse)").matches) return;
+
+    const lenis = new Lenis({ lerp: 0.11, wheelMultiplier: 1 });
+    let raf = 0;
+    const loop = (time: number) => {
+      lenis.raf(time);
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      lenis.destroy();
+    };
+  }, [disabled]);
+};
 
 const ScrollManager = () => {
   const { pathname, hash } = useLocation();
@@ -50,9 +72,14 @@ const PageTransition = () => {
   );
 };
 
-const Layout = () => (
+const Layout = () => {
+  const reduced = useReducedMotion();
+  useSmoothScroll(Boolean(reduced));
+
+  return (
   <div className="relative min-h-screen bg-canvas">
     <ParallaxGridCanvas />
+    <CursorTrail />
     {/* קווי עמודות דקיקים לאורך כל העמוד, בסגנון orbix */}
     <div className="page-lines pointer-events-none fixed inset-0 z-0 hidden lg:block" aria-hidden />
     <div className="relative z-[1]">
@@ -73,6 +100,7 @@ const Layout = () => (
     <Consent />
     <AccessibilityMenu />
   </div>
-);
+  );
+};
 
 export default Layout;
