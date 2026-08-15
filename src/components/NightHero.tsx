@@ -1,15 +1,18 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { SITE } from "../data/site";
 
 /**
  * הירו בלילה: ציור מלא מסך של שדה פורח מתחת לשמי כוכבים, עם טיפוגרפיית
- * תצוגה סריפית במרכז. הרקע נע לאט יותר מהתוכן בגלילה, והכותרת עולה
- * מטשטוש לחדות. תנועה מופחתת מקבלת תמונה סטטית וטקסט מיידי.
+ * תצוגה סריפית במרכז. התמונה חיה - לופ פלינדרום שקט של עשב שנע ומסכים
+ * שנושמים, שנפתח מעל התמונה הסטטית רק כשהוא מוכן לנגן. הרקע נע לאט יותר
+ * מהתוכן בגלילה, והכותרת עולה מטשטוש לחדות. תנועה מופחתת נשארת סטטית.
  */
 
 const IMAGE = "/images/hero-night.jpg";
+const VIDEO_WEBM = "/videos/hero-night.webm";
+const VIDEO_MP4 = "/videos/hero-night.mp4";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -27,6 +30,22 @@ const rise = (delay: number) => ({
 const NightHero = () => {
   const reduced = useReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoReady, setVideoReady] = useState(false);
+
+  /* הווידאו מתגלה בדעיכה מעל התמונה רק ברגע שהוא באמת מנגן */
+  useEffect(() => {
+    if (reduced) return;
+    const video = videoRef.current;
+    if (!video) return;
+
+    const reveal = () => setVideoReady(true);
+    video.addEventListener("playing", reveal);
+    const play = video.play();
+    if (play) play.catch(() => undefined);
+
+    return () => video.removeEventListener("playing", reveal);
+  }, [reduced]);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -56,6 +75,24 @@ const NightHero = () => {
           fetchPriority="high"
           decoding="async"
         />
+        {!reduced && (
+          <video
+            ref={videoRef}
+            className="absolute inset-0 h-full w-full object-cover object-bottom transition-opacity duration-[1200ms] ease-out"
+            style={{ opacity: videoReady ? 1 : 0 }}
+            poster={IMAGE}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            aria-hidden="true"
+            tabIndex={-1}
+          >
+            <source src={VIDEO_WEBM} type="video/webm" />
+            <source src={VIDEO_MP4} type="video/mp4" />
+          </video>
+        )}
       </motion.div>
 
       {/* שכבות קריאות: כהה למעלה לניווט, הילה מרכזית לטקסט, מעבר לקנבס למטה */}

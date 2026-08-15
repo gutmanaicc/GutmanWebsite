@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import type { Course, CourseCardPill } from "../data/courses";
 import { ArrowIcon, BoltIcon, SparkIcon, TargetIcon, UsersIcon } from "./icons";
 import { useRegisterModal } from "../context/RegisterModalContext";
-import Pressable from "./Pressable";
 import { MagneticCard, MagneticDepth } from "./motion";
 import { staggerContainer, staggerItem, useMotionCapability } from "../lib/motion";
 
@@ -21,6 +21,11 @@ type Props = {
   unroll?: boolean;
 };
 
+/**
+ * כרטיס מסלול: קטגוריה זעירה למעלה, כותרת סריפית, קו שיער, ומדף פעולה
+ * תחתון עם פעולה ראשית כהה ולינק משני. הפעולות יושבות על משטח לבן,
+ * ולכן חייבות ניגודיות כהה - לא שנהב על לבן.
+ */
 const CourseCard = ({ course, featured = false, unroll = true }: Props) => {
   const { openRegisterModal } = useRegisterModal();
   const level = useMotionCapability();
@@ -31,15 +36,20 @@ const CourseCard = ({ course, featured = false, unroll = true }: Props) => {
   return (
     <MagneticCard
       as="article"
-      className={`course-card glow-edge group relative flex h-full flex-col rounded-[1.75rem] border border-white/40 bg-white p-4 shadow-card ring-1 ring-ink/5 sm:p-6 ${
-        featured ? "sm:p-7 lg:p-8" : ""
+      className={`course-card group relative flex h-full flex-col overflow-hidden rounded-[1.5rem] bg-white text-ink shadow-card ring-1 ring-ink/[0.07] ${
+        featured ? "p-6 sm:p-8 lg:p-10" : "p-6 sm:p-7"
       }`}
-      tilt={featured ? 10 : 8}
-      scale={featured ? 1.02 : 1.015}
-      lift={featured ? -10 : -8}
+      tilt={featured ? 8 : 6}
+      scale={1.012}
+      lift={-6}
       unroll={unroll}
     >
-      <span className="course-card-accent" aria-hidden="true" />
+      {/* משיכת ורוד עדינה בפינה העליונה, מתחזקת בהובר */}
+      <span
+        className="pointer-events-none absolute -top-24 right-0 h-48 w-64 rounded-full opacity-60 blur-3xl transition-opacity duration-500 group-hover:opacity-100"
+        style={{ background: "radial-gradient(circle, rgba(255,95,158,0.16) 0%, rgba(255,95,158,0) 70%)" }}
+        aria-hidden
+      />
 
       <motion.div
         className="relative z-[1] flex h-full flex-col"
@@ -48,20 +58,18 @@ const CourseCard = ({ course, featured = false, unroll = true }: Props) => {
         viewport={{ once: true, amount: 0.35 }}
         variants={container}
       >
-        <motion.div variants={item}>
-          <MagneticDepth z={36} className="mb-3 sm:mb-4">
-            <span className="stat-pill border-[#FF2D85]/20 bg-[#FF2D85]/5 text-[#FF2D85]">
-              {course.category}
-            </span>
-          </MagneticDepth>
-        </motion.div>
+        <motion.p
+          variants={item}
+          className="flex items-center gap-2 text-[11px] font-semibold tracking-[0.18em] text-brand"
+        >
+          <span className="h-1 w-1 rounded-full bg-brand" aria-hidden />
+          {course.category}
+        </motion.p>
 
         <motion.h3
           variants={item}
-          className={`font-bold tracking-tight text-ink ${
-            featured
-              ? "text-xl leading-tight sm:text-2xl lg:text-[1.75rem]"
-              : "text-lg leading-snug sm:text-xl"
+          className={`mt-4 font-serif font-medium leading-[1.18] tracking-tight text-ink ${
+            featured ? "text-[1.7rem] sm:text-4xl" : "text-2xl sm:text-[1.7rem]"
           }`}
         >
           {course.title}
@@ -69,19 +77,20 @@ const CourseCard = ({ course, featured = false, unroll = true }: Props) => {
 
         <motion.p
           variants={item}
-          className={`mt-2 text-muted ${
-            featured ? "max-w-xl text-sm leading-snug sm:text-base" : "text-sm leading-snug"
-          }`}
+          className={`mt-3 leading-relaxed text-muted ${featured ? "max-w-xl text-base" : "text-[15px]"}`}
         >
           {course.cardSubtitle}
         </motion.p>
 
         <motion.div variants={item}>
-          <MagneticDepth z={22} className="mt-3 flex flex-wrap gap-2 sm:mt-4">
+          <MagneticDepth z={20} className="mt-5 flex flex-wrap gap-x-5 gap-y-2">
             {course.cardPills.map((pill) => {
               const Icon = PILL_ICONS[pill.icon];
               return (
-                <span key={pill.label} className="course-card-pill">
+                <span
+                  key={pill.label}
+                  className="inline-flex items-center gap-1.5 text-[13px] font-medium text-ink/55"
+                >
                   <Icon size={13} />
                   {pill.label}
                 </span>
@@ -90,29 +99,32 @@ const CourseCard = ({ course, featured = false, unroll = true }: Props) => {
           </MagneticDepth>
         </motion.div>
 
-        <motion.div variants={item} className="mt-auto pt-5 sm:pt-6">
-          <MagneticDepth z={40} className="flex flex-wrap items-center gap-2">
-            <Pressable
-              as="link"
+        {/* מדף הפעולה: קו שיער מפריד, פעולה ראשית כהה, משנית כלינק */}
+        <motion.div variants={item} className="mt-auto pt-7">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-t border-ink/10 pt-5">
+            <Link
               to={`/courses/${course.slug}`}
-              className="course-card-cta-primary btn-primary btn-small"
+              className="group/cta inline-flex min-h-11 items-center gap-2.5 rounded-full bg-ink px-6 text-sm font-medium text-white transition-colors duration-300 hover:bg-black"
             >
               לפרטי המסלול
-              <span className="course-card-cta-arrow inline-flex" aria-hidden="true">
+              <span
+                className="inline-flex transition-transform duration-300 group-hover/cta:-translate-x-1"
+                aria-hidden
+              >
                 <ArrowIcon />
               </span>
-            </Pressable>
-            <Pressable
+            </Link>
+
+            <button
               type="button"
-              className="btn-ghost btn-small cursor-pointer"
-              rippleTone="pink"
+              className="inline-flex min-h-11 items-center text-sm font-medium text-ink/55 underline-offset-4 transition-colors duration-200 hover:text-brand hover:underline"
               onClick={() =>
                 openRegisterModal({ courseId: course.slug, leadSource: `card-${course.slug}` })
               }
             >
               שמרו לי מקום
-            </Pressable>
-          </MagneticDepth>
+            </button>
+          </div>
         </motion.div>
       </motion.div>
     </MagneticCard>

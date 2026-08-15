@@ -14,6 +14,8 @@ export type RegisterFormProps = {
   sub?: string;
   initialGoal?: string;
   compact?: boolean;
+  /** מוותר על הכרטיס, הכותרת ותת-הכותרת - המכל שמסביב כבר מספק אותם */
+  headless?: boolean;
   autoFocus?: boolean;
   onSuccess?: () => void;
 };
@@ -146,6 +148,7 @@ const RegisterForm = ({
   sub,
   initialGoal,
   compact,
+  headless = false,
   autoFocus = false,
   onSuccess,
 }: RegisterFormProps) => {
@@ -229,24 +232,30 @@ const RegisterForm = ({
 
   if (status === "success") {
     return (
-      <div className="lead-form text-center text-ink">
-        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brand/10 text-brand">✓</div>
-        <h3>קיבלנו. נחזור אליכם בקרוב.</h3>
-        <p className="form-sub">מעבירים אתכם לדף אישור...</p>
+      <div className={`text-center text-ink${headless ? " py-6" : " lead-form"}`}>
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-brand/10 text-2xl text-brand">
+          ✓
+        </div>
+        <h3 className="font-serif text-2xl font-medium tracking-tight">קיבלנו. נחזור אליכם בקרוב.</h3>
+        <p className="mt-2 text-sm text-muted">מעבירים אתכם לדף אישור...</p>
       </div>
     );
   }
 
   return (
     <form
-      className={`lead-form text-ink${compact ? " !border-0 !bg-transparent !p-0 !shadow-none" : ""}`}
+      className={`text-ink${headless ? "" : " lead-form"}${compact ? " !border-0 !bg-transparent !p-0 !shadow-none" : ""}`}
       onSubmit={onSubmit}
       noValidate
     >
-      <h3 className="text-ink">{title ?? "השאירו פרטים ונחזור אליכם"}</h3>
-      <p className="form-sub">
-        {sub ?? "בלי התחייבות ובלי ספאם. נחזור אליכם עם כל הפרטים ונענה על כל שאלה."}
-      </p>
+      {!headless && (
+        <>
+          <h3 className="text-ink">{title ?? "השאירו פרטים ונחזור אליכם"}</h3>
+          <p className="form-sub">
+            {sub ?? "בלי התחייבות ובלי ספאם. נחזור אליכם עם כל הפרטים ונענה על כל שאלה."}
+          </p>
+        </>
+      )}
 
       {status === "error" && (
         <div className="form-error-summary" role="alert">
@@ -254,7 +263,7 @@ const RegisterForm = ({
         </div>
       )}
 
-      <div className="mt-6 space-y-4">
+      <div className={headless ? "space-y-5" : "mt-6 space-y-5"}>
         <div className="form-row">
           <div className="field">
             <label htmlFor={field("name")}>שם מלא *</label>
@@ -354,7 +363,7 @@ const RegisterForm = ({
 
         <Pressable
           type="submit"
-          className={`btn-primary btn-block${status === "sending" ? " is-sending" : ""}`}
+          className={`btn-submit${status === "sending" ? " is-sending" : ""}`}
           disabled={status === "sending"}
           motionDisabled={status === "sending"}
         >

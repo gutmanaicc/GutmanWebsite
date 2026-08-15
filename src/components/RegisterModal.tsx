@@ -60,33 +60,43 @@ const RegisterModal = () => {
           <motion.div
             ref={panelRef}
             key="register-modal-panel"
-            className="relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-t-3xl border border-line bg-white p-5 text-ink shadow-float sm:rounded-3xl sm:p-6"
+            className="relative z-10 flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-t-[1.75rem] bg-paper text-ink shadow-float sm:max-h-[90vh] sm:rounded-[1.75rem]"
             onClick={(e) => e.stopPropagation()}
             initial={reduced ? false : { opacity: 0, y: 28, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.98 }}
             transition={{ type: "spring", stiffness: 380, damping: 32 }}
           >
-            <button
-              type="button"
-              className="absolute left-4 top-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-line bg-white text-muted transition hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
-              onClick={closeRegisterModal}
-              aria-label="סגירת טופס"
-            >
-              <XIcon />
-            </button>
+            {/* כותרת על רצועה כהה - הופכת את המודאל לחלק מהשפה של האתר */}
+            <div className="relative shrink-0 bg-canvas px-6 pb-7 pt-7 text-bone sm:px-9 sm:pb-8 sm:pt-8">
+              <button
+                type="button"
+                className="absolute left-4 top-4 flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-bone/60 transition-colors duration-200 hover:border-white/45 hover:text-bone focus:outline-none focus-visible:ring-2 focus-visible:ring-bone"
+                onClick={closeRegisterModal}
+                aria-label="סגירת טופס"
+              >
+                <XIcon />
+              </button>
 
-            <div className="relative z-10 pt-8">
-              <h2 id={titleId} className="sr-only">
-                טופס הרשמה והשארת פרטים
+              <span className="section-label mb-4 flex">
+                <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
+                הרשמה
+              </span>
+              <h2 id={titleId} className="font-serif text-[1.6rem] font-medium leading-tight tracking-tight sm:text-3xl">
+                רוצים שנשמור לכם מקום?
               </h2>
+              <p className="mt-2.5 max-w-md text-sm leading-relaxed text-bone/55">
+                מלאו פרטים קצרים. נחזור אליכם עם כל המידע על המסלול, בלי התחייבות ובלי ספאם.
+              </p>
+            </div>
+
+            <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-7 pt-7 sm:px-9 sm:pb-9">
               <RegisterForm
                 key={`modal-${options.courseId ?? "any"}-${options.leadSource ?? "register-modal"}`}
                 preselectedCourse={options.courseId}
                 initialGoal={options.initialGoal}
                 leadSource={options.leadSource ?? "register-modal"}
-                title="רוצים שנשמור לכם מקום?"
-                sub="מלאו פרטים קצרים. נחזור אליכם עם כל המידע על המסלול."
+                headless
                 autoFocus
                 onSuccess={closeRegisterModal}
               />

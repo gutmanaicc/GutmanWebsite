@@ -32,21 +32,22 @@ const Courses = () => {
 
   return (
     <div>
-      <section className="relative overflow-hidden border-b border-line/60">
-        <div className="pointer-events-none absolute inset-0 grid-canvas opacity-40" aria-hidden />
+      <section className="relative overflow-hidden border-b border-white/10">
+        <div className="pointer-events-none absolute inset-0 grid-canvas opacity-25" aria-hidden />
         <div className="container-site relative py-10 sm:py-14 lg:py-16">
           <div className="mb-4 flex w-full justify-start sm:mb-5">
             <BackButton fallbackTo="/" />
           </div>
 
           <div className="mx-auto flex max-w-4xl flex-col items-center justify-center text-center">
-            <span className="stat-pill mb-4 inline-flex border-[#FF2D85]/25 bg-[#FF2D85]/5 text-[#FF2D85]">
+            <span className="section-label mb-5 text-bone">
+              <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
               מסלולים
             </span>
-            <h1 className="text-3xl font-bold tracking-tight text-[#191919] sm:text-4xl lg:text-5xl">
+            <h1 className="display-2 text-bone">
               המסלולים המעשיים שלנו <AccentWord>ללימודי AI</AccentWord>
             </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-base font-medium leading-relaxed text-zinc-600 sm:mt-5 sm:text-lg">
+            <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-bone/60 sm:text-lg">
               בחרו את המסלול המותאם למקצוע, לעסק ולמטרה שלכם - לימודים פרונטליים מבוססי תוצר מעשי.
             </p>
           </div>
@@ -55,13 +56,15 @@ const Courses = () => {
 
       <div className="py-12 sm:py-16">
         <div className="container-site">
-          <div className="mb-10 flex flex-wrap items-center justify-center gap-2" role="tablist" aria-label="סינון מסלולים">
+          <div className="mb-12 flex flex-wrap items-center justify-center gap-2" role="tablist" aria-label="סינון מסלולים">
             <button
               type="button"
               role="tab"
               aria-selected={filter === ALL}
-              className={`inline-flex min-h-11 cursor-pointer items-center rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                filter === ALL ? "bg-ink text-white" : "border border-line bg-white text-muted hover:text-ink"
+              className={`inline-flex min-h-11 cursor-pointer items-center rounded-full border px-5 text-sm font-medium transition-colors duration-300 ${
+                filter === ALL
+                  ? "border-bone bg-bone text-ink"
+                  : "border-white/20 text-bone/60 hover:border-white/50 hover:text-bone"
               }`}
               onClick={() => setFilter(ALL)}
             >
@@ -73,8 +76,10 @@ const Courses = () => {
                 type="button"
                 role="tab"
                 aria-selected={filter === cat}
-                className={`inline-flex min-h-11 cursor-pointer items-center rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                  filter === cat ? "bg-ink text-white" : "border border-line bg-white text-muted hover:text-ink"
+                className={`inline-flex min-h-11 cursor-pointer items-center rounded-full border px-5 text-sm font-medium transition-colors duration-300 ${
+                  filter === cat
+                    ? "border-bone bg-bone text-ink"
+                    : "border-white/20 text-bone/60 hover:border-white/50 hover:text-bone"
                 }`}
                 onClick={() => setFilter(cat)}
               >
@@ -88,8 +93,8 @@ const Courses = () => {
               key={filter}
               className={
                 isBento
-                  ? "grid auto-rows-fr gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-12"
-                  : "grid gap-4 sm:gap-5 md:grid-cols-2"
+                  ? "grid auto-rows-fr gap-5 sm:gap-6 md:grid-cols-2 lg:grid-cols-12"
+                  : "grid gap-5 sm:gap-6 md:grid-cols-2"
               }
               stagger={0.07}
             >

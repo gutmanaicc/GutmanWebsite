@@ -365,15 +365,19 @@
   }
 
   .faq-compact .faq-q {
-    @apply py-2.5 text-sm;
+    @apply py-3.5;
+  }
+
+  .faq-compact .faq-q-text {
+    @apply text-base sm:text-lg;
   }
 
   .faq-compact .faq-a-inner p {
-    @apply pb-2.5 text-sm leading-snug;
+    @apply pb-4 pl-10 text-sm leading-relaxed;
   }
 
   .faq-compact .faq-icon {
-    @apply text-lg;
+    @apply h-7 w-7;
   }
 
   /* Course cards - bento grid (lift/tilt handled by MagneticCard) */
@@ -524,16 +528,22 @@
   }
 
   .field label {
-    @apply mb-1.5 block text-sm font-medium text-ink;
+    @apply mb-2 block text-[13px] font-medium tracking-wide text-ink/55;
   }
 
+  /* שדות שקועים: משטח חם מעט כהה מהכרטיס, קו שיער, בלי צל */
   .field input,
   .field select,
   .field textarea {
-    @apply w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm text-ink outline-none;
+    @apply w-full rounded-xl border border-ink/10 bg-white px-4 py-3 text-[15px] text-ink outline-none;
     transition:
       border-color 220ms cubic-bezier(0.22, 1, 0.36, 1),
       box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .field input::placeholder,
+  .field textarea::placeholder {
+    @apply text-ink/35;
   }
 
   .field input:focus,
@@ -565,7 +575,7 @@
   }
 
   .field .err {
-    @apply mt-1 block text-xs text-red-600;
+    @apply mt-1.5 block text-xs text-red-600;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -595,7 +605,19 @@
   }
 
   .form-row {
-    @apply grid gap-4 sm:grid-cols-2;
+    @apply grid gap-5 sm:grid-cols-2;
+  }
+
+  /* כפתור השליחה יושב על משטח בהיר, ולכן חייב להיות ורוד מלא ולא שנהב */
+  .btn-submit {
+    @apply btn w-full bg-brand text-white hover:brightness-105;
+    box-shadow: 0 10px 26px -12px rgba(255, 95, 158, 0.75);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .btn-submit:hover {
+      transform: translateY(-2px);
+    }
   }
 
   .form-error-summary {
@@ -603,7 +625,7 @@
   }
 
   .form-note {
-    @apply mt-3 text-xs text-muted;
+    @apply mt-3.5 text-center text-xs leading-relaxed text-ink/40;
   }
 
   /* ChatFinder */
@@ -792,25 +814,43 @@
     @apply text-[11px] text-muted;
   }
 
-  /* FAQ */
+  /* FAQ - קווי שיער, שאלה בסריף, מעגל ורוד שמסתובב */
   .faq-item {
-    @apply border-b border-line;
+    border-bottom: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  }
+
+  .faq-item:first-child {
+    border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent);
   }
 
   .faq-q {
-    @apply flex w-full items-center justify-between gap-4 py-4 text-right text-sm font-semibold sm:text-base;
+    @apply flex w-full items-center justify-between gap-5 py-6 text-right transition-colors duration-300 sm:py-7;
+  }
+
+  .faq-q-text {
+    @apply font-serif text-lg font-medium leading-snug tracking-tight sm:text-[1.35rem];
+  }
+
+  .faq-q:hover .faq-q-text {
+    @apply text-brand;
   }
 
   .faq-icon {
-    @apply text-xl font-light text-muted transition-transform;
+    @apply inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-[transform,background-color,border-color,color] duration-300;
+    border-color: color-mix(in srgb, currentColor 22%, transparent);
+    color: color-mix(in srgb, currentColor 70%, transparent);
+  }
+
+  .faq-q:hover .faq-icon {
+    @apply border-brand text-brand;
   }
 
   .faq-item[data-open="true"] .faq-icon {
-    @apply rotate-45;
+    @apply rotate-[135deg] border-brand bg-brand text-white;
   }
 
   .faq-a {
-    @apply grid transition-[grid-template-rows] duration-300 ease-out;
+    @apply grid transition-[grid-template-rows] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)];
     grid-template-rows: 0fr;
   }
 
@@ -823,7 +863,14 @@
   }
 
   .faq-a-inner p {
-    @apply pb-4 text-sm leading-relaxed text-muted;
+    @apply max-w-2xl pb-7 pl-12 text-[15px] leading-relaxed opacity-60 sm:pb-8;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .faq-a,
+    .faq-icon {
+      transition: none;
+    }
   }
 
   /* Reveal */

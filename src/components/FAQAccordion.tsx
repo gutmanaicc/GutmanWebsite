@@ -2,22 +2,22 @@ import { useId, useState } from "react";
 
 type Item = { q?: string; a?: string; question?: string; answer?: string };
 
+/**
+ * אקורדיון שאלות: קווי שיער בלבד, שאלה בסריף תצוגה, ומעגל ורוד שמסתובב
+ * לסגירה. אין מסגרת חיצונית - הרשימה נושמת על המשטח שמאחוריה.
+ */
 const FAQAccordion = ({ items, compact }: { items: Item[]; compact?: boolean }) => {
   const [open, setOpen] = useState<number | null>(0);
   const baseId = useId();
 
   return (
-    <div
-      className={`divide-y divide-line/80 overflow-hidden rounded-2xl border border-white/50 bg-white/70 shadow-card backdrop-blur-xl ${
-        compact ? "faq-compact" : "rounded-3xl"
-      }`}
-    >
+    <div className={`mx-auto w-full ${compact ? "faq-compact" : "max-w-3xl"}`}>
       {items.map((item, i) => {
         const question = item.question ?? item.q ?? "";
         const answer = item.answer ?? item.a ?? "";
         const isOpen = open === i;
         return (
-          <div className={`faq-item ${compact ? "px-3 sm:px-4" : "px-4 sm:px-6"}`} key={`${question}-${i}`} data-open={isOpen}>
+          <div className="faq-item" key={`${question}-${i}`} data-open={isOpen}>
             <button
               type="button"
               className="faq-q"
@@ -26,9 +26,11 @@ const FAQAccordion = ({ items, compact }: { items: Item[]; compact?: boolean }) 
               aria-controls={`${baseId}-a-${i}`}
               id={`${baseId}-q-${i}`}
             >
-              {question}
+              <span className="faq-q-text">{question}</span>
               <span className="faq-icon" aria-hidden="true">
-                +
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+                  <path d="M6.5 1.5v10M1.5 6.5h10" />
+                </svg>
               </span>
             </button>
             <div className="faq-a" id={`${baseId}-a-${i}`} role="region" aria-labelledby={`${baseId}-q-${i}`}>
