@@ -189,7 +189,7 @@ const SlideChrome = ({ slide, reduced, focused, showMock = false, compact = fals
       >
         {slide.title}
         <br />
-        <em className="inline-block font-serif text-[0.78em] font-extrabold italic text-[#FF2D85]">
+        <em className="inline-block font-display text-[0.78em] font-extrabold italic text-[#FF2D85]">
           {slide.accent}
         </em>
       </motion.h3>

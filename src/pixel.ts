@@ -26,6 +26,12 @@ export function loadPixel() {
   window.fbq("track", "PageView");
 }
 
-export function track(event: string, params?: Record<string, string>) {
+/** אירוע מותאם אישית */
+export function track(event: string, params?: Record<string, unknown>) {
   window.fbq?.("trackCustom", event, params);
+}
+
+/** אירוע סטנדרטי של מטא (Lead, ViewContent וכדומה), שמנוע האופטימיזציה מזהה */
+export function trackStandard(event: string, params?: Record<string, unknown>) {
+  window.fbq?.("track", event, params);
 }

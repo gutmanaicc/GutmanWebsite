@@ -236,7 +236,7 @@ const RegisterForm = ({
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-brand/10 text-2xl text-brand">
           ✓
         </div>
-        <h3 className="font-serif text-2xl font-medium tracking-tight">קיבלנו. נחזור אליכם בקרוב.</h3>
+        <h3 className="font-display text-2xl font-bold tracking-tight">קיבלנו. נחזור אליכם בקרוב.</h3>
         <p className="mt-2 text-sm text-muted">מעבירים אתכם לדף אישור...</p>
       </div>
     );

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import SectionHeader, { AccentWord } from "./SectionHeader";
 import StudentWorksCarousel from "./StudentWorksCarousel";
+import ImageLightbox from "./ImageLightbox";
 import { ArrowIcon } from "./icons";
 import { STUDENT_WORKS } from "../data/studentWorksData";
 import { TESTIMONIALS, type Testimonial } from "../data/testimonialsData";
@@ -14,9 +15,16 @@ const FEATURED = TESTIMONIALS.slice(0, 5);
  * קיר עדויות: הציטוט האמיתי הוא הטיפוגרפיה, וצילום ההודעה המקורית
  * נפתח רק למי שרוצה לאמת. כל מילה כאן תומללה מצילומי המסך עצמם.
  */
-const QuoteRow = ({ item, index }: { item: Testimonial; index: number }) => {
+const QuoteRow = ({
+  item,
+  index,
+  onOpen,
+}: {
+  item: Testimonial;
+  index: number;
+  onOpen: (item: Testimonial) => void;
+}) => {
   const reduced = useReducedMotion();
-  const [open, setOpen] = useState(false);
 
   return (
     <motion.li
@@ -28,8 +36,7 @@ const QuoteRow = ({ item, index }: { item: Testimonial; index: number }) => {
     >
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
+        onClick={() => onOpen(item)}
         className="w-full py-8 text-right sm:py-10"
       >
         <span className="block">
@@ -41,32 +48,21 @@ const QuoteRow = ({ item, index }: { item: Testimonial; index: number }) => {
               {item.text}
             </span>
             <span className="mt-4 inline-flex items-center gap-2 text-xs font-medium text-bone/40 transition-colors group-hover:text-brand">
-              {open ? "סגירת ההודעה" : "לצפייה בהודעה המקורית"}
+              לצפייה בהודעה המקורית
               <ArrowIcon size={13} />
             </span>
           </span>
         </span>
       </button>
 
-      <motion.div
-        className="overflow-hidden"
-        initial={false}
-        animate={{ height: open ? "auto" : 0, opacity: open ? 1 : 0 }}
-        transition={{ duration: reduced ? 0 : 0.45, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <img
-          src={item.image}
-          alt={`צילום ההודעה: ${item.quote}`}
-          className="mb-8 w-full max-w-sm rounded-xl border border-white/10"
-          loading="lazy"
-          draggable={false}
-        />
-      </motion.div>
     </motion.li>
   );
 };
 
-const HomeProof = () => (
+const HomeProof = () => {
+  const [lightbox, setLightbox] = useState<Testimonial | null>(null);
+
+  return (
   <>
     <section className="py-14 sm:py-20 lg:py-24">
       <div className="container-site">
@@ -82,7 +78,7 @@ const HomeProof = () => (
 
         <ul className="border-t border-white/10">
           {FEATURED.map((item, i) => (
-            <QuoteRow key={item.id} item={item} index={i} />
+            <QuoteRow key={item.id} item={item} index={i} onOpen={setLightbox} />
           ))}
         </ul>
 
@@ -97,7 +93,14 @@ const HomeProof = () => (
 
     {/* Carousel ships its own <section> + header. */}
     {STUDENT_WORKS.length > 0 && <StudentWorksCarousel works={STUDENT_WORKS} />}
+
+    <ImageLightbox
+      src={lightbox?.image ?? null}
+      alt={lightbox ? `צילום ההודעה: ${lightbox.quote}` : ""}
+      onClose={() => setLightbox(null)}
+    />
   </>
-);
+  );
+};
 
 export default HomeProof;

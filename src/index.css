@@ -53,26 +53,57 @@
 
   /* מילת ההדגשה בכותרת: אותו סריף תצוגה, בוורוד של המותג */
   .accent-serif {
-    @apply font-serif not-italic text-brand;
-    font-weight: 500;
+    @apply font-display not-italic text-brand;
+    font-weight: 700;
     display: inline-block;
   }
 
   /* סקאלת התצוגה - סריף תצוגה במשקל בינוני, אווירי ורחב */
   .display-1 {
-    @apply font-serif;
-    font-size: clamp(2.6rem, 7.6vw, 6rem);
-    line-height: 1.08;
-    letter-spacing: -0.02em;
-    font-weight: 500;
+    @apply font-display;
+    font-size: clamp(2.5rem, 7.2vw, 5.5rem);
+    line-height: 1.06;
+    letter-spacing: -0.035em;
+    font-weight: 700;
   }
 
   .display-2 {
-    @apply font-serif;
-    font-size: clamp(2rem, 4.4vw, 3.5rem);
-    line-height: 1.14;
-    letter-spacing: -0.015em;
-    font-weight: 500;
+    @apply font-display;
+    font-size: clamp(1.9rem, 4.2vw, 3.25rem);
+    line-height: 1.12;
+    letter-spacing: -0.03em;
+    font-weight: 700;
+  }
+
+  /* כותרת ההירו: נפח אמיתי מעל הסרטון. שכבות צל שנבנות כלפי מטה נותנות
+     גוף לאותיות, וההילה הכהה מתחתן מפרידה אותן מהשמיים שמאחור. */
+  .hero-title {
+    text-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.28),
+      0 2px 1px rgba(10, 9, 14, 0.5),
+      0 4px 3px rgba(10, 9, 14, 0.42),
+      0 8px 10px rgba(10, 9, 14, 0.4),
+      0 18px 34px rgba(10, 9, 14, 0.55),
+      0 34px 70px rgba(10, 9, 14, 0.5);
+    transform: translateZ(0);
+  }
+
+  /* מילת ההדגשה זוהרת בוורוד, כמו המסכים בשדה */
+  .hero-title-accent {
+    color: #ff5f9e;
+    text-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.2),
+      0 2px 2px rgba(10, 9, 14, 0.5),
+      0 6px 12px rgba(255, 95, 158, 0.45),
+      0 14px 40px rgba(255, 95, 158, 0.4),
+      0 26px 70px rgba(10, 9, 14, 0.55);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-title,
+    .hero-title-accent {
+      text-shadow: 0 2px 12px rgba(10, 9, 14, 0.85);
+    }
   }
 
   /* תווית סקשן ממוספרת: ‎(01) הוכחות. צבע יורש - עובד על כהה ועל בהיר. */
@@ -833,7 +864,7 @@
   }
 
   .faq-q-text {
-    @apply font-serif text-lg font-medium leading-snug tracking-tight sm:text-[1.35rem];
+    @apply font-display text-lg font-semibold leading-snug tracking-tight sm:text-[1.3rem];
   }
 
   .faq-q:hover .faq-q-text {
@@ -902,6 +933,26 @@
 
   .legal-body a {
     @apply text-brand underline underline-offset-4 transition-opacity hover:opacity-80;
+  }
+
+  /* מסמך הסילבוס בהדפסה: משטח לבן, בלי קישוטי רקע ובלי חיתוך בלוקים */
+  @media print {
+    .syllabus-doc {
+      background: #fff;
+      padding: 0;
+    }
+
+    .syllabus-doc li,
+    .syllabus-doc article {
+      break-inside: avoid;
+    }
+
+    .film-grain,
+    .page-lines,
+    header nav,
+    footer {
+      display: none !important;
+    }
   }
 
   /* Reveal */

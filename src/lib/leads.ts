@@ -1,4 +1,4 @@
-import { track } from "../pixel";
+import { trackStandard } from "../pixel";
 
 export type LeadPayload = {
   fullName: string;
@@ -18,8 +18,9 @@ export type LeadPayload = {
 
 const STORAGE_KEY = "academy-leads-v1";
 
+/** ברירת המחדל היא פונקציית השרת של האתר, שמעבירה את הליד לפיירברי. */
 export function getLeadEndpoint(): string {
-  return import.meta.env.VITE_LEAD_ENDPOINT?.trim() ?? "";
+  return import.meta.env.VITE_LEAD_ENDPOINT?.trim() || "/api/lead";
 }
 
 export function collectUtm(): Record<string, string> {
@@ -52,7 +53,7 @@ export async function submitLead(lead: LeadPayload): Promise<boolean> {
     } else {
       saveLocally(lead);
     }
-    track("Lead", { course: lead.courseInterest, source: lead.leadSource });
+    trackStandard("Lead", { content_name: lead.courseInterest, content_category: lead.leadSource });
     return true;
   } catch {
     try {

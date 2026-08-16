@@ -44,11 +44,13 @@ const NightHero = () => {
   const bgScale = useTransform(scrollYProgress, [0, 1], [1.04, 1.14]);
   const contentY = useTransform(scrollYProgress, [0, 1], [0, -70]);
   const contentOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
+  /* הכותרת נוטה מעט אחורה כשגוללים, כאילו היא לוח שנשען לתוך הסצנה */
+  const contentTilt = useTransform(scrollYProgress, [0, 1], [0, 14]);
 
   return (
     <section
       ref={sectionRef}
-      className="relative isolate flex min-h-[100svh] items-center justify-center overflow-hidden bg-canvas px-5 pb-24 pt-28 sm:px-8 sm:pb-28"
+      className="relative isolate flex min-h-[100svh] flex-col items-center justify-start overflow-hidden bg-canvas px-5 pb-24 pt-[18vh] sm:px-8 sm:pt-[15vh]"
     >
       {/* הציור */}
       <motion.div
@@ -81,7 +83,7 @@ const NightHero = () => {
         className="pointer-events-none absolute inset-0 z-[1]"
         style={{
           background:
-            "linear-gradient(to bottom, rgba(10,9,14,0.55) 0%, rgba(10,9,14,0.12) 24%, rgba(10,9,14,0) 50%, rgba(13,12,17,0.55) 90%, #0d0c11 100%)",
+            "linear-gradient(to bottom, rgba(10,9,14,0.72) 0%, rgba(10,9,14,0.45) 26%, rgba(10,9,14,0.08) 55%, rgba(13,12,17,0.5) 90%, #0d0c11 100%)",
         }}
         aria-hidden
       />
@@ -89,14 +91,14 @@ const NightHero = () => {
         className="pointer-events-none absolute inset-0 z-[1]"
         style={{
           background:
-            "radial-gradient(58% 40% at 50% 44%, rgba(10,9,14,0.5) 0%, rgba(10,9,14,0.16) 62%, rgba(10,9,14,0) 100%)",
+            "radial-gradient(64% 42% at 50% 24%, rgba(10,9,14,0.62) 0%, rgba(10,9,14,0.2) 60%, rgba(10,9,14,0) 100%)",
         }}
         aria-hidden
       />
 
       <motion.div
-        className="relative z-[2] w-full max-w-3xl text-center text-bone"
-        style={reduced ? undefined : { y: contentY, opacity: contentOpacity }}
+        className="relative z-[2] w-full max-w-3xl text-center text-bone [perspective:1200px]"
+        style={reduced ? undefined : { y: contentY, opacity: contentOpacity, rotateX: contentTilt }}
         initial="hidden"
         animate="show"
       >
@@ -109,13 +111,13 @@ const NightHero = () => {
         </motion.span>
 
         <motion.h1
-          className="mt-7 font-serif font-medium leading-[1.12] tracking-tight text-bone"
-          style={{ fontSize: "clamp(2.4rem, 7.2vw, 5.25rem)" }}
+          className="hero-title mt-7 font-display font-black leading-[1.04] tracking-tightest text-bone"
+          style={{ fontSize: "clamp(2.6rem, 8vw, 6rem)" }}
           variants={reduced ? undefined : rise(0.24)}
         >
           במקום שבו רעיון
           <br />
-          הופך למשהו <span className="text-brand">אמיתי</span>
+          הופך למשהו <span className="hero-title-accent">אמיתי</span>
         </motion.h1>
 
         <motion.p

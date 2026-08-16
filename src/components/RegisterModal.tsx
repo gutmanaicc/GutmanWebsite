@@ -82,7 +82,7 @@ const RegisterModal = () => {
                 <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
                 הרשמה
               </span>
-              <h2 id={titleId} className="font-serif text-[1.6rem] font-medium leading-tight tracking-tight sm:text-3xl">
+              <h2 id={titleId} className="font-display text-[1.6rem] font-bold leading-tight tracking-tight sm:text-3xl">
                 רוצים שנשמור לכם מקום?
               </h2>
               <p className="mt-2.5 max-w-md text-sm leading-relaxed text-bone/55">

@@ -67,8 +67,9 @@ const Home = () => {
         <div className="container-site pb-8 sm:pb-10">
           <SectionHeader
             kicker="מסלולים"
-            title={<>חמישה מסלולים. <AccentWord>תוצר</AccentWord> אחד לכל אחד.</>}
+            title={<>חמש סדנאות. <AccentWord>תוצר</AccentWord> אחד לכל אחת.</>}
             sub={SITE.claim}
+            center
           />
         </div>
         <StackingCourses />
@@ -80,6 +81,7 @@ const Home = () => {
             kicker="למה פרונטלי"
             title={<>לומדים <AccentWord>בזמן אמת</AccentWord></>}
             sub="האקדמיה בנויה סביב עבודה מעשית, פידבק מיידי, ותוצר שיוצא איתכם הביתה."
+            center
           />
           {/* לוחות כהים על הקנבס: מספר זעיר, קו שיער שנמתח בהובר, וזוהר ורוד */}
           <StaggerGroup
@@ -114,7 +116,7 @@ const Home = () => {
                       {String(i + 1).padStart(2, "0")}
                     </span>
 
-                    <h3 className="mt-7 font-serif text-xl font-medium leading-snug tracking-tight sm:text-[1.4rem]">
+                    <h3 className="mt-7 font-display text-xl font-bold leading-snug tracking-tight sm:text-[1.4rem]">
                       {item.title}
                     </h3>
                     <p className="mt-3 text-[15px] leading-relaxed text-bone/50">{item.text}</p>

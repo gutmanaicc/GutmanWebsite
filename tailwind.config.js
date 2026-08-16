@@ -16,7 +16,7 @@ export default {
       fontFamily: {
         sans: ["Assistant", "Helvetica Neue", "Arial", "sans-serif"],
         heading: ["Assistant", "Helvetica Neue", "Arial", "sans-serif"],
-        serif: ["'Frank Ruhl Libre'", "Georgia", "serif"],
+        display: ["Rubik", "Assistant", "Helvetica Neue", "Arial", "sans-serif"],
       },
       letterSpacing: {
         tightest: "-0.04em",

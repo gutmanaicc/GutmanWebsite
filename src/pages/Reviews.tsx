@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import { X } from "lucide-react";
+
 import { motion, useReducedMotion } from "framer-motion";
 import BackButton from "../components/BackButton";
+import ImageLightbox from "../components/ImageLightbox";
 import ReviewsRatingBadge from "../components/ReviewsRatingBadge";
 import { AccentWord } from "../components/SectionHeader";
 import { TESTIMONIALS, type Testimonial } from "../data/testimonialsData";
@@ -94,31 +95,11 @@ const Reviews = () => {
         </div>
       </section>
 
-      {lightbox && (
-        <div
-          className="fixed inset-0 z-[90] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
-          role="dialog"
-          aria-modal="true"
-          aria-label={`צילום ההודעה: ${lightbox.quote}`}
-          onClick={close}
-        >
-          <button
-            type="button"
-            className="absolute left-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/20 text-bone transition-colors hover:border-white/50"
-            onClick={close}
-            aria-label="סגירה"
-          >
-            <X size={20} />
-          </button>
-          <img
-            src={lightbox.image}
-            alt={`צילום ההודעה: ${lightbox.quote}`}
-            className="max-h-[88vh] w-auto rounded-xl"
-            onClick={(e) => e.stopPropagation()}
-            draggable={false}
-          />
-        </div>
-      )}
+      <ImageLightbox
+        src={lightbox?.image ?? null}
+        alt={lightbox ? `צילום ההודעה: ${lightbox.quote}` : ""}
+        onClose={close}
+      />
     </>
   );
 };

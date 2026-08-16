@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import FAQAccordion from "../components/FAQAccordion";
@@ -25,7 +25,8 @@ import {
   VideoIcon,
 } from "../components/icons";
 import { getChildCourses, getCourse, type AudienceIcon, type Course } from "../data/courses";
-import { getMarketingSyllabus } from "../data/syllabi";
+import { getMarketingSyllabus, getSyllabusHref } from "../data/syllabi";
+import { trackStandard } from "../pixel";
 import { getInstructorsForCourse } from "../data/instructorsData";
 import { getStudentWorksForCourse } from "../data/studentWorksData";
 import { SITE } from "../data/site";
@@ -253,6 +254,15 @@ const CourseDetail = () => {
   const courseKey = course.slug;
   const marketingSyllabus = getMarketingSyllabus(course.slug);
 
+  useEffect(() => {
+    trackStandard("ViewContent", {
+      content_type: "product",
+      content_ids: [course.slug],
+      content_name: course.title,
+      content_category: course.category,
+    });
+  }, [course.slug, course.title, course.category]);
+
   return (
     <div className="course-detail-page" key={courseKey}>
       {/* Hero */}
@@ -344,7 +354,7 @@ const CourseDetail = () => {
                   שמרו לי מקום
                   <ArrowIcon />
                 </Pressable>
-                <Pressable as="a" href="#curriculum" className="btn-ghost btn-small" rippleTone="pink">
+                <Pressable as="link" to={getSyllabusHref(course.slug)} className="btn-ghost btn-small" rippleTone="pink">
                   סילבוס
                 </Pressable>
               </div>

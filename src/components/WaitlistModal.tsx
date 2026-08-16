@@ -134,7 +134,7 @@ const WaitlistModal = () => {
                 <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
                 בקרוב
               </span>
-              <h2 id={titleId} className="font-serif text-[1.45rem] font-medium leading-tight tracking-tight sm:text-2xl">
+              <h2 id={titleId} className="font-display text-[1.45rem] font-bold leading-tight tracking-tight sm:text-2xl">
                 {status === "success" ? "נרשמת לרשימת ההמתנה" : "הצטרפות לרשימת המתנה"}
               </h2>
               {status !== "success" && (

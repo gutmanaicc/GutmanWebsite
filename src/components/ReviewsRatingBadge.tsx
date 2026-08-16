@@ -17,7 +17,7 @@ const Inner = () => (
     </span>
     <span className="h-8 w-px shrink-0 bg-current opacity-20" aria-hidden />
     <span className="flex flex-col items-start gap-0.5 text-right">
-      <span className="text-[13px] font-medium leading-none text-bone/85">מעל 100 ביקורות</span>
+      <span className="text-[13px] font-medium leading-none text-bone/85">מעל 100 תלמידים עם תוצאות</span>
       <span className="text-[11px] leading-none text-bone/45">של משתתפים במסלולים</span>
     </span>
   </>
@@ -29,7 +29,7 @@ const base =
 const ReviewsRatingBadge = ({ linked = true, className = "" }: Props) => {
   if (!linked) {
     return (
-      <div dir="rtl" className={`${base} ${className}`} aria-label="דירוג 5.0, מעל 100 ביקורות">
+      <div dir="rtl" className={`${base} ${className}`} aria-label="דירוג 5.0, מעל 100 תלמידים עם תוצאות">
         <Inner />
       </div>
     );
@@ -40,7 +40,7 @@ const ReviewsRatingBadge = ({ linked = true, className = "" }: Props) => {
       to="/reviews"
       dir="rtl"
       className={`${base} hover:border-white/30 hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 ${className}`}
-      aria-label="דירוג 5.0, מעל 100 ביקורות, לצפייה בביקורות"
+      aria-label="דירוג 5.0, מעל 100 תלמידים עם תוצאות, לצפייה בביקורות"
     >
       <Inner />
     </Link>

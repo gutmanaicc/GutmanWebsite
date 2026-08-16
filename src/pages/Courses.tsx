@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import BackButton from "../components/BackButton";
 import CourseCard from "../components/CourseCard";
 import UpcomingCourseCard from "../components/UpcomingCourseCard";
-import SectionHeader, { AccentWord } from "../components/SectionHeader";
+import { AccentWord } from "../components/SectionHeader";
 import { ScrollReveal3D, StaggerGroup, StaggerItem } from "../components/motion";
 import { ACTIVE_COURSES } from "../data/courses";
 import { UPCOMING_COURSES } from "../data/upcomingCourses";
@@ -55,22 +55,10 @@ const Courses = () => {
         </div>
       </section>
 
-      {/* פתוחות להרשמה */}
       <section className="py-12 sm:py-16">
         <div className="container-site">
-          <SectionHeader
-            as="h2"
-            kicker="פתוח להרשמה"
-            title={
-              <>
-                סדנאות <AccentWord>שנפתחות עכשיו</AccentWord>
-              </>
-            }
-            center
-          />
-
           <div
-            className="mb-12 mt-10 flex flex-wrap items-center justify-center gap-2"
+            className="mb-12 flex flex-wrap items-center justify-center gap-2"
             role="tablist"
             aria-label="סינון סדנאות"
           >
@@ -97,7 +85,8 @@ const Courses = () => {
             ))}
           </div>
 
-          <StaggerGroup key={filter} className="grid gap-5 sm:gap-6 md:grid-cols-2" stagger={0.07}>
+          {/* רשת אחת: הפתוחות להרשמה קודם, ומיד אחריהן אלה שבקרוב */}
+          <StaggerGroup key={filter} className="grid gap-5 sm:gap-6 md:grid-cols-2" stagger={0.06}>
             {filtered.map((course) => (
               <StaggerItem key={course.slug} className="h-full">
                 <ScrollReveal3D className="h-full" fromRotateX={10} fromY={26}>
@@ -105,33 +94,15 @@ const Courses = () => {
                 </ScrollReveal3D>
               </StaggerItem>
             ))}
-          </StaggerGroup>
-        </div>
-      </section>
 
-      {/* בקרוב */}
-      <section className="border-t border-white/10 py-12 sm:py-16">
-        <div className="container-site">
-          <SectionHeader
-            as="h2"
-            kicker="בקרוב"
-            title={
-              <>
-                סדנאות <AccentWord>בדרך</AccentWord>
-              </>
-            }
-            sub="הסדנאות האלה עוד לא נפתחו להרשמה. השאירו פרטים ונעדכן אתכם ברגע שההרשמה נפתחת."
-            center
-          />
-
-          <StaggerGroup className="mt-10 grid gap-5 sm:gap-6 md:grid-cols-2" stagger={0.07}>
-            {UPCOMING_COURSES.map((course) => (
-              <StaggerItem key={course.slug} className="h-full">
-                <ScrollReveal3D className="h-full" fromRotateX={10} fromY={26}>
-                  <UpcomingCourseCard course={course} />
-                </ScrollReveal3D>
-              </StaggerItem>
-            ))}
+            {filter === ALL &&
+              UPCOMING_COURSES.map((course) => (
+                <StaggerItem key={course.slug} className="h-full">
+                  <ScrollReveal3D className="h-full" fromRotateX={10} fromY={26}>
+                    <UpcomingCourseCard course={course} />
+                  </ScrollReveal3D>
+                </StaggerItem>
+              ))}
           </StaggerGroup>
         </div>
       </section>

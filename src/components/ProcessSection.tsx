@@ -58,7 +58,7 @@ const Step = ({ step, index, progress, reduced }: StepProps) => {
 
       <div>
         <span className="section-label mb-2">שלב {String(index + 1).padStart(2, "0")}</span>
-        <h3 className="font-serif text-2xl font-medium leading-snug tracking-tight text-bone sm:text-[1.8rem]">
+        <h3 className="font-display text-2xl font-bold leading-snug tracking-tight text-bone sm:text-[1.8rem]">
           {step.title}
         </h3>
       </div>

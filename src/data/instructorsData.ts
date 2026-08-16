@@ -9,7 +9,9 @@ export type InstructorTrackBioKey =
   | "cbt"
   | "social"
   | "business"
-  | "students";
+  | "students"
+  | "fashion"
+  | "therapists";
 
 export type Instructor = {
   id: string;
@@ -44,6 +46,8 @@ export const INSTRUCTORS: Instructor[] = [
         "כמייסד האקדמיה, רון מוביל את הגישה המעשית: כל מסלול בנוי סביב תוצר אמיתי, פידבק בזמן אמת, ועבודה על החומר של המשתתפים עצמם.",
       video:
         "במסלול עורכי הווידאו ויוצרי התוכן, רון מוביל תהליך הפקה מבוסס AI - מקונספט ותסריט ועד שוטים, עריכה ותוצר שניתן לשחזר בכל פרויקט.",
+      therapists:
+        "בסדנה למטפלים ופסיכולוגים, רון מלמד לשלב AI ככלי עבודה תומך בקליניקה: סדר בחומרים, תהליכי תיעוד ומעקב, וסביבת עבודה שמותאמת לשיטה של כל מטפל.",
       cbt: "במסלול לטיפולי CBT ואנשי מקצוע טיפוליים, רון מתרגם כלי AI לשגרות עבודה אתיות ומדויקות - סיכום, תרגול והכנה - בלי לוותר על שיקול דעת מקצועי.",
       social:
         "במסלול למנהלי סושיאל, רון מלמד לבנות לכל לקוח עובד AI שמכיר טון, קהל ומטרות - כדי לנהל יותר לקוחות בפחות שעות ובלי לוותר על איכות.",
@@ -69,6 +73,8 @@ export const INSTRUCTORS: Instructor[] = [
     trackBios: {
       general:
         "הדר מביאה סטנדרט ויזואלי לתוך תהליכי יצירה עם AI - קומפוזיציה, אור, טון מותג ותוצאה שנראית מקצועית מהפריים הראשון.",
+      fashion:
+        "בסדנת האופנה, הדר מלווה את הדרך מהשראה וקונספט ועד קמפיין מוגמר: ניתוח מותג, Moodboard, שפה ויזואלית אחידה ופידבק מקצועי על פרויקט הסיום.",
       video:
         "במסלול הווידאו והתוכן, הדר מחזקת את השכבה הוויזואלית: איך בונים שפה תמונתית עקבית, שוטים ברמהת, וטון מותג שלא נשבר בין פריימים.",
     },
@@ -86,6 +92,8 @@ export const INSTRUCTORS: Instructor[] = [
     ],
     bio: "עידן מנצור מלווה את המשתתפים בבניית תהליכי עבודה עם AI - מהגדרת המטרה ועד תוצר חי. הוא מתמקד בפידבק מדויק, פישוט שלבים מורכבים, והפיכת כלים לשגרה שעובדת גם אחרי המסלול.",
     trackBios: {
+      students:
+        "בסדנה לסטודנטים, עידן מלווה את הבנייה של סביבת לימוד אישית: איך להפוך חומר גלם לסיכומים, לתרגול ולהכנה למבחנים, ואיך לשמור על שיטה שעובדת לאורך הסמסטר.",
       general:
         "עידן מלווה את הקבוצה צמוד: שאלות בזמן אמת, תיקון מסלול כשנתקעים, ודגש על תוצר שעובד ביום שאחרי.",
       business:
@@ -103,13 +111,15 @@ export const COURSE_INSTRUCTOR_MAP: Record<
   string,
   { instructorIds: string[]; bioKey: InstructorTrackBioKey }
 > = {
-  "social-media-ai": { instructorIds: ["ron-gutman", "idan-mansur"], bioKey: "social" },
-  "ai-for-students": { instructorIds: ["ron-gutman"], bioKey: "students" },
-  "ai-video-content": { instructorIds: ["ron-gutman", "hadar-ben-dor"], bioKey: "video" },
-  "ai-business-systems": { instructorIds: ["ron-gutman", "idan-mansur"], bioKey: "business" },
-  "business-crm": { instructorIds: ["ron-gutman", "idan-mansur"], bioKey: "business" },
-  "business-payments": { instructorIds: ["ron-gutman", "idan-mansur"], bioKey: "business" },
-  "business-landing-page": { instructorIds: ["ron-gutman", "idan-mansur"], bioKey: "business" },
+  "ai-for-students": { instructorIds: ["idan-mansur"], bioKey: "students" },
+  "social-media-ai": { instructorIds: ["ron-gutman"], bioKey: "social" },
+  "ai-video-content": { instructorIds: ["ron-gutman"], bioKey: "video" },
+  "ai-fashion": { instructorIds: ["hadar-ben-dor"], bioKey: "fashion" },
+  "ai-for-therapists": { instructorIds: ["ron-gutman"], bioKey: "therapists" },
+  "ai-business-systems": { instructorIds: ["ron-gutman"], bioKey: "business" },
+  "business-crm": { instructorIds: ["ron-gutman"], bioKey: "business" },
+  "business-payments": { instructorIds: ["ron-gutman"], bioKey: "business" },
+  "business-landing-page": { instructorIds: ["ron-gutman"], bioKey: "business" },
 };
 
 export function getInstructorsForCourse(slug: string): Array<{

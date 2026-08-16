@@ -34,7 +34,7 @@ const SyllabusBlocks = ({ syllabus }: { syllabus: MarketingSyllabus }) => {
             >
               {String(i + 1).padStart(2, "0")}
             </span>
-            <h3 className="mt-3 font-serif text-xl font-medium leading-snug tracking-tight text-bone sm:text-[1.35rem]">
+            <h3 className="mt-3 font-display text-xl font-bold leading-snug tracking-tight text-bone sm:text-[1.35rem]">
               {block.title}
             </h3>
             <p className="mt-2.5 text-[15px] leading-relaxed text-bone/55">{block.text}</p>
@@ -54,7 +54,7 @@ const SyllabusBlocks = ({ syllabus }: { syllabus: MarketingSyllabus }) => {
           <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
           בסיום הסדנה
         </span>
-        <p className="font-serif text-lg font-medium leading-snug tracking-tight text-bone sm:text-2xl">
+        <p className="font-display text-lg font-bold leading-snug tracking-tight text-bone sm:text-2xl">
           {syllabus.outcome}
         </p>
       </motion.div>

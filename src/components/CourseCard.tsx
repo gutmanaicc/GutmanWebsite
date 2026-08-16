@@ -68,7 +68,7 @@ const CourseCard = ({ course, featured = false, unroll = true }: Props) => {
 
         <motion.h3
           variants={item}
-          className={`mt-4 font-serif font-medium leading-[1.18] tracking-tight text-ink ${
+          className={`mt-4 font-display font-bold leading-[1.18] tracking-tight text-ink ${
             featured ? "text-[1.7rem] sm:text-4xl" : "text-2xl sm:text-[1.7rem]"
           }`}
         >

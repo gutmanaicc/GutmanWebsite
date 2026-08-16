@@ -17,6 +17,8 @@ export type MarketingSyllabus = {
   blocks: SyllabusBlock[];
   /** מה יוצאים איתו בסוף - מודגש בתחתית הסילבוס */
   outcome: string;
+  /** הכלים שנלמדים בפועל. ריק כשלא נמסרה רשימה, ואז פשוט לא מוצג. */
+  tools?: string[];
 };
 
 export const MARKETING_SYLLABI: Record<string, MarketingSyllabus> = {
@@ -43,6 +45,7 @@ export const MARKETING_SYLLABI: Record<string, MarketingSyllabus> = {
     ],
     outcome:
       "תצאו עם שיטת עבודה פרקטית שמשלבת AI בתוך הקליניקה בצורה מסודרת, יעילה ומותאמת לצרכים שלכם.",
+    tools: ["ChatGPT", "Claude"],
   },
 
   "ai-fashion": {
@@ -97,6 +100,7 @@ export const MARKETING_SYLLABI: Record<string, MarketingSyllabus> = {
     ],
     outcome:
       "תצאו עם מערכת עבודה משלכם לניהול לקוחות בעזרת AI, כך שבמקום להתחיל כל משימה מחדש, יש לכם צוות של עובדים וירטואליים שעובד לצדכם.",
+    tools: ["ChatGPT", "Claude", "Luma"],
   },
 
   "ai-video-content": {
@@ -126,6 +130,7 @@ export const MARKETING_SYLLABI: Record<string, MarketingSyllabus> = {
     ],
     outcome:
       "תצאו עם שיטת עבודה מסודרת ליצירת סרטוני AI, מהרעיון הראשון ועד לתוצר שאפשר להציג ללקוח או לפרסם.",
+    tools: ["ChatGPT", "Luma", "Kinovi"],
   },
 
   "ai-for-students": {
@@ -155,8 +160,14 @@ export const MARKETING_SYLLABI: Record<string, MarketingSyllabus> = {
     ],
     outcome:
       "תצאו עם מערכת עבודה שתעזור לכם ללמוד, לסכם, לחקור ולהתכונן למבחנים בצורה הרבה יותר חכמה ויעילה.",
+    tools: ["ChatGPT", "NotebookLM"],
   },
 };
 
 export const getMarketingSyllabus = (slug: string): MarketingSyllabus | undefined =>
   MARKETING_SYLLABI[slug];
+
+/** הכתובת של מסמך הסילבוס המלא של הסדנה */
+export const getSyllabusHref = (slug: string) => `/syllabus/${slug}`;
+
+export const hasSyllabus = (slug: string) => slug in MARKETING_SYLLABI;

@@ -10,6 +10,8 @@ import CourseDetail from "./pages/CourseDetail";
 import Reviews from "./pages/Reviews";
 import Privacy from "./pages/Privacy";
 import Accessibility from "./pages/Accessibility";
+import Syllabus from "./pages/Syllabus";
+import Register from "./pages/Register";
 import ThankYou from "./pages/ThankYou";
 import NotFound from "./pages/NotFound";
 
@@ -31,6 +33,8 @@ const App = () => (
           <Route path="/thank-you" element={<ThankYou />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/accessibility" element={<Accessibility />} />
+          <Route path="/syllabus/:slug" element={<Syllabus />} />
+          <Route path="/register" element={<Register />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

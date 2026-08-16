@@ -22,8 +22,9 @@ const Marquee = ({ items, className = "" }: Props) => {
     const half = halfWidth.current || (trackRef.current?.scrollWidth ?? 0) / 2;
     halfWidth.current = half;
     if (!half) return;
-    let next = x.get() - (delta / 1000) * 42; // 42px לשנייה
-    if (next <= -half) next += half; // גלגול אינסופי
+    /* נעה ימינה: הערך גדל, וכשהוא חוצה חצי רוחב הוא מתגלגל אחורה */
+    let next = x.get() + (delta / 1000) * 42; // 42px לשנייה
+    if (next >= 0) next -= half;
     x.set(next);
   });
 

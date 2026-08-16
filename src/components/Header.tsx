@@ -11,8 +11,6 @@ type NavItem = {
   to?: string;
   label: string;
   end?: boolean;
-  /** Opens registration (scroll to form on-page, else modal) */
-  action?: "register";
   /** Desktop hover dropdown of courses */
   coursesMenu?: boolean;
   /** Superscript proof count rendered next to the label */
@@ -24,7 +22,7 @@ const NAV: NavItem[] = [
   { to: "/courses", label: "מסלולים", coursesMenu: true },
   { to: "/reviews", label: "ביקורות" },
   { to: "/about", label: "אודות" },
-  { label: "הרשמה", action: "register" },
+  { to: "/register", label: "הרשמה" },
 ];
 
 /** לינק ניווט מערכתי: טקסט נקי עם קו תחתון שנמתח מהצד בהובר */
@@ -56,7 +54,7 @@ const Header = () => {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const location = useLocation();
-  const { openRegisterModal, openRegister } = useRegisterModal();
+  const { openRegisterModal } = useRegisterModal();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -74,29 +72,7 @@ const Header = () => {
     };
   }, [open]);
 
-  const handleRegister = () => {
-    setOpen(false);
-    openRegister({ leadSource: "nav-register", preferScroll: true });
-  };
-
   const renderNavLink = (item: NavItem, mobile = false): ReactNode => {
-    if (item.action === "register") {
-      return (
-        <button
-          key="register"
-          type="button"
-          className={
-            mobile
-              ? "block w-full rounded-full px-4 py-3 text-right text-base font-medium text-bone/70 hover:bg-white/10 hover:text-bone"
-              : navLinkClass({ isActive: false })
-          }
-          onClick={handleRegister}
-        >
-          <NavLabel label={item.label} count={item.count} />
-        </button>
-      );
-    }
-
     if (!item.to) return null;
 
     if (item.coursesMenu && mobile) {

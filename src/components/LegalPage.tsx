@@ -16,7 +16,7 @@ export const LegalSection = ({
   children: ReactNode;
 }) => (
   <section className="border-t border-white/10 py-8 first:border-t-0 sm:py-10">
-    <h2 className="flex items-baseline gap-3 font-serif text-xl font-medium tracking-tight text-bone sm:text-2xl">
+    <h2 className="flex items-baseline gap-3 font-display text-xl font-bold tracking-tight text-bone sm:text-2xl">
       {num && (
         <span className="shrink-0 text-[13px] font-medium tracking-normal text-brand" dir="ltr">
           {num}
