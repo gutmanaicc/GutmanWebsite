@@ -47,6 +47,13 @@ const StudentWorksCarousel = ({ works }: Props) => {
   const [activeIndex, setActiveIndex] = useState(origin);
   const [pausedByUser, setPausedByUser] = useState(false);
   const [showToggleIcon, setShowToggleIcon] = useState<"play" | "pause" | null>(null);
+  /*
+   * ספארי בנייד חוסם הפעלה אוטומטית במצב חיסכון בסוללה וגם כשהמדיה
+   * עדיין לא מוכנה. בלי לדעת שזה קרה, הכרטיס נשאר שחור והמשתמש חושב
+   * שהאתר שבור. כאן שומרים את המצב ומציגים כפתור נגינה גדול.
+   */
+  const [autoplayBlocked, setAutoplayBlocked] = useState(false);
+  const [activeReady, setActiveReady] = useState(false);
 
   /** מראה של activeIndex, לשימוש בתוך מאזינים שלא נרשמים מחדש בכל רינדור */
   const activeRef = useRef(activeIndex);
@@ -254,11 +261,22 @@ const StudentWorksCarousel = ({ works }: Props) => {
 
   // Autoplay active, pause others
   useEffect(() => {
+    setAutoplayBlocked(false);
+    setActiveReady(false);
+
     videoRefs.current.forEach((video, index) => {
       if (index === activeIndex && !pausedByUser) {
+        /* חייב להיות מושתק לפני play, אחרת iOS דוחה את הבקשה */
         video.muted = true;
+        video.setAttribute("muted", "");
+        video.playsInline = true;
+        if (video.readyState >= 2) setActiveReady(true);
         const playPromise = video.play();
-        if (playPromise) playPromise.catch(() => undefined);
+        if (playPromise) {
+          playPromise
+            .then(() => setAutoplayBlocked(false))
+            .catch(() => setAutoplayBlocked(true));
+        }
       } else {
         video.pause();
         if (index !== activeIndex) video.currentTime = 0;
@@ -272,7 +290,9 @@ const StudentWorksCarousel = ({ works }: Props) => {
 
     if (video.paused) {
       setPausedByUser(false);
-      video.play().catch(() => undefined);
+      video.muted = true;
+      /* הלחיצה עצמה היא מחוות משתמש, ולכן כאן ההפעלה כבר מותרת */
+      video.play().then(() => setAutoplayBlocked(false)).catch(() => undefined);
       setShowToggleIcon("play");
     } else {
       video.pause();
@@ -379,20 +399,49 @@ const StudentWorksCarousel = ({ works }: Props) => {
                       {hasVideo ? (
                         <video
                           ref={(el) => {
-                            if (el) videoRefs.current.set(index, el);
-                            else videoRefs.current.delete(index);
+                            if (el) {
+                              videoRefs.current.set(index, el);
+                              /* React לא משקף את muted כאטריביוט, ובלעדיו
+                                 ספארי בנייד מסרב להפעיל אוטומטית */
+                              el.muted = true;
+                              el.setAttribute("muted", "");
+                            } else {
+                              videoRefs.current.delete(index);
+                            }
                           }}
                           src={work.video}
                           className="h-full w-full object-cover"
                           muted
+                          autoPlay={isActive}
                           playsInline
                           loop
                           preload={preload}
                           poster={work.poster}
+                          onLoadedData={() => isActive && setActiveReady(true)}
+                          onCanPlay={() => isActive && setActiveReady(true)}
                         />
                       ) : (
                         /* ממלא מקום עד שהכרטיס מתקרב, כדי לא לגעת בתקרת הווידאו */
                         <span className="absolute inset-0 bg-[#1a1920]" aria-hidden />
+                      )}
+
+                      {/* הסרטון עוד נטען: משהו חי על המסך במקום מלבן שחור */}
+                      {isActive && hasVideo && !activeReady && (
+                        <span
+                          className="pointer-events-none absolute inset-0 flex items-center justify-center bg-[#1a1920]"
+                          aria-hidden
+                        >
+                          <span className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-brand" />
+                        </span>
+                      )}
+
+                      {/* ההפעלה האוטומטית נחסמה - נותנים למשתמש להפעיל בלחיצה */}
+                      {isActive && autoplayBlocked && !pausedByUser && (
+                        <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                          <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white shadow-lg">
+                            <Play className="h-6 w-6 fill-white" />
+                          </span>
+                        </span>
                       )}
 
                       <AnimatePresence>

@@ -76,7 +76,7 @@ const InstructorsShowcase = () => {
         />
 
         <div className="mt-14 flex flex-wrap items-start justify-center gap-x-14 gap-y-14 sm:gap-x-20">
-          {INSTRUCTORS.map((instructor) => (
+          {INSTRUCTORS.filter((i) => i.published !== false).map((instructor) => (
             <InstructorAvatar
               key={instructor.id}
               instructor={instructor}

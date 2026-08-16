@@ -1,15 +1,15 @@
 import { useEffect } from "react";
 
 /**
- * נעילת גלילה לכל פופאפ באתר.
+ * נעילת גלילה אחת ויחידה לכל האתר.
  *
- * לא מספיק להסתיר את הגלילה של ה-body: מנוע הגלילה החלקה (Lenis) ממשיך
- * לתפוס את גלגלת העכבר, וכשהרקע נעול והפופאפ לא מקבל את הגלגלת, העמוד
- * מרגיש תקוע. לכן עוצרים את Lenis במפורש כל עוד הפופאפ פתוח, ומחזירים
- * אותו בסגירה.
+ * קודם היו חמישה מקומות שכתבו ישירות ל-body.style.overflow: מסך
+ * הטעינה, תפריט הנייד, גלריית התוצרים ושלושת הפופאפים. כשהם נפתחו
+ * ונסגרו בסדר שונה הם דרסו זה את זה, ומצב אחד סיים עם overflow:hidden
+ * תקוע - כלומר עמוד שלא נגלל בכלל, בלי שום סימן חיצוני לבעיה.
  *
- * בנוסף שומרים את מיקום הגלילה ומשחזרים אותו, כדי שסגירת הפופאפ לא
- * תקפיץ את המשתמש לראש העמוד.
+ * עכשיו יש מונה אחד: הנעילה הראשונה שומרת את הערך המקורי, והשחרור
+ * האחרון מחזיר אותו. כל נעילה באמצע לא נוגעת בכלום.
  */
 
 declare global {
@@ -18,21 +18,42 @@ declare global {
   }
 }
 
+let locks = 0;
+let savedOverflow = "";
+
+export function lockScroll() {
+  if (typeof document === "undefined") return;
+  const { body } = document;
+  if (locks === 0) {
+    savedOverflow = body.style.overflow;
+    body.style.overflow = "hidden";
+    window.__lenis?.stop();
+  }
+  locks += 1;
+}
+
+export function unlockScroll() {
+  if (typeof document === "undefined") return;
+  locks -= 1;
+  if (locks > 0) return;
+  locks = 0;
+  document.body.style.overflow = savedOverflow;
+  window.__lenis?.start();
+}
+
+/**
+ * נועל את הגלילה כל עוד active, ומשחזר את מיקום הגלילה בסגירה כדי
+ * שסגירת פופאפ לא תקפיץ את המשתמש לראש העמוד.
+ */
 export function useScrollLock(active: boolean) {
   useEffect(() => {
     if (!active) return;
 
-    const lenis = window.__lenis;
-    const { body } = document;
-    const previousOverflow = body.style.overflow;
     const scrollY = window.scrollY;
-
-    lenis?.stop();
-    body.style.overflow = "hidden";
+    lockScroll();
 
     return () => {
-      body.style.overflow = previousOverflow;
-      lenis?.start();
+      unlockScroll();
       /* Lenis עלול לאפס את המיקום כשהוא מתעורר, ולכן מחזירים אותו ידנית */
       window.scrollTo({ top: scrollY, behavior: "auto" });
     };
@@ -43,7 +64,7 @@ export function useScrollLock(active: boolean) {
  * חלון קצר אחרי סגירת פופאפ שבו אסור לפתוח אותו מחדש.
  *
  * הסגירה בלחיצה מחוץ לפאנל קורית ב-pointerdown, ואז שחרור העכבר נוחת
- * על מה שהיה מתחת. בלי החסם הזה, אותה לחיצה עצמה פותחת את הפופאפ שוב
+ * על מה שהיה מתחתיו. בלי החסם הזה, אותה לחיצה עצמה פותחת את הפופאפ שוב
  * והמשתמש מרגיש שהאתר תקוע.
  */
 let lastCloseAt = 0;

@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { X } from "lucide-react";
 import type { StudentWork } from "../data/studentWorksData";
+import { lockScroll, unlockScroll } from "../lib/scrollLock";
 import SectionHeader, { AccentWord } from "./SectionHeader";
 
 type Props = {
@@ -19,16 +20,17 @@ const StudentWorksGallery = ({ works }: Props) => {
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
-    if (active) {
-      if (!dialog.open) dialog.showModal();
-      document.body.style.overflow = "hidden";
-    } else if (dialog.open) {
-      dialog.close();
-      document.body.style.overflow = "";
+
+    if (!active) {
+      if (dialog.open) dialog.close();
+      return;
     }
-    return () => {
-      document.body.style.overflow = "";
-    };
+
+    /* נעילה אחת בפתיחה ושחרור אחד בניקוי. שחרור כפול היה מוריד את
+       המונה המשותף ומשחרר נעילה של פופאפ אחר שעדיין פתוח. */
+    if (!dialog.open) dialog.showModal();
+    lockScroll();
+    return () => unlockScroll();
   }, [active]);
 
   if (!works.length) return null;

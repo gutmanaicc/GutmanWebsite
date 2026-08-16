@@ -748,11 +748,11 @@
   }
 
   .consent-check label {
-    @apply flex cursor-pointer items-start gap-3 text-right;
+    @apply flex min-h-11 cursor-pointer items-start gap-3 py-1 text-right;
   }
 
   .consent-check input[type="checkbox"] {
-    @apply mt-0.5 h-5 w-5 shrink-0 cursor-pointer appearance-none rounded-md border border-white/25 bg-white/[0.05] transition-colors;
+    @apply mt-px h-6 w-6 shrink-0 cursor-pointer appearance-none rounded-md border border-white/25 bg-white/[0.05] transition-colors;
   }
 
   .consent-check input[type="checkbox"]:checked {
@@ -776,7 +776,7 @@
   }
 
   .consent-check a {
-    @apply text-bone/80 underline underline-offset-2 transition-colors hover:text-brand;
+    @apply inline-block py-1 text-bone/80 underline underline-offset-2 transition-colors hover:text-brand;
   }
 
   .consent-check .err {
