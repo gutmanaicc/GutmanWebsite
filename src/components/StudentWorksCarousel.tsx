@@ -32,6 +32,8 @@ const StudentWorksCarousel = ({ works }: Props) => {
   const cardRefs = useRef<(HTMLElement | null)[]>([]);
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
   const programmaticUntil = useRef(0);
+  /** חלון שבו הגלילה האופקית באמת הגיעה מהמשתמש (מגע, גלגלת, מקלדת) */
+  const userDrivingUntil = useRef(0);
   const normalizeTimer = useRef(0);
 
   const count = works.length;
@@ -45,6 +47,10 @@ const StudentWorksCarousel = ({ works }: Props) => {
   const [activeIndex, setActiveIndex] = useState(origin);
   const [pausedByUser, setPausedByUser] = useState(false);
   const [showToggleIcon, setShowToggleIcon] = useState<"play" | "pause" | null>(null);
+
+  /** מראה של activeIndex, לשימוש בתוך מאזינים שלא נרשמים מחדש בכל רינדור */
+  const activeRef = useRef(activeIndex);
+  activeRef.current = activeIndex;
 
   const centerCard = useCallback(
     (index: number, smooth = true) => {
@@ -101,10 +107,18 @@ const StudentWorksCarousel = ({ works }: Props) => {
     [count, centerCard, reduced, scheduleNormalize],
   );
 
-  // Instant-center the origin slide on mount; re-center after layout settles
+  /*
+   * מרכוז הכרטיס הפותח.
+   *
+   * הפריסה לא יציבה מיד: פונטים, תמונות ומדיה כבדה מזיזים את המסילה
+   * עוד כמה מאות מילישניות אחרי הרינדור הראשון. לכן ממרכזים שוב ושוב
+   * לאורך חלון הזנקה ארוך, ומשתיקים בינתיים את המעקב אחרי הגלילה
+   * הידנית כדי שלא "יגלוש" לכרטיס השני.
+   */
   useEffect(() => {
     if (!count) return;
-    programmaticUntil.current = performance.now() + 600;
+    const SETTLE_MS = 1600;
+    programmaticUntil.current = performance.now() + SETTLE_MS;
     cardRefs.current = cardRefs.current.slice(0, count * COPIES);
 
     let cancelled = false;
@@ -114,9 +128,11 @@ const StudentWorksCarousel = ({ works }: Props) => {
 
     run();
     const raf = requestAnimationFrame(run);
-    const t1 = window.setTimeout(run, 50);
-    const t2 = window.setTimeout(run, 150);
-    const t3 = window.setTimeout(run, 350);
+    const timers = [50, 150, 350, 700, 1100, 1500].map((ms) => window.setTimeout(run, ms));
+
+    /* גם סיום טעינת הפונטים מזיז את הפריסה */
+    document.fonts?.ready.then(run).catch(() => undefined);
+    window.addEventListener("load", run);
 
     const track = scrollerRef.current;
     let ro: ResizeObserver | undefined;
@@ -132,15 +148,14 @@ const StudentWorksCarousel = ({ works }: Props) => {
     const stop = window.setTimeout(() => {
       ro?.disconnect();
       ro = undefined;
-    }, 700);
+    }, SETTLE_MS + 100);
 
     return () => {
       cancelled = true;
       cancelAnimationFrame(raf);
-      window.clearTimeout(t1);
-      window.clearTimeout(t2);
-      window.clearTimeout(t3);
+      timers.forEach(window.clearTimeout);
       window.clearTimeout(stop);
+      window.removeEventListener("load", run);
       ro?.disconnect();
     };
   }, [count, origin, centerCard]);
@@ -159,41 +174,83 @@ const StudentWorksCarousel = ({ works }: Props) => {
     return () => ro.disconnect();
   }, [activeIndex, centerCard]);
 
-  // Track active slide via swipe / manual scroll (skip while arrow animation runs)
+  /*
+   * מעקב אחרי הכרטיס הפעיל בגרירה ידנית.
+   *
+   * שתי מלכודות שנפלנו בהן כאן:
+   *
+   * 1. IntersectionObserver לא מתאים למדידה הזו. כשכמה כרטיסים נראים
+   *    במלואם בתוך המסילה, ה-ratio של כולם הוא 1 והבחירה ביניהם הופכת
+   *    שרירותית. לכן מודדים מרחק מהמרכז.
+   *
+   * 2. הדפדפן מאפס לבדו את מיקום הגלילה האופקי כשהעמוד נגלל והמסילה
+   *    מקבלת פריסה מחדש, והקרוסלה "קופצת" לכרטיס אקראי. לכן מבדילים
+   *    בין גלילה שהמשתמש יזם - מגע, גלגלת או מקלדת על המסילה - לבין
+   *    גלילה שקרתה מעצמה, ואת השנייה פשוט מחזירים למקום.
+   */
   useEffect(() => {
     const scroller = scrollerRef.current;
     if (!scroller || !count) return;
 
-    const cards = Array.from(scroller.querySelectorAll<HTMLElement>("[data-slide-index]"));
-    const ratios = new Map<number, number>();
+    let frame = 0;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (performance.now() < programmaticUntil.current) return;
+    const measure = () => {
+      frame = 0;
+      const now = performance.now();
+      if (now < programmaticUntil.current) return;
 
-        for (const entry of entries) {
-          const idx = Number((entry.target as HTMLElement).dataset.slideIndex);
-          if (Number.isNaN(idx)) continue;
-          ratios.set(idx, entry.intersectionRatio);
+      if (now > userDrivingUntil.current) {
+        /* גלילה שאיש לא ביקש: מחזירים את הכרטיס הנוכחי למרכז */
+        programmaticUntil.current = now + 250;
+        centerCard(activeRef.current, false);
+        return;
+      }
+      /* תנופת מגע ממשיכה אחרי שהאצבע עזבה, ולכן מאריכים את החלון */
+      userDrivingUntil.current = now + 400;
+
+      const trackRect = scroller.getBoundingClientRect();
+      const trackCenter = trackRect.left + trackRect.width / 2;
+
+      let best = origin;
+      let bestDistance = Infinity;
+      for (const card of scroller.querySelectorAll<HTMLElement>("[data-slide-index]")) {
+        const idx = Number(card.dataset.slideIndex);
+        if (Number.isNaN(idx)) continue;
+        const rect = card.getBoundingClientRect();
+        const distance = Math.abs(rect.left + rect.width / 2 - trackCenter);
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          best = idx;
         }
-        let best = origin;
-        let bestRatio = -1;
-        ratios.forEach((ratio, idx) => {
-          if (ratio > bestRatio) {
-            bestRatio = ratio;
-            best = idx;
-          }
-        });
-        setActiveIndex((prev) => (prev === best ? prev : best));
-        /* גם גרירה ידנית מוחזרת לעותק האמצעי, אחרי שהאצבע עוזבת והתנופה נחה */
-        scheduleNormalize(best, 700);
-      },
-      { root: scroller, threshold: [0.35, 0.5, 0.65, 0.8] },
-    );
+      }
 
-    cards.forEach((card) => observer.observe(card));
-    return () => observer.disconnect();
-  }, [count, origin, scheduleNormalize]);
+      setActiveIndex((prev) => (prev === best ? prev : best));
+      /* גם גרירה ידנית מוחזרת לעותק האמצעי, אחרי שהאצבע עוזבת והתנופה נחה */
+      scheduleNormalize(best, 700);
+    };
+
+    const onScroll = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(measure);
+    };
+
+    const markUserDriving = () => {
+      userDrivingUntil.current = performance.now() + 1200;
+    };
+
+    scroller.addEventListener("scroll", onScroll, { passive: true });
+    for (const type of ["pointerdown", "touchstart", "wheel", "keydown"] as const) {
+      scroller.addEventListener(type, markUserDriving, { passive: true });
+    }
+
+    return () => {
+      scroller.removeEventListener("scroll", onScroll);
+      for (const type of ["pointerdown", "touchstart", "wheel", "keydown"] as const) {
+        scroller.removeEventListener(type, markUserDriving);
+      }
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, [count, origin, scheduleNormalize, centerCard]);
 
   // Autoplay active, pause others
   useEffect(() => {
