@@ -27,11 +27,6 @@ export type Instructor = {
   bio: string;
   /** Track-specific bios for Course Detail */
   trackBios: Partial<Record<InstructorTrackBioKey, string>>;
-  /**
-   * מנחה שהתמונה שלו עדיין לא הועלתה לא מוצג באתר.
-   * ברירת המחדל היא מוצג; מסמנים false רק כשחסר קובץ תמונה.
-   */
-  published?: boolean;
 };
 
 export const INSTRUCTORS: Instructor[] = [
@@ -112,7 +107,6 @@ export const INSTRUCTORS: Instructor[] = [
   },
   {
     id: "netanel-halevi",
-    published: false,
     name: "מתנאל הלוי",
     shortName: "מתנאל",
     role: "מנחה סדנת בעלי עסקים",
@@ -129,7 +123,6 @@ export const INSTRUCTORS: Instructor[] = [
   },
   {
     id: "nofar-zevulun",
-    published: false,
     name: "נופר זבולון",
     shortName: "נופר",
     role: "מנחת סדנת התפתחות אישית",
@@ -146,7 +139,6 @@ export const INSTRUCTORS: Instructor[] = [
   },
   {
     id: "maor-israel",
-    published: false,
     name: "מאור ישראל",
     shortName: "מאור",
     role: "מנחה סדנת מפתחים",

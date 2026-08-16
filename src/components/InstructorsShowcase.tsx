@@ -14,11 +14,14 @@ export const InstructorAvatar = ({
   bio,
   onOpen,
   size = "lg",
+  onImageError,
 }: {
   instructor: Instructor;
   bio: string;
   onOpen: (value: InstructorBio) => void;
   size?: "lg" | "md";
+  /** נקרא כשקובץ התמונה חסר, כדי שהסקשן יוכל להשמיט את המנחה */
+  onImageError?: () => void;
 }) => {
   const reduced = useReducedMotion();
   const dimension = size === "lg" ? "h-40 w-40 sm:h-48 sm:w-48" : "h-32 w-32 sm:h-36 sm:w-36";
@@ -44,6 +47,7 @@ export const InstructorAvatar = ({
           className={`${dimension} rounded-full object-cover object-center ring-1 ring-white/15 transition-[filter] duration-500 group-hover:brightness-110`}
           loading="lazy"
           draggable={false}
+          onError={onImageError}
         />
       </span>
 
@@ -60,6 +64,12 @@ export const InstructorAvatar = ({
 
 const InstructorsShowcase = () => {
   const [bio, setBio] = useState<InstructorBio>(null);
+  /*
+   * מנחה שקובץ התמונה שלו עדיין לא הועלה פשוט לא מוצג, במקום להציג
+   * ריבוע תמונה שבורה. ברגע שהקובץ נכנס לריפו הוא מופיע מעצמו, בלי
+   * שינוי קוד נוסף.
+   */
+  const [missingImage, setMissingImage] = useState<string[]>([]);
 
   return (
     <section className="py-14 sm:py-20 lg:py-24">
@@ -76,12 +86,15 @@ const InstructorsShowcase = () => {
         />
 
         <div className="mt-14 flex flex-wrap items-start justify-center gap-x-14 gap-y-14 sm:gap-x-20">
-          {INSTRUCTORS.filter((i) => i.published !== false).map((instructor) => (
+          {INSTRUCTORS.filter((i) => !missingImage.includes(i.id)).map((instructor) => (
             <InstructorAvatar
               key={instructor.id}
               instructor={instructor}
               bio={instructor.trackBios.general ?? instructor.bio}
               onOpen={setBio}
+              onImageError={() =>
+                setMissingImage((prev) => (prev.includes(instructor.id) ? prev : [...prev, instructor.id]))
+              }
             />
           ))}
         </div>
