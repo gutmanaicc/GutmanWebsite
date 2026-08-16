@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { Fragment, useRef } from "react";
 import { motion, useAnimationFrame, useMotionValue, useReducedMotion } from "framer-motion";
 
 type Props = {
@@ -28,18 +28,25 @@ const Marquee = ({ items, className = "" }: Props) => {
     x.set(next);
   });
 
+  /*
+   * רשימה שטוחה: כל מילה וכל כוכב הם אלמנט נפרד באותו flex, ולכן
+   * אותו gap חל בין כולם והמרווחים יוצאים שווים בדיוק.
+   *
+   * קודם הכוכב ישב בתוך ה-span של המילה, ליד טקסט חשוף. טקסט חשוף
+   * הופך לפריט flex אנונימי שמתנהג אחרת, ובשורה שמערבבת עברית
+   * ואנגלית זה יצא לא אחיד: כוכב אחד נצמד למילה ואחר ריחף באמצע.
+   */
   const row = (dup: boolean) => (
     <div className="flex shrink-0 items-center gap-14" aria-hidden={dup || undefined}>
       {items.map((item, i) => (
-        <span
-          key={`${item}-${i}`}
-          className="flex select-none items-center gap-14 whitespace-nowrap text-sm font-medium tracking-wide text-bone/70"
-        >
-          {item}
-          <span className="text-brand" aria-hidden>
+        <Fragment key={`${item}-${i}`}>
+          <span className="select-none whitespace-nowrap text-sm font-medium tracking-wide text-bone/70">
+            {item}
+          </span>
+          <span className="select-none text-brand" aria-hidden>
             ✦
           </span>
-        </span>
+        </Fragment>
       ))}
     </div>
   );
