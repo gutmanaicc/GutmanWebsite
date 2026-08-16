@@ -334,9 +334,17 @@ const StudentWorksCarousel = ({ works }: Props) => {
             >
               {slides.map((work, index) => {
                 const isActive = index === activeIndex;
-                /* רק השכנים הקרובים טוענים מדיה בפועל; השאר שומרים מקום בלבד */
                 const distance = Math.abs(index - activeIndex);
-                const preload = isActive ? "auto" : distance <= 2 ? "metadata" : "none";
+                /*
+                 * רק חלון קטן סביב הכרטיס הפעיל מקבל אלמנט וידאו אמיתי.
+                 *
+                 * הלופ פורש את הרשימה שלוש פעמים, וזה הגיע ל-27 אלמנטי
+                 * וידאו בעמוד. לאייפון יש תקרה קשיחה על מספר הסרטונים
+                 * שאפשר לטעון בו-זמנית, ומעליה הם פשוט לא נטענים - כך
+                 * שכל הקרוסלה נשארה שחורה בנייד. עכשיו יש חמישה לכל היותר.
+                 */
+                const hasVideo = distance <= 2;
+                const preload = isActive ? "auto" : "metadata";
 
                 return (
                   <article
@@ -368,18 +376,24 @@ const StudentWorksCarousel = ({ works }: Props) => {
                           : `עבור לסרטון: ${work.title}`
                       }
                     >
-                      <video
-                        ref={(el) => {
-                          if (el) videoRefs.current.set(index, el);
-                          else videoRefs.current.delete(index);
-                        }}
-                        src={work.video}
-                        className="h-full w-full object-cover"
-                        muted
-                        playsInline
-                        loop
-                        preload={preload}
-                      />
+                      {hasVideo ? (
+                        <video
+                          ref={(el) => {
+                            if (el) videoRefs.current.set(index, el);
+                            else videoRefs.current.delete(index);
+                          }}
+                          src={work.video}
+                          className="h-full w-full object-cover"
+                          muted
+                          playsInline
+                          loop
+                          preload={preload}
+                          poster={work.poster}
+                        />
+                      ) : (
+                        /* ממלא מקום עד שהכרטיס מתקרב, כדי לא לגעת בתקרת הווידאו */
+                        <span className="absolute inset-0 bg-[#1a1920]" aria-hidden />
+                      )}
 
                       <AnimatePresence>
                         {isActive && showToggleIcon && (

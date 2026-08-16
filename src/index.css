@@ -737,6 +737,52 @@
     @apply mb-4 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-200;
   }
 
+  /**
+   * אישור מפורש לפני שליחה.
+   *
+   * תיבת סימון ולא משפט קטן מתחת לכפתור: כך יש רגע הסכמה מתועד,
+   * והמשתמש בוחר במקום שיניחו בשמו.
+   */
+  .consent-check {
+    @apply mt-1;
+  }
+
+  .consent-check label {
+    @apply flex cursor-pointer items-start gap-3 text-right;
+  }
+
+  .consent-check input[type="checkbox"] {
+    @apply mt-0.5 h-5 w-5 shrink-0 cursor-pointer appearance-none rounded-md border border-white/25 bg-white/[0.05] transition-colors;
+  }
+
+  .consent-check input[type="checkbox"]:checked {
+    @apply border-brand bg-brand;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E");
+    background-size: 74%;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  .consent-check input[type="checkbox"]:focus-visible {
+    @apply outline-none ring-2 ring-brand/45 ring-offset-2 ring-offset-transparent;
+  }
+
+  .consent-check input[type="checkbox"][aria-invalid="true"] {
+    @apply border-red-400;
+  }
+
+  .consent-check span {
+    @apply text-[13px] leading-relaxed text-bone/55;
+  }
+
+  .consent-check a {
+    @apply text-bone/80 underline underline-offset-2 transition-colors hover:text-brand;
+  }
+
+  .consent-check .err {
+    @apply mt-1.5 block pr-8 text-xs text-red-300;
+  }
+
   .form-note {
     @apply mt-3.5 text-center text-xs leading-relaxed text-bone/40;
   }
