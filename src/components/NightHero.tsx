@@ -114,7 +114,14 @@ const NightHero = () => {
           src={IMAGE}
           alt=""
           className="h-full w-full object-cover object-bottom"
-          fetchPriority="high"
+          /*
+           * האטריביוט נכתב באותיות קטנות דרך spread.
+           *
+           * גרסת React שכאן לא מזהה את הפרופ fetchPriority ומדפיסה אזהרה
+           * בכל טעינה, בזמן שטיפוסי React דווקא דורשים את הצורה הזו. spread
+           * עם המרה מספק את שניהם: HTML תקין וקונסול נקי.
+           */
+          {...({ fetchpriority: "high" } as Record<string, string>)}
           decoding="async"
         />
         <video

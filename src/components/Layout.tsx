@@ -10,6 +10,7 @@ import AccessibilityMenu from "./AccessibilityMenu";
 import RegisterModal from "./RegisterModal";
 import WaitlistModal from "./WaitlistModal";
 import { ParallaxGridCanvas } from "./motion";
+import { useMotionCapability } from "../lib/motion";
 import { REGISTRATION_FORM_ID, scrollToRegistrationForm } from "../lib/registration";
 
 /** גלילה חלקה עם אינרציה (lenis) - הבסיס של תחושת orbix. עכבר בלבד. */
@@ -108,7 +109,16 @@ const PageTransition = () => {
 
 const Layout = () => {
   const reduced = useReducedMotion();
-  useSmoothScroll(Boolean(reduced));
+  /*
+   * גם המתג של תפריט הנגישות עוצר את הגלילה החלקה, לא רק הגדרת מערכת
+   * ההפעלה.
+   *
+   * useReducedMotion קורא רק את prefers-reduced-motion, ולכן מי שביקש
+   * "עצירת אנימציות" בתפריט של האתר קיבל הירו סטטי אבל Lenis המשיך
+   * לרוץ מתחתיו. useMotionCapability כבר יודע לקרוא את שני המקורות.
+   */
+  const motionLevel = useMotionCapability();
+  useSmoothScroll(Boolean(reduced) || motionLevel === "static");
 
   return (
   <div className="relative min-h-screen bg-canvas">

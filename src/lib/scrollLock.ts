@@ -38,8 +38,15 @@ export function useScrollLock(active: boolean) {
     return () => {
       body.style.overflow = previousOverflow;
       lenis?.start();
-      /* Lenis עלול לאפס את המיקום כשהוא מתעורר, ולכן מחזירים אותו ידנית */
-      window.scrollTo({ top: scrollY, behavior: "auto" });
+      /*
+       * השחזור עובר דרך Lenis ולא דרך window.scrollTo.
+       *
+       * Lenis מחזיק מיקום גלילה משלו ודוחף אותו בחזרה בפריים הבא, ולכן
+       * window.scrollTo נמחק מיד והעמוד קפץ לראש בסגירת כל פופאפ. force
+       * כדי שהפקודה תתפוס גם ברגע שבו המנוע עוד לא התעורר לגמרי.
+       */
+      if (lenis) lenis.scrollTo(scrollY, { immediate: true, force: true });
+      else window.scrollTo({ top: scrollY, behavior: "auto" });
     };
   }, [active]);
 }
