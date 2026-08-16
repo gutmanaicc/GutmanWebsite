@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { LEAD_TRACKS } from "../data/courses";
+import { SITE } from "../data/site";
 import { collectUtm, submitLead } from "../lib/leads";
 import Pressable from "./Pressable";
 
@@ -259,7 +260,15 @@ const RegisterForm = ({
 
       {status === "error" && (
         <div className="form-error-summary" role="alert">
-          משהו השתבש בשליחה. נסו שוב, ואם זה חוזר על עצמו אפשר לפנות אלינו בוואטסאפ.
+          לא הצלחנו לשלוח את הפרטים. נסו שוב, ואם זה חוזר על עצמו התקשרו אלינו ל-
+          <a href={`tel:${SITE.contact.phone.replace(/-/g, "")}`} dir="ltr" className="underline underline-offset-2">
+            {SITE.contact.phone}
+          </a>{" "}
+          או כתבו ל-
+          <a href={`mailto:${SITE.contact.email}`} dir="ltr" className="underline underline-offset-2">
+            {SITE.contact.email}
+          </a>
+          .
         </div>
       )}
 

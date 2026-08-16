@@ -39,28 +39,49 @@ function saveLocally(lead: LeadPayload) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
 }
 
+async function postOnce(endpoint: string, lead: LeadPayload): Promise<boolean> {
+  const res = await fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(lead),
+  });
+  if (!res.ok) throw new Error(`lead endpoint returned ${res.status}`);
+  return true;
+}
+
+/**
+ * שולח ליד לשרת, ומדווח בכנות אם הוא הגיע.
+ *
+ * הגרסה הקודמת החזירה "הצלחה" גם כשהשליחה נכשלה, אחרי ששמרה עותק
+ * ב-localStorage של הגולש. זה נראה תקין למשתמש אבל הליד נשאר תקוע
+ * בדפדפן שלו ולא הגיע לאף אחד. עכשיו מנסים פעמיים, ואם באמת לא
+ * הצלחנו - הטופס אומר את זה ומציע דרך יצירת קשר חלופית.
+ *
+ * הגיבוי המקומי נשמר בכל מקרה, כדי שאפשר יהיה לשחזר ליד שאבד.
+ */
 export async function submitLead(lead: LeadPayload): Promise<boolean> {
   const endpoint = getLeadEndpoint();
 
   try {
-    if (endpoint) {
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(lead),
-      });
-      if (!res.ok) throw new Error(`lead endpoint returned ${res.status}`);
-    } else {
-      saveLocally(lead);
-    }
-    trackStandard("Lead", { content_name: lead.courseInterest, content_category: lead.leadSource });
-    return true;
+    saveLocally(lead);
   } catch {
+    /* אחסון מלא או חסום - לא סיבה להפיל את השליחה */
+  }
+
+  if (!endpoint) return false;
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
-      saveLocally(lead);
+      await postOnce(endpoint, lead);
+      trackStandard("Lead", {
+        content_name: lead.courseInterest,
+        content_category: lead.leadSource,
+      });
       return true;
     } catch {
-      return false;
+      if (attempt === 0) await new Promise((resolve) => setTimeout(resolve, 700));
     }
   }
+
+  return false;
 }

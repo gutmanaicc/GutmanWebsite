@@ -27,7 +27,7 @@ import {
   VideoIcon,
 } from "../components/icons";
 import { getChildCourses, getCourse, type AudienceIcon, type Course } from "../data/courses";
-import { getMarketingSyllabus, getSyllabusHref } from "../data/syllabi";
+import { getMarketingSyllabus, getSyllabusHref, hasSyllabus } from "../data/syllabi";
 import { trackStandard } from "../pixel";
 import { getInstructorsForCourse } from "../data/instructorsData";
 import { getStudentWorksForCourse } from "../data/studentWorksData";
@@ -207,9 +207,11 @@ const SubTracksGrid = ({
                     לפרטי המסלול
                     <ArrowIcon />
                   </Link>
+                  {/* הכרטיס לבן, ולכן כאן צריך גרסה כהה: btn-ghost נבנה לקנבס הכהה
+                      והטקסט שלו היה לבן על לבן */}
                   <Pressable
                     type="button"
-                    className="btn-ghost btn-small"
+                    className="btn btn-small border border-ink/20 bg-transparent text-ink hover:border-ink/50 hover:bg-ink/5"
                     rippleTone="pink"
                     onClick={() =>
                       openRegisterModal({ courseId: sub.slug, leadSource: `${sub.leadSource}-hub` })
@@ -357,9 +359,17 @@ const CourseDetail = () => {
                   שמרו לי מקום
                   <ArrowIcon />
                 </Pressable>
-                <Pressable as="link" to={getSyllabusHref(course.slug)} className="btn-ghost btn-small" rippleTone="pink">
-                  סילבוס
-                </Pressable>
+                {/* רק לסדנאות שיש להן סילבוס. אחרת הכפתור הוביל לעמוד 404 */}
+                {hasSyllabus(course.slug) && (
+                  <Pressable
+                    as="link"
+                    to={getSyllabusHref(course.slug)}
+                    className="btn-ghost btn-small"
+                    rippleTone="pink"
+                  >
+                    סילבוס
+                  </Pressable>
+                )}
               </div>
             </motion.div>
           </div>
@@ -464,11 +474,8 @@ const CourseDetail = () => {
         </MotionSection>
       )}
 
-      {studentWorks.length > 0 && (
-        <div className="bg-[#F4F4F2]/60">
-          <StudentWorksCarousel works={studentWorks} />
-        </div>
-      )}
+      {/* הקרוסלה בנויה לקנבס הכהה; רקע בהיר כאן הפך את הכיתובים שלה ללבן על לבן */}
+      {studentWorks.length > 0 && <StudentWorksCarousel works={studentWorks} />}
 
       {/* Deliverables - featured bento */}
       <MotionSection resetKey={`${courseKey}-deliverables`} className="relative py-10 sm:py-12">

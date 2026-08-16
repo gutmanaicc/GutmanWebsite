@@ -3,6 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useScrollLock } from "../lib/scrollLock";
 import { useWaitlistModal } from "../context/WaitlistModalContext";
 import { collectUtm, submitLead } from "../lib/leads";
+import { SITE } from "../data/site";
 import Pressable from "./Pressable";
 import { XIcon } from "./icons";
 
@@ -163,7 +164,15 @@ const WaitlistModal = () => {
                 <form onSubmit={onSubmit} noValidate className="space-y-5">
                   {status === "error" && (
                     <div className="form-error-summary" role="alert">
-                      משהו השתבש בשליחה. נסו שוב, ואם זה חוזר על עצמו אפשר לפנות אלינו בוואטסאפ.
+                      לא הצלחנו לשלוח את הפרטים. נסו שוב, ואם זה חוזר על עצמו התקשרו אלינו ל-
+                      <a
+                        href={`tel:${SITE.contact.phone.replace(/-/g, "")}`}
+                        dir="ltr"
+                        className="underline underline-offset-2"
+                      >
+                        {SITE.contact.phone}
+                      </a>
+                      .
                     </div>
                   )}
 
