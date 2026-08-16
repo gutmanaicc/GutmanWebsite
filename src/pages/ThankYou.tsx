@@ -1,34 +1,33 @@
 import { Link, useLocation } from "react-router-dom";
-import { getCourse } from "../data/courses";
+import { COURSES } from "../data/courses";
+import { SITE } from "../data/site";
 import { useSeo } from "../lib/seo";
-import { useReveal } from "../lib/useReveal";
 
 const ThankYou = () => {
   const location = useLocation();
-  const slug = (location.state as { course?: string } | null)?.course;
-  const course = slug && slug !== "unsure" ? getCourse(slug) : undefined;
+  const courseSlug = (location.state as { course?: string } | null)?.course;
+  const course = COURSES.find((c) => c.slug === courseSlug);
 
   useSeo({
-    title: "תודה! הפרטים נקלטו | Gutman Academy",
-    description: "הפרטים נקלטו ונחזור אליכם בהקדם.",
+    title: `תודה | ${SITE.name}`,
+    description: "קיבלנו את הפרטים שלכם ונחזור אליכם בקרוב.",
     path: "/thank-you",
   });
-  useReveal();
 
   return (
-    <section className="center-page container">
-      <span className="eyebrow" data-reveal>הפרטים נקלטו</span>
-      <h1 data-reveal>תודה! מכאן זה עלינו.</h1>
-      <p data-reveal>
+    <div className="container-site flex min-h-[60vh] flex-col items-center justify-center py-20 text-center">
+      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-brand/10 text-2xl text-brand">✓</div>
+      <h1 className="text-3xl font-bold">קיבלנו. נחזור אליכם בקרוב.</h1>
+      <p className="mt-3 max-w-md text-muted">
         {course
-          ? `נחזור אליכם בהקדם עם כל הפרטים על ${course.title}: מועדים, מחירים ותשובות לכל שאלה.`
-          : "נחזור אליכם בהקדם עם המלצה אישית וכל הפרטים. בינתיים, שווה להציץ במסלולים."}
+          ? `רשמנו את פנייתכם לגבי "${course.title}". ניצור קשר עם כל הפרטים.`
+          : "רשמנו את פנייתכם. ניצור קשר בהקדם עם כל הפרטים."}
       </p>
-      <div className="hero-ctas" data-reveal>
-        <Link to="/courses" className="btn btn-primary">לצפייה במסלולים</Link>
-        <Link to="/" className="btn btn-ghost">חזרה לעמוד הראשי</Link>
+      <div className="mt-8 flex flex-wrap justify-center gap-3">
+        <Link to="/courses" className="btn-primary">למסלולים</Link>
+        <Link to="/" className="btn-ghost">לעמוד הראשי</Link>
       </div>
-    </section>
+    </div>
   );
 };
 

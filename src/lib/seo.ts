@@ -4,8 +4,7 @@ import { SITE } from "../data/site";
 type SeoProps = {
   title: string;
   description: string;
-  path: string; // "/courses/social-media-ai"
-  /** JSON-LD schema objects to inject for this page */
+  path: string;
   schema?: object[];
 };
 
@@ -44,7 +43,7 @@ export function useSeo({ title, description, path, schema }: SeoProps) {
     ensureCanonical().href = SITE.domain + path;
 
     document.getElementById(SCHEMA_ID)?.remove();
-    if (schema && schema.length) {
+    if (schema?.length) {
       const s = document.createElement("script");
       s.type = "application/ld+json";
       s.id = SCHEMA_ID;
@@ -75,12 +74,12 @@ export const courseSchema = (c: { title: string; tagline: string; slug: string }
   provider: { "@type": "EducationalOrganization", name: SITE.name, url: SITE.domain },
 });
 
-export const faqSchema = (items: { q: string; a: string }[]) => ({
+export const faqSchema = (items: Array<{ q?: string; a?: string; question?: string; answer?: string }>) => ({
   "@context": "https://schema.org",
   "@type": "FAQPage",
   mainEntity: items.map((i) => ({
     "@type": "Question",
-    name: i.q,
-    acceptedAnswer: { "@type": "Answer", text: i.a },
+    name: i.question ?? i.q ?? "",
+    acceptedAnswer: { "@type": "Answer", text: i.answer ?? i.a ?? "" },
   })),
 });

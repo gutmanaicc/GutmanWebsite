@@ -1,27 +1,64 @@
-import type { ReactNode } from "react";
-
 type Props = {
   kicker?: string;
-  title: ReactNode;
+  /** מספר סקשן עילי בסגנון orbix: ‎(01)‎ */
+  index?: string;
+  title: React.ReactNode;
   sub?: string;
+  /**
+   * נשמר לצורך תאימות לאחור בלבד. כל הכותרות באתר ממורכזות,
+   * ולכן הדגל הזה כבר לא משנה את הפריסה.
+   */
   center?: boolean;
   as?: "h1" | "h2";
+  /** Tighter spacing for dense pages (e.g. course detail). */
+  compact?: boolean;
 };
 
-// כותרת סקשן בשפה הבהירה: eyebrow עם נקודת מותג, כותרת גדולה, תת-כותרת.
-// מילת הדגשה בתוך title עוברת דרך <Accent> (סריף עברי נטוי).
-const SectionHeader = ({ kicker, title, sub, center, as = "h2" }: Props) => {
+/**
+ * כותרת סקשן אחידה לכל האתר - תמיד ממורכזת.
+ * המרכוז הוא החלטה גלובלית ולא פר-סקשן, כדי שהקצב של הדף יישאר זהה
+ * מלמעלה עד למטה ולא יקפוץ בין יישור לימין ליישור למרכז.
+ */
+const SectionHeader = ({ kicker, index, title, sub, as = "h2", compact }: Props) => {
   const Tag = as;
   return (
-    <div className={`sec-head${center ? " center" : ""}`} data-reveal>
-      {kicker && <span className="eyebrow">{kicker}</span>}
-      <Tag className="sec-title">{title}</Tag>
-      {sub && <p className="sec-sub">{sub}</p>}
+    <div
+      className={`mx-auto text-center ${compact ? "mb-5 max-w-3xl" : "mb-12 max-w-4xl sm:mb-14"}`}
+      data-reveal
+    >
+      {kicker && (
+        <span className={`section-label ${compact ? "mb-2" : "mb-4"}`}>
+          {index && (
+            <span className="section-label-num" dir="ltr">
+              ({index})
+            </span>
+          )}
+          <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden="true" />
+          {kicker}
+        </span>
+      )}
+      <Tag
+        className={
+          compact ? "text-2xl font-semibold tracking-tight sm:text-3xl" : "display-2 text-ink"
+        }
+      >
+        {title}
+      </Tag>
+      {sub && (
+        <p
+          className={`mx-auto leading-relaxed text-muted ${
+            compact ? "mt-2 text-sm sm:text-base" : "mt-5 max-w-2xl text-base sm:text-lg"
+          }`}
+        >
+          {sub}
+        </p>
+      )}
     </div>
   );
 };
 
-/** החתימה של השפה: מילת הדגשה בסריף עברי נטוי (Frank Ruhl Libre עם skew) */
-export const Accent = ({ children }: { children: ReactNode }) => <em className="acc">{children}</em>;
-
 export default SectionHeader;
+
+export function AccentWord({ children }: { children: React.ReactNode }) {
+  return <em className="accent-serif not-italic">{children}</em>;
+}

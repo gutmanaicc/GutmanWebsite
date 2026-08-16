@@ -1,41 +1,39 @@
 import { Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
+import { RegisterModalProvider } from "./context/RegisterModalContext";
+import { WaitlistModalProvider } from "./context/WaitlistModalContext";
 import Home from "./pages/Home";
-import Courses from "./pages/Courses";
-import CoursePage from "./pages/CoursePage";
-import CourseFinder from "./pages/CourseFinder";
 import About from "./pages/About";
-import Results from "./pages/Results";
-import FAQPage from "./pages/FAQPage";
-import Contact from "./pages/Contact";
-import ThankYou from "./pages/ThankYou";
+import Courses from "./pages/Courses";
+import CourseDetail from "./pages/CourseDetail";
+import Reviews from "./pages/Reviews";
 import Privacy from "./pages/Privacy";
 import Accessibility from "./pages/Accessibility";
-import Terms from "./pages/Terms";
+import Syllabus from "./pages/Syllabus";
+import Register from "./pages/Register";
+import ThankYou from "./pages/ThankYou";
 import NotFound from "./pages/NotFound";
-import ComingSoon from "./pages/ComingSoon";
 
 const App = () => (
-  <Routes>
-    {/* דף ה-Teaser המקורי נשמר כפי שהוא, מחוץ ל-Layout של האתר */}
-    <Route path="/coming-soon" element={<ComingSoon />} />
-
-    <Route element={<Layout />}>
-      <Route path="/" element={<Home />} />
-      <Route path="/courses" element={<Courses />} />
-      <Route path="/courses/:slug" element={<CoursePage />} />
-      <Route path="/course-finder" element={<CourseFinder />} />
-      <Route path="/about" element={<About />} />
-      <Route path="/results" element={<Results />} />
-      <Route path="/faq" element={<FAQPage />} />
-      <Route path="/contact" element={<Contact />} />
-      <Route path="/thank-you" element={<ThankYou />} />
-      <Route path="/privacy" element={<Privacy />} />
-        <Route path="/accessibility" element={<Accessibility />} />
-      <Route path="/terms" element={<Terms />} />
-      <Route path="*" element={<NotFound />} />
-    </Route>
-  </Routes>
+  <RegisterModalProvider>
+    <WaitlistModalProvider>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/courses" element={<Courses />} />
+          <Route path="/courses/:slug" element={<CourseDetail />} />
+          <Route path="/reviews" element={<Reviews />} />
+          <Route path="/thank-you" element={<ThankYou />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/accessibility" element={<Accessibility />} />
+          <Route path="/syllabus/:slug" element={<Syllabus />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="*" element={<NotFound />} />
+        </Route>
+      </Routes>
+    </WaitlistModalProvider>
+  </RegisterModalProvider>
 );
 
 export default App;

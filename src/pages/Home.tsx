@@ -1,329 +1,202 @@
-import { Link } from "react-router-dom";
-import { CATALOG } from "../data/catalog";
-import { getCourse } from "../data/courses";
-import { GENERAL_FAQ, SITE } from "../data/site";
-import { faqSchema, orgSchema, useSeo } from "../lib/seo";
-import { useReveal } from "../lib/useReveal";
-import SectionHeader, { Accent } from "../components/SectionHeader";
-import FAQAccordion from "../components/FAQAccordion";
+import { useEffect } from "react";
 import ChatFinder from "../components/ChatFinder";
-import LeadForm from "../components/LeadForm";
+import FAQAccordion from "../components/FAQAccordion";
+import HomeProof from "../components/HomeProof";
 import Marquee from "../components/Marquee";
-import TestimonialPlaceholder from "../components/TestimonialPlaceholder";
-import { COURSE_ART, COURSE_LOOPS, COURSE_LOOPS_WEBM, SHOWREEL, SHOWREEL_POSTER, SHOWREEL_WEBM, WIDE_BANNER, WIDE_BANNER_LOOP, WIDE_BANNER_LOOP_WEBM } from "../data/courseArt";
-import AmbientMedia from "../components/AmbientMedia";
-import { CrmWindow, StoryboardWindow } from "../components/MockWindows";
-import { Words } from "../components/Words";
-import { getWorkshop } from "../data/workshops";
+import ProcessSection from "../components/ProcessSection";
+import RegisterForm from "../components/RegisterForm";
+import SectionHeader, { AccentWord } from "../components/SectionHeader";
+import StackingCourses from "../components/StackingCourses";
+import NightHero from "../components/NightHero";
+import InstructorsShowcase from "../components/InstructorsShowcase";
+import Pressable from "../components/Pressable";
+import { StaggerGroup, StaggerItem, ScrollReveal3D } from "../components/motion";
+import { GENERAL_FAQ, SITE } from "../data/site";
+import { useRegisterModal } from "../context/RegisterModalContext";
+import { acquirePointerStore } from "../lib/motion";
+import { useReveal } from "../lib/useReveal";
+import { orgSchema, useSeo } from "../lib/seo";
 
-/* הגוונים שמעליהם הכותרת חייבת להתהפך ללבן */
-const DARK_TONES = new Set(["tone-ink", "tone-pink", "tone-graphite", "tone-deep"]);
-const FLAGSHIP = CATALOG.filter((c) => c.full);
-const HOME_FAQ = GENERAL_FAQ.slice(0, 6);
+const WHY_FROM = ["left", "right", "up", "left", "right"] as const;
 
-/* עיגול-חץ קטן בקצה כפתור, בסגנון orbix */
-const Orb = () => (
-  <span className="btn-orb" aria-hidden="true">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M19 12H5M12 19l-7-7 7-7" />
-    </svg>
-  </span>
-);
+const MARQUEE_ITEMS = SITE.principles.map((p) => p.title);
 
 const Home = () => {
+  const { inlinePrefill, setInlinePrefill, openRegisterModal } = useRegisterModal();
+
   useSeo({
-    title: "Gutman Academy | האקדמיה הפרונטלית ללימודי AI בישראל",
-    description:
-      "מסלולי AI פרונטליים ומעשיים: סושיאל, וידאו ותוכן, סטודנטים, בעלי עסקים, מטפלים, מעצבי פנים, מפתחים ועוד. לומדים דרך בנייה ויוצאים עם תוצר אמיתי.",
+    title: `${SITE.name} | ${SITE.tagline}`,
+    description: SITE.hero.subtitle,
     path: "/",
-    schema: [orgSchema(), faqSchema(HOME_FAQ)],
+    schema: [orgSchema()],
   });
-  useReveal();
+
+  useReveal([inlinePrefill.courseId]);
+
+  useEffect(() => acquirePointerStore(), []);
+
+  const handleFinderResult = (slug: string, goal?: string) => {
+    setInlinePrefill({ courseId: slug, initialGoal: goal, leadSource: "chat-finder-home" });
+  };
 
   return (
     <>
-      {/* Hero ממורכז + בלוק מוצר כהה */}
-      <section className="hero">
-        <div className="container">
-          <p data-reveal><span className="eyebrow">{SITE.claim}</span></p>
-          <h1 data-reveal className="hero-title">
-            <Words text="לא רק ללמוד AI." />
-            <br />
-            <Accent>
-              <Words text="לדעת לעבוד איתו." start={4} />
-            </Accent>
-          </h1>
-          <p className="hero-sub" data-reveal>
-            לומדים פנים מול פנים, בקבוצות קטנות, על העבודה האמיתית שלכם. בסוף כל מסלול יוצאים עם
-            תוצר שעובד ועם שיטת עבודה שנשארת.
-          </p>
-          <div className="hero-ctas" data-reveal>
-            <Link to="/courses" className="btn btn-primary">לצפייה בסדנאות<Orb /></Link>
-            <Link to="/course-finder" className="btn btn-ghost">עזרו לי לבחור</Link>
-          </div>
+      <NightHero />
 
-          <div className="hero-media" data-reveal>
-            <div className="hero-side side-a" aria-hidden="true"><CrmWindow /></div>
-            <div className="hero-side side-b" aria-hidden="true"><StoryboardWindow /></div>
-            <div className="hero-chips">
-              <span className="hero-chip">סדנאות פרונטליות</span>
-              <span className="hero-chip">בלי הקלטות. הכול חי</span>
-              <span className="hero-chip">תוצר ביד בסוף</span>
+      <div className="relative z-[2] bg-canvas">
+      <Marquee items={MARQUEE_ITEMS} />
+
+
+      <section id="finder" className="py-14 sm:py-20 lg:py-24">
+        <div className="container-site">
+          <SectionHeader
+            kicker="המנחה"
+            title={<>לא בטוחים? <AccentWord>נכוון</AccentWord> אתכם.</>}
+            sub="שתי שאלות קצרות, והמנחה של האקדמיה ימליץ על המסלול שמתאים למטרה שלכם. בסוף, מעבירים אתכם ישר לטופס עם המסלול שכבר נבחר."
+          />
+          <ScrollReveal3D from="up" intensity="quiet" fromRotateX={8} fromY={28}>
+            <div className="mx-auto w-full max-w-2xl">
+              <ChatFinder onResult={handleFinderResult} />
             </div>
-            <ChatFinder />
-          </div>
+          </ScrollReveal3D>
         </div>
       </section>
 
-      {/* הצהרה + גריד תאי מסלולים */}
-      <section className="section">
-        <div className="container">
-          <p className="statement" data-reveal>
-            סדנאות פרונטליות, לכל מקצוע ולכל מטרה.
-            {" "}בלי הרצאות תאורטיות, בלי ספריית הקלטות. <Accent>עובדים, בונים, יוצאים עם תוצר.</Accent>
-          </p>
-          <div className="wide-banner" style={{ marginTop: "clamp(32px, 4.5vw, 56px)" }} data-reveal>
-            <AmbientMedia video={WIDE_BANNER_LOOP} videoWebm={WIDE_BANNER_LOOP_WEBM} poster={WIDE_BANNER} scrub />
-          </div>
-          <div style={{ marginTop: "clamp(36px, 5vw, 60px)" }} data-reveal>
-            <p className="cells-note">הסדנאות של האקדמיה · לחיצה על שורה פותחת את הסדנה</p>
-            <div className="index-list">
-              {CATALOG.map((c) => (
-                <Link key={c.slug} to={`/courses/${c.slug}`} className="index-row">
-                  <span className="index-title">
-                    {c.title}
-                    <span className="index-kind">{c.kind} · {c.category}</span>
-                  </span>
-                  <span className="index-go">
-                    <span>לפתיחת הסדנה</span>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M19 12H5M12 19l-7-7 7-7" />
-                    </svg>
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </div>
+      <section className="pt-4 sm:pt-6">
+        <div className="container-site pb-8 sm:pb-10">
+          <SectionHeader
+            kicker="מסלולים"
+            title={<>חמש סדנאות. <AccentWord>תוצר</AccentWord> אחד לכל אחת.</>}
+            sub={SITE.claim}
+            center
+          />
         </div>
+        <StackingCourses />
       </section>
 
-      {/* עולמות הסדנאות: סלאבים שנערמים בגלילה. כל סלאב הוא קומפוזיציה:
-          עמודת תוכן מימין, פאנל מדיה משמאל, לא טקסט ענק לבד */}
-      <div className="stack-slides">
-        {FLAGSHIP.map((c, i) => {
-          const course = getCourse(c.slug);
-          const workshop = getWorkshop(c.slug);
-          const tone = ["tone-ink", "tone-paper", "tone-pink", "tone-graphite", "tone-deep"][i % 5];
-          return (
-            <Link
-              key={c.slug}
-              to={`/courses/${c.slug}`}
-              className={`stack-slide ${tone}`}
-              data-surface={DARK_TONES.has(tone) ? "dark" : "light"}
-            >
-              <span className="ss-grid">
-                <span className="ss-copy">
-                  <span className="ss-kicker">{c.category}</span>
-                  <span className="ss-title">{c.title}</span>
-                  {course && <span className="ss-sub">{course.tagline}</span>}
-                  {workshop && workshop.sessions.length > 1 && (
-                    <span className="ss-meta">
-                      {workshop.sessions.map((sess) => (
-                        <span className="ss-session" key={sess.title}>{sess.title}</span>
-                      ))}
+      <section className="py-14 sm:py-20 lg:py-24">
+        <div className="container-site">
+          <SectionHeader
+            kicker="למה פרונטלי"
+            title={<>לומדים <AccentWord>בזמן אמת</AccentWord></>}
+            sub="האקדמיה בנויה סביב עבודה מעשית, פידבק מיידי, ותוצר שיוצא איתכם הביתה."
+            center
+          />
+          {/* לוחות כהים על הקנבס: מספר זעיר, קו שיער שנמתח בהובר, וזוהר ורוד */}
+          <StaggerGroup
+            className="mt-12 grid gap-px overflow-hidden rounded-[1.5rem] bg-white/10 sm:grid-cols-2 lg:grid-cols-3"
+            stagger={0.06}
+          >
+            {SITE.whyFrontal.map((item, i) => (
+              <StaggerItem key={item.title} className="h-full">
+                <ScrollReveal3D
+                  className="h-full"
+                  from={WHY_FROM[i % WHY_FROM.length]}
+                  intensity="quiet"
+                  fromRotateX={6}
+                  fromY={26}
+                >
+                  <article className="why-tile group relative flex h-full flex-col bg-canvas p-7 text-bone transition-colors duration-500 sm:p-9">
+                    <span
+                      className="pointer-events-none absolute inset-x-0 top-0 h-px origin-right scale-x-0 bg-brand transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100"
+                      aria-hidden
+                    />
+                    <span
+                      className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full opacity-0 blur-3xl transition-opacity duration-700 group-hover:opacity-100"
+                      style={{ background: "radial-gradient(circle, rgba(255,95,158,0.3) 0%, rgba(255,95,158,0) 70%)" }}
+                      aria-hidden
+                    />
+
+                    <span
+                      className="text-[11px] font-medium tracking-[0.22em] text-bone/30 transition-colors duration-500 group-hover:text-brand"
+                      dir="ltr"
+                      aria-hidden
+                    >
+                      {String(i + 1).padStart(2, "0")}
                     </span>
-                  )}
-                  <span className="ss-explore">
-                    לגלות את הסדנה
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M19 12H5M12 19l-7-7 7-7" />
-                    </svg>
-                  </span>
-                </span>
-                {COURSE_ART[c.slug] && (
-                  <span className="ss-media" aria-hidden="true">
-                    <AmbientMedia video={COURSE_LOOPS[c.slug]} videoWebm={COURSE_LOOPS_WEBM[c.slug]} poster={COURSE_ART[c.slug]} scrub />
-                  </span>
-                )}
-              </span>
-            </Link>
-          );
-        })}
+
+                    <h3 className="mt-7 font-display text-xl font-bold leading-snug tracking-tight sm:text-[1.4rem]">
+                      {item.title}
+                    </h3>
+                    <p className="mt-3 text-[15px] leading-relaxed text-bone/50">{item.text}</p>
+                  </article>
+                </ScrollReveal3D>
+              </StaggerItem>
+            ))}
+          </StaggerGroup>
+        </div>
+      </section>
+
+      <HomeProof />
+
+      <ProcessSection />
+
+      <InstructorsShowcase />
+
+      <section id="registration-form" className="scroll-mt-24 py-14 sm:py-20 lg:py-24">
+        <div className="container-site">
+          <SectionHeader
+            as="h2"
+            kicker="הצעד הבא"
+            title={<>מוכנים? <AccentWord>השאירו פרטים.</AccentWord></>}
+            sub="נחזור אליכם עם כל הפרטים על המסלול, תאריכים כשייסגרו, ותשובות לכל שאלה. בלי ספאם."
+          />
+          <ScrollReveal3D from="up" intensity="quiet" fromRotateX={7} fromY={24}>
+            <div className="mx-auto w-full max-w-xl">
+              <RegisterForm
+                preselectedCourse={inlinePrefill.courseId}
+                initialGoal={inlinePrefill.initialGoal}
+                leadSource={inlinePrefill.leadSource ?? "home-lead"}
+                title="השאירו פרטים "
+                sub="אם עברתם דרך המנחה, המסלול כבר נבחר בשבילכם."
+              />
+            </div>
+          </ScrollReveal3D>
+        </div>
+      </section>
+
+      <section className="border-t border-white/10 py-14 sm:py-20">
+        <div className="container-site">
+          <SectionHeader kicker="שאלות" title="שאלות נפוצות" center />
+          <ScrollReveal3D from="up" intensity="quiet" fromRotateX={6} fromY={20}>
+            <FAQAccordion items={[...GENERAL_FAQ]} />
+          </ScrollReveal3D>
+        </div>
+      </section>
+
+      {/* סגירה שקטה: אותו קנבס כהה, קו שיער אחד, וטיפוגרפיה במידה */}
+      <section className="border-t border-white/10 py-20 text-center sm:py-24">
+        <div className="container-site flex flex-col items-center">
+          <span className="section-label mb-5 text-bone">
+            <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
+            {SITE.hebrewName}
+          </span>
+          <h2 className="max-w-3xl font-display text-[clamp(1.8rem,4vw,3rem)] font-bold leading-[1.12] tracking-tightest text-bone">
+            לא רק ללמוד. <AccentWord>לדעת.</AccentWord>
+          </h2>
+          <p className="mt-5 max-w-lg text-[15px] leading-relaxed text-bone/55 sm:text-base">
+            מגיעים עם העסק, הלימודים או הפרויקט שלכם. יוצאים עם תוצר שעובד ושיטה שנשארת.
+          </p>
+          <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
+            <Pressable
+              as="link"
+              to="/courses"
+              className="inline-flex min-h-11 items-center rounded-full bg-bone px-6 text-sm font-medium text-ink transition-colors duration-300 hover:bg-white"
+            >
+              {SITE.hero.primaryCta}
+            </Pressable>
+            <Pressable
+              type="button"
+              className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/15 px-6 text-sm font-medium text-bone/70 transition-colors duration-300 hover:border-white/40 hover:text-bone"
+              rippleTone="pink"
+              onClick={() => openRegisterModal({ leadSource: "home-closing" })}
+            >
+              השאירו פרטים ונחזור אליכם
+            </Pressable>
+          </div>
+        </div>
+      </section>
       </div>
-
-      {/* מה בונים: כרטיסי תמונה עם כיתוב, כמו Featured Case Studies */}
-      <section className="section band-soft">
-        <div className="container">
-          <SectionHeader
-            center
-            kicker="מה בונים באקדמיה"
-            title={<>עולמות שבונים בהם, <Accent>לא מקשיבים</Accent>.</>}
-            sub="כל מסלול דגל בנוי סביב עולם עבודה אחד ומסתיים בתוצר עובד."
-          />
-          <div className="case-grid">
-            {[
-              { slug: "social-media-ai", label: "עובד AI שמכיר את הלקוח", cat: "מסלול מנהלי סושיאל", wide: true },
-              { slug: "ai-video-content", label: "מרעיון לסרטון גמור", cat: "מסלול וידאו ותוכן" },
-              { slug: "ai-business-systems", label: "CRM ומעקב תשלומים", cat: "מסלול בעלי עסקים" },
-              { slug: "ai-for-students", label: "סביבת לימודים אישית", cat: "מסלול סטודנטים" },
-              { slug: "ai-landing-page", label: "דף נחיתה שבונים לבד", cat: "סדנת דפי נחיתה" },
-            ].map((it) => (
-              <div className={`case-item${it.wide ? " wide" : ""}`} key={it.slug} data-reveal>
-                <Link to={`/courses/${it.slug}`} className="case-photo">
-                  <AmbientMedia video={COURSE_LOOPS[it.slug]} videoWebm={COURSE_LOOPS_WEBM[it.slug]} poster={COURSE_ART[it.slug]} alt={it.label} />
-                </Link>
-                <div className="case-caption"><b>{it.label}</b><span>{it.cat}</span></div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* פס דיו: סטטיסטיקות ענק */}
-      <section className="section band-ink" data-surface="dark">
-        <div className="container">
-          <div className="band-head" data-reveal>
-            <h2>למה <Accent>האקדמיה של גוטמן?</Accent></h2>
-            <p>
-              כי פה לא צופים בהרצאה על AI. עובדים איתו בידיים, על החומרים שלכם, עד שיש תוצר ביד.
-            </p>
-          </div>
-          <div className="stats-grid" data-reveal>
-            <div className="stat-cell">
-              <span className="stat-label">סדנאות פרונטליות, לכל מקצוע ומטרה</span>
-              <span className="stat-num">{CATALOG.length}</span>
-            </div>
-            <div className="stat-cell">
-              <span className="stat-label">סילבוס מלא ופתוח באתר לכל סדנה</span>
-              <span className="stat-num">{FLAGSHIP.length}</span>
-            </div>
-            <div className="stat-cell">
-              <span className="stat-label">הקלטות ווובינרים. הכול חי, פנים מול פנים</span>
-              <span className="stat-num">0</span>
-            </div>
-            <div className="stat-cell">
-              <span className="stat-label">תוצר אמיתי שיוצאים איתו בסוף כל מסלול</span>
-              <span className="stat-num">1</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* שואוריל: חמשת העולמות בשוט אחד */}
-      <section className="section band-soft">
-        <div className="container">
-          <SectionHeader
-            center
-            kicker="בשוט אחד"
-            title={<>חמישה עולמות. קו עבודה <Accent>אחד</Accent>.</>}
-          />
-          <div className="showreel" data-reveal>
-            <AmbientMedia video={SHOWREEL} videoWebm={SHOWREEL_WEBM} poster={SHOWREEL_POSTER} scrub alt="חמשת עולמות המסלולים של האקדמיה בשוט רציף אחד" />
-          </div>
-        </div>
-      </section>
-
-      {/* למה פרונטלי: גריד פיצ'רים */}
-      <section className="section">
-        <div className="container">
-          <SectionHeader
-            center
-            kicker="למה דווקא פרונטלי"
-            title={<>כי בהקלטה אי אפשר <Accent>לשאול</Accent>.</>}
-          />
-          <div className="feature-grid" data-reveal>
-            {SITE.whyFrontal.map((p) => (
-              <div className="feature-cell" key={p.title}>
-                <h3>{p.title}</h3>
-                <p>{p.text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* עקרונות: שורות ממוספרות עם צד דביק */}
-      <section className="section band-soft">
-        <div className="container split-section">
-          <div className="split-aside">
-            <SectionHeader
-              kicker="העקרונות"
-              title={<>ככה נראית למידה <Accent>שעובדת</Accent>.</>}
-            />
-          </div>
-          <div className="num-rows">
-            {SITE.principles.map((p) => (
-              <div className="num-row" key={p.title} data-reveal>
-                <div className="nr-body">
-                  <h3>{p.title}</h3>
-                  <p>{p.text}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* המלצות: בכנות, בקרוב */}
-      <section className="section">
-        <div className="container">
-          <SectionHeader
-            center
-            kicker="המלצות"
-            title={<>מה משתתפים יגידו <Accent>עלינו</Accent>.</>}
-            sub="האקדמיה נפתחת עכשיו. במקום ציטוטים מומצאים, המקומות האלה שמורים למשתתפים האמיתיים הראשונים."
-          />
-          <div className="testi-grid">
-            <TestimonialPlaceholder roleHint="מנהל/ת סושיאל" />
-            <TestimonialPlaceholder roleHint="בעל/ת עסק" />
-            <TestimonialPlaceholder roleHint="סטודנט/ית" />
-          </div>
-        </div>
-      </section>
-
-      {/* שאלות: חצי-חצי עם כרטיס שיחה */}
-      <section className="section band-soft">
-        <div className="container split-section">
-          <div className="split-aside">
-            <SectionHeader
-              kicker="שאלות נפוצות"
-              title={<>יש שאלות? יש <Accent>תשובות</Accent>.</>}
-              sub="ואם לא מצאתם כאן, דברו איתנו ישירות."
-            />
-            <div className="mini-call-card" data-reveal>
-              <h4>מעדיפים בן אדם?</h4>
-              <p>השאירו פרטים ונחזור אליכם עם תשובה לכל שאלה, בלי התחייבות.</p>
-              <Link to="/contact" className="btn btn-primary btn-small">דברו איתנו<Orb /></Link>
-            </div>
-          </div>
-          <FAQAccordion items={HOME_FAQ} />
-        </div>
-      </section>
-
-      {/* פס המסלולים הנע, על דיו, כמו Present on Top Creative Platforms */}
-      <section className="band-ink" data-surface="dark" style={{ paddingBlock: "clamp(28px, 4vw, 48px)" }}>
-        <Marquee />
-      </section>
-
-      {/* טופס: כרטיס כהה + שדות קו-תחתון, כמו Book a Free Discovery Call */}
-      <section className="section" id="lead-form">
-        <div className="container split-section">
-          <div className="split-aside">
-            <div className="cta-card" data-reveal>
-              <span className="eyebrow">נדבר?</span>
-              <h2>מוכנים לבנות עם AI בידיים?</h2>
-              <p>
-                ספרו לנו מי אתם ומה המטרה, ונחזור אליכם עם המלצה אישית על מסלול. בלי התחייבות ובלי
-                ספאם.
-              </p>
-              <p className="cc-trust">
-                <b>סדנאות פרונטליות</b> · קבוצות קטנות · פנים מול פנים · תוצר ביד
-              </p>
-            </div>
-          </div>
-          <LeadForm leadSource="home-general" />
-        </div>
-      </section>
     </>
   );
 };

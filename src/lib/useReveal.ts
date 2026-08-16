@@ -1,7 +1,5 @@
 import { useEffect } from "react";
 
-// חשיפה עדינה של אלמנטים בגלילה. אלמנטים עם [data-reveal] מקבלים class "revealed".
-// מכבד prefers-reduced-motion: אם המשתמש ביקש פחות תנועה, הכול מוצג מיד.
 export function useReveal(deps: unknown[] = []) {
   useEffect(() => {
     const els = Array.from(document.querySelectorAll<HTMLElement>("[data-reveal]:not(.revealed)"));

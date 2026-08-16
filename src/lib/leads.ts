@@ -1,26 +1,14 @@
-// שכבת שליחת לידים.
-// כרגע אין Backend מחובר, ולכן הלידים נשמרים מקומית (localStorage) ונרשמים לפיקסל.
-// כדי לחבר יעד אמיתי (CRM / Google Sheets / אימייל / אוטומציה):
-//   1. הגדירו את LEAD_ENDPOINT לכתובת Webhook או API (למשל Make / Zapier / Google Apps Script).
-//   2. הפונקציה תשלח לשם POST עם JSON של הליד ותפסיק להסתמך על השמירה המקומית בלבד.
-// עד שאין Endpoint, הטופס מציג למשתמש הודעה כנה: "הפרטים נקלטו ונחזור אליכם" רק אחרי שמירה שהצליחה.
-
-import { track } from "../pixel";
-
-// Webhook של Make (חשבון GutmanAI): תרחיש "Gutman Academy: ליד מהאתר אל Fireberry".
-// ה-webhook קולט את הליד ושומר אותו בתור; התרחיש דוחף ל-Fireberry.
-export const LEAD_ENDPOINT = "https://hook.us2.make.com/dpq1djvtml118alux9q4byalyjnrhzc4";
+import { trackStandard } from "../pixel";
 
 export type LeadPayload = {
   fullName: string;
   phone: string;
   email: string;
   occupation: string;
-  courseInterest: string; // slug של מסלול או "unsure"
+  courseInterest: string;
   goal: string;
   experienceLevel?: string;
-  audienceType?: string; // סטודנט / בעל עסק / איש מקצוע
-  // מידע סמוי
+  audienceType?: string;
   leadSource: string;
   pageUrl: string;
   referrer: string;
@@ -29,6 +17,11 @@ export type LeadPayload = {
 };
 
 const STORAGE_KEY = "academy-leads-v1";
+
+/** ברירת המחדל היא פונקציית השרת של האתר, שמעבירה את הליד לפיירברי. */
+export function getLeadEndpoint(): string {
+  return import.meta.env.VITE_LEAD_ENDPOINT?.trim() || "/api/lead";
+}
 
 export function collectUtm(): Record<string, string> {
   const params = new URLSearchParams(window.location.search);
@@ -46,31 +39,49 @@ function saveLocally(lead: LeadPayload) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
 }
 
+async function postOnce(endpoint: string, lead: LeadPayload): Promise<boolean> {
+  const res = await fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(lead),
+  });
+  if (!res.ok) throw new Error(`lead endpoint returned ${res.status}`);
+  return true;
+}
+
 /**
- * שולח ליד. מחזיר true אם הליד נקלט (בשרת או מקומית), false אם נכשל.
+ * שולח ליד לשרת, ומדווח בכנות אם הוא הגיע.
+ *
+ * הגרסה הקודמת החזירה "הצלחה" גם כשהשליחה נכשלה, אחרי ששמרה עותק
+ * ב-localStorage של הגולש. זה נראה תקין למשתמש אבל הליד נשאר תקוע
+ * בדפדפן שלו ולא הגיע לאף אחד. עכשיו מנסים פעמיים, ואם באמת לא
+ * הצלחנו - הטופס אומר את זה ומציע דרך יצירת קשר חלופית.
+ *
+ * הגיבוי המקומי נשמר בכל מקרה, כדי שאפשר יהיה לשחזר ליד שאבד.
  */
 export async function submitLead(lead: LeadPayload): Promise<boolean> {
+  const endpoint = getLeadEndpoint();
+
   try {
-    if (LEAD_ENDPOINT) {
-      const res = await fetch(LEAD_ENDPOINT, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(lead),
-      });
-      if (!res.ok) throw new Error(`lead endpoint returned ${res.status}`);
-    } else {
-      // אין יעד חיצוני עדיין: שמירה מקומית כדי שהליד לא יאבד בפיתוח
-      saveLocally(lead);
-    }
-    track("Lead", { course: lead.courseInterest, source: lead.leadSource });
-    return true;
+    saveLocally(lead);
   } catch {
-    // ניסיון גיבוי מקומי גם אם השרת נכשל
+    /* אחסון מלא או חסום - לא סיבה להפיל את השליחה */
+  }
+
+  if (!endpoint) return false;
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
-      saveLocally(lead);
+      await postOnce(endpoint, lead);
+      trackStandard("Lead", {
+        content_name: lead.courseInterest,
+        content_category: lead.leadSource,
+      });
       return true;
     } catch {
-      return false;
+      if (attempt === 0) await new Promise((resolve) => setTimeout(resolve, 700));
     }
   }
+
+  return false;
 }

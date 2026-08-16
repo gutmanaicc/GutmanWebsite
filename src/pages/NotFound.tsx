@@ -1,27 +1,25 @@
 import { Link } from "react-router-dom";
+import { SITE } from "../data/site";
 import { useSeo } from "../lib/seo";
-import { useReveal } from "../lib/useReveal";
 
 const NotFound = () => {
   useSeo({
-    title: "404 | העמוד לא נמצא | Gutman Academy",
-    description: "העמוד שחיפשתם לא נמצא.",
+    title: `עמוד לא נמצא | ${SITE.name}`,
+    description: "העמוד שחיפשתם לא קיים.",
     path: "/404",
   });
-  useReveal();
 
   return (
-    <section className="center-page container">
-      <span className="eyebrow" data-reveal>404</span>
-      <h1 data-reveal>העמוד הזה עוד לא נבנה.</h1>
-      <p data-reveal>
-        הקישור שהגעתם אליו לא קיים, אבל המסלולים דווקא כן. מכאן אפשר להמשיך לכל מקום.
-      </p>
-      <div className="hero-ctas" data-reveal>
-        <Link to="/" className="btn btn-primary">לעמוד הראשי</Link>
-        <Link to="/courses" className="btn btn-ghost">לצפייה במסלולים</Link>
+    <div className="container-site flex min-h-[60vh] flex-col items-center justify-center py-20 text-center">
+      <p className="text-sm font-semibold text-brand">404</p>
+      <h1 className="mt-2 text-3xl font-bold">העמוד לא נמצא</h1>
+      <p className="mt-3 max-w-md text-muted">ייתכן שהקישור השתנה. אפשר לחזור לעמוד הראשי או לראות את המסלולים.</p>
+      <div className="mt-8 flex flex-wrap justify-center gap-3">
+        <Link to="/" className="btn-primary">לעמוד הראשי</Link>
+        <Link to="/courses" className="btn-ghost">למסלולים</Link>
+        <a href="/#registration-form" className="btn-ghost">השארת פרטים</a>
       </div>
-    </section>
+    </div>
   );
 };
 
