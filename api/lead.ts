@@ -47,6 +47,21 @@ function buildNote(lead: LeadBody): string {
 }
 
 export default async function handler(req: any, res: any) {
+  /*
+   * בדיקת בריאות: GET /api/lead מחזיר האם ההגדרות במקום, בלי לחשוף
+   * את המפתח עצמו. עוזר לענות על "הכנסתי את הטוקן, למה זה לא עובד"
+   * בלי לנחש - רואים מיד אם המשתנה הגיע לפונקציה.
+   */
+  if (req.method === "GET") {
+    const token = process.env.FIREBERRY_TOKEN ?? "";
+    return res.status(200).json({
+      ok: true,
+      fireberryConfigured: token.length > 0,
+      tokenLength: token.length,
+      objectType: process.env.FIREBERRY_OBJECT_TYPE ?? "1 (ברירת מחדל)",
+    });
+  }
+
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
