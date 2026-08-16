@@ -45,7 +45,7 @@ const InstructorBioModal = ({ value, onClose }: { value: InstructorBio; onClose:
       <div className="absolute inset-0 bg-ink/60 backdrop-blur-sm" aria-hidden />
 
       <motion.div
-        className="relative flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-[1.75rem] bg-paper text-ink shadow-float sm:rounded-[1.75rem]"
+        className="relative flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-[1.75rem] bg-[#141318] text-bone ring-1 ring-white/10 shadow-float sm:rounded-[1.75rem]"
         initial={reduced ? false : { opacity: 0, y: 28, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ type: "spring", stiffness: 360, damping: 31 }}
@@ -73,12 +73,12 @@ const InstructorBioModal = ({ value, onClose }: { value: InstructorBio; onClose:
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-8 pt-7 sm:px-9" data-lenis-prevent>
-          <p className="text-[15px] leading-relaxed text-ink/70 sm:text-base">{value.bio}</p>
+          <p className="text-[15px] leading-relaxed text-bone/70 sm:text-base">{value.bio}</p>
 
           {value.instructor.credentials?.length > 0 && (
-            <ul className="mt-6 space-y-2.5 border-t border-ink/10 pt-6">
+            <ul className="mt-6 space-y-2.5 border-t border-white/10 pt-6">
               {value.instructor.credentials.map((credential) => (
-                <li key={credential} className="flex gap-2.5 text-sm leading-relaxed text-ink/60">
+                <li key={credential} className="flex gap-2.5 text-sm leading-relaxed text-bone/60">
                   <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-brand" aria-hidden />
                   {credential}
                 </li>
@@ -91,7 +91,7 @@ const InstructorBioModal = ({ value, onClose }: { value: InstructorBio; onClose:
               {value.instructor.roleTags.map((tag) => (
                 <span
                   key={tag}
-                  className="inline-flex items-center rounded-full border border-ink/15 px-3.5 py-1 text-xs font-medium text-ink/60"
+                  className="inline-flex items-center rounded-full border border-white/15 px-3.5 py-1 text-xs font-medium text-bone/60"
                 >
                   {tag}
                 </span>

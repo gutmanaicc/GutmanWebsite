@@ -151,7 +151,7 @@ const AccessibilityMenu = () => {
       <button
         type="button"
         tabIndex={0}
-        className="a11y-launcher fixed bottom-6 left-6 z-[70] flex h-12 w-12 items-center justify-center rounded-full border border-zinc-200 bg-white text-[#191919] shadow-[0_6px_20px_-6px_rgba(18,18,18,0.28)] transition-[transform,box-shadow,background-color,color,border-color] duration-200 ease-out hover:scale-105 hover:border-[#FF2D85]/50 hover:text-[#FF2D85] hover:shadow-[0_12px_28px_-8px_rgba(255,45,133,0.35)] focus:outline-none focus-visible:scale-105 focus-visible:ring-2 focus-visible:ring-[#FF2D85] focus-visible:ring-offset-2 focus-visible:ring-offset-canvas active:scale-100"
+        className="a11y-launcher fixed bottom-6 left-6 z-[70] flex h-12 w-12 items-center justify-center rounded-full border border-white/15 bg-[#141318] text-bone shadow-[0_6px_20px_-6px_rgba(0,0,0,0.6)] transition-[transform,box-shadow,background-color,color,border-color] duration-200 ease-out hover:scale-105 hover:border-[#FF2D85]/50 hover:text-[#FF2D85] hover:shadow-[0_12px_28px_-8px_rgba(255,45,133,0.35)] focus:outline-none focus-visible:scale-105 focus-visible:ring-2 focus-visible:ring-[#FF2D85] focus-visible:ring-offset-2 focus-visible:ring-offset-canvas active:scale-100"
         onClick={() => setOpen((v) => !v)}
         aria-label="תפריט נגישות"
         aria-expanded={open}

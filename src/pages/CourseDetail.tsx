@@ -195,14 +195,14 @@ const SubTracksGrid = ({
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
           {tracks.map((sub) => (
             <MotionItem key={sub.slug}>
-              <article className="flex h-full flex-col rounded-2xl border border-line bg-white/90 p-4 shadow-sm">
+              <article className="flex h-full flex-col rounded-2xl border border-white/12 bg-white/[0.03] p-4">
                 <span className="text-[11px] font-semibold tracking-wide text-[#FF2D85]">{parent.shortTitle}</span>
-                <h3 className="mt-1.5 text-base font-bold text-ink">{sub.shortTitle}</h3>
-                <p className="mt-2 flex-1 text-sm leading-relaxed text-muted">{sub.cardSubtitle}</p>
+                <h3 className="mt-1.5 text-base font-bold text-bone">{sub.shortTitle}</h3>
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-bone/55">{sub.cardSubtitle}</p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Link
                     to={`/courses/${sub.slug}`}
-                    className="btn btn-small bg-[#191919] text-[#F4F4F2] hover:brightness-110"
+                    className="btn btn-small bg-bone text-ink hover:bg-white"
                   >
                     לפרטי המסלול
                     <ArrowIcon />
@@ -211,7 +211,7 @@ const SubTracksGrid = ({
                       והטקסט שלו היה לבן על לבן */}
                   <Pressable
                     type="button"
-                    className="btn btn-small border border-ink/20 bg-transparent text-ink hover:border-ink/50 hover:bg-ink/5"
+                    className="btn btn-small border border-white/20 bg-transparent text-bone hover:border-white/50 hover:bg-white/10"
                     rippleTone="pink"
                     onClick={() =>
                       openRegisterModal({ courseId: sub.slug, leadSource: `${sub.leadSource}-hub` })
@@ -592,7 +592,7 @@ const CourseDetail = () => {
                   </ul>
                 </div>
 
-                <div className="relative rounded-2xl border border-white/20 bg-white/95 shadow-xl backdrop-blur-xl">
+                <div className="relative rounded-2xl border border-white/12 bg-white/[0.04] shadow-xl backdrop-blur-xl">
                   <RegisterForm
                     key={courseKey}
                     preselectedCourse={course.slug}

@@ -56,7 +56,7 @@ const RegisterModal = () => {
           <motion.div
             ref={panelRef}
             key="register-modal-panel"
-            className="relative z-10 flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-t-[1.75rem] bg-paper text-ink shadow-float sm:max-h-[90vh] sm:rounded-[1.75rem]"
+            className="relative z-10 flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-t-[1.75rem] bg-[#141318] text-bone ring-1 ring-white/10 shadow-float sm:max-h-[90vh] sm:rounded-[1.75rem]"
             onClick={(e) => e.stopPropagation()}
             initial={reduced ? false : { opacity: 0, y: 28, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}

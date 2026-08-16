@@ -45,7 +45,7 @@ const Syllabus = () => {
           <BackButton fallbackTo={`/courses/${course.slug}`} />
         </div>
 
-        <article className="overflow-hidden rounded-[1.75rem] bg-paper text-ink shadow-float print:rounded-none print:shadow-none">
+        <article className="overflow-hidden rounded-[1.75rem] bg-[#141318] text-bone ring-1 ring-white/10 shadow-float print:rounded-none print:shadow-none print:ring-0">
           {/* כותרת המסמך: הלוגו בצד ימין למעלה, על רצועה כהה של המותג */}
           <header className="relative bg-canvas px-7 pb-9 pt-8 text-bone sm:px-10 sm:pb-10">
             <div className="flex items-start justify-between gap-6">
@@ -74,7 +74,7 @@ const Syllabus = () => {
           </header>
 
           <div className="px-7 pb-10 pt-8 sm:px-10 sm:pb-12">
-            <p className="text-base leading-relaxed text-ink/70 sm:text-lg">{syllabus.intro}</p>
+            <p className="text-base leading-relaxed text-bone/70 sm:text-lg">{syllabus.intro}</p>
 
             <h2 className="mt-10 flex items-center gap-2.5 font-display text-xs font-bold tracking-[0.2em] text-brand">
               <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
@@ -83,7 +83,7 @@ const Syllabus = () => {
 
             <ol className="mt-5 space-y-5">
               {syllabus.blocks.map((block, i) => (
-                <li key={block.title} className="flex gap-4 border-t border-ink/10 pt-5 first:border-t-0 first:pt-0">
+                <li key={block.title} className="flex gap-4 border-t border-white/10 pt-5 first:border-t-0 first:pt-0">
                   <span
                     className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand"
                     dir="ltr"
@@ -92,10 +92,10 @@ const Syllabus = () => {
                     {i + 1}
                   </span>
                   <div>
-                    <h3 className="font-display text-lg font-bold leading-snug tracking-tight text-ink">
+                    <h3 className="font-display text-lg font-bold leading-snug tracking-tight text-bone">
                       {block.title}
                     </h3>
-                    <p className="mt-1.5 text-[15px] leading-relaxed text-muted">{block.text}</p>
+                    <p className="mt-1.5 text-[15px] leading-relaxed text-bone/55">{block.text}</p>
                   </div>
                 </li>
               ))}
@@ -111,14 +111,14 @@ const Syllabus = () => {
                   {syllabus.tools.map((tool) => (
                     <span
                       key={tool}
-                      className="inline-flex items-center rounded-full border border-ink/15 px-4 py-1.5 text-sm font-medium text-ink/75"
+                      className="inline-flex items-center rounded-full border border-white/15 px-4 py-1.5 text-sm font-medium text-bone/75"
                       dir="ltr"
                     >
                       {tool}
                     </span>
                   ))}
                 </div>
-                <p className="mt-3 text-xs leading-relaxed text-ink/45">
+                <p className="mt-3 text-xs leading-relaxed text-bone/45">
                   הכלים מתחלפים מדי כמה חודשים. הסדנה בנויה סביב שיטת עבודה שנשארת נכונה גם כשהכלי
                   משתנה.
                 </p>
@@ -130,13 +130,13 @@ const Syllabus = () => {
                 <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
                 בסיום הסדנה
               </h2>
-              <p className="mt-3 font-display text-lg font-bold leading-snug tracking-tight text-ink sm:text-xl">
+              <p className="mt-3 font-display text-lg font-bold leading-snug tracking-tight text-bone sm:text-xl">
                 {syllabus.outcome}
               </p>
             </div>
 
-            <footer className="mt-10 flex flex-col gap-4 border-t border-ink/10 pt-7 sm:flex-row sm:items-center sm:justify-between">
-              <div className="text-xs leading-relaxed text-ink/45">
+            <footer className="mt-10 flex flex-col gap-4 border-t border-white/10 pt-7 sm:flex-row sm:items-center sm:justify-between">
+              <div className="text-xs leading-relaxed text-bone/45">
                 <p>
                   {SITE.name} · {SITE.tagline}
                 </p>
