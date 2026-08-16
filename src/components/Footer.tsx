@@ -1,7 +1,6 @@
-import { Instagram, Phone } from "lucide-react";
+import { Instagram, Mail, Phone } from "lucide-react";
 import { Link } from "react-router-dom";
 import Logo from "./Logo";
-import { WhatsAppIcon } from "./icons";
 import { SITE } from "../data/site";
 
 const phoneHref = `tel:${SITE.contact.phone.replace(/-/g, "")}`;
@@ -15,26 +14,18 @@ const iconBadgeClass =
  */
 const Footer = () => (
   <footer className="bg-ink text-white">
-    <div className="container-site flex flex-col items-center justify-center py-14 text-center sm:py-16">
-      <Logo height={36} className="max-h-9 w-auto sm:max-h-10" />
+    {/* עמודה צרה וממורכזת: הפוטר סוגר את העמוד ולא נפרש לרוחב המסך */}
+    <div className="mx-auto flex w-full max-w-md flex-col items-center justify-center px-5 py-12 text-center sm:py-14">
+      <Logo height={32} className="max-h-8 w-auto sm:max-h-9" />
 
-      <p className="mt-5 max-w-md text-sm leading-relaxed text-white/75 sm:text-base">
+      <p className="mt-4 text-sm leading-relaxed text-white/75">
         האקדמיה הפרונטלית ללימודי בינה מלאכותית
       </p>
 
       <nav
-        className="mt-7 flex items-center justify-center gap-3"
+        className="mt-6 flex items-center justify-center gap-3"
         aria-label="יצירת קשר ורשתות חברתיות"
       >
-        <a
-          href={SITE.contact.whatsapp}
-          target="_blank"
-          rel="noreferrer"
-          className={iconBadgeClass}
-          aria-label="WhatsApp"
-        >
-          <WhatsAppIcon size={20} />
-        </a>
         <a
           href={SITE.social.instagram}
           target="_blank"
@@ -42,14 +33,26 @@ const Footer = () => (
           className={iconBadgeClass}
           aria-label="Instagram"
         >
-          <Instagram size={20} strokeWidth={2} aria-hidden />
+          <Instagram size={19} strokeWidth={2} aria-hidden />
         </a>
-        <a href={phoneHref} dir="ltr" className={iconBadgeClass} aria-label={`התקשרו ${SITE.contact.phone}`}>
-          <Phone size={20} strokeWidth={2} aria-hidden />
+        <a
+          href={phoneHref}
+          dir="ltr"
+          className={iconBadgeClass}
+          aria-label={`התקשרו ${SITE.contact.phone}`}
+        >
+          <Phone size={19} strokeWidth={2} aria-hidden />
+        </a>
+        <a
+          href={`mailto:${SITE.contact.email}`}
+          className={iconBadgeClass}
+          aria-label={`שלחו מייל ל-${SITE.contact.email}`}
+        >
+          <Mail size={19} strokeWidth={2} aria-hidden />
         </a>
       </nav>
 
-      <div className="mt-10 flex w-full max-w-lg flex-col items-center justify-center gap-1 border-t border-white/10 pt-6 text-xs text-white/45">
+      <div className="mt-8 flex w-full flex-col items-center justify-center gap-1 border-t border-white/10 pt-6 text-xs text-white/45">
         <span>© GutmanAI {new Date().getFullYear()} · כל הזכויות שמורות</span>
         <span>gutmanai.com</span>
         <div className="mt-2 flex flex-wrap items-center justify-center gap-x-2">

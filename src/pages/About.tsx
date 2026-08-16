@@ -82,34 +82,9 @@ const About = () => {
             <BackButton fallbackTo="/" />
           </div>
 
-          <div className="grid items-center gap-10 lg:grid-cols-[1fr_0.85fr] lg:gap-16">
-            <div>
-              <span className="section-label mb-5 flex text-bone">
-                <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
-                אודות
-              </span>
-              <h1 className="display-1 text-bone">
-                אני רון גוטמן,
-                <br />
-                <AccentWord>ובניתי את האקדמיה</AccentWord>
-              </h1>
-              <p className="mt-7 max-w-xl text-base leading-relaxed text-bone/65 sm:text-lg">
-                {SITE.founder.title} · {SITE.tagline}
-              </p>
-
-              <div className="mt-9 flex flex-wrap gap-2.5">
-                {["צילום ווידאו", "יצירת תוכן", "בינה מלאכותית", "הנחיה פרונטלית"].map((tag) => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center rounded-full border border-white/15 px-4 py-1.5 text-[13px] font-medium text-bone/60"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div className="relative">
+          {/* עמודה ממורכזת: הפורטרט למעלה, ומתחתיו הכותרת והתגיות */}
+          <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
+            <div className="relative w-[min(78%,20rem)]">
               <div className="relative overflow-hidden rounded-[1.75rem] border border-white/10">
                 <motion.img
                   src={PORTRAIT}
@@ -131,10 +106,35 @@ const About = () => {
               <div
                 className="pointer-events-none absolute -inset-6 -z-10 rounded-full blur-3xl"
                 style={{
-                  background: "radial-gradient(circle, rgba(255,95,158,0.14) 0%, rgba(255,95,158,0) 70%)",
+                  background:
+                    "radial-gradient(circle, rgba(255,95,158,0.14) 0%, rgba(255,95,158,0) 70%)",
                 }}
                 aria-hidden
               />
+            </div>
+
+            <span className="section-label mb-4 mt-10 text-bone">
+              <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
+              אודות
+            </span>
+            <h1 className="display-1 text-bone">
+              אני רון גוטמן,
+              <br />
+              <AccentWord>ובניתי את האקדמיה</AccentWord>
+            </h1>
+            <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-bone/65 sm:text-lg">
+              {SITE.founder.title} · {SITE.tagline}
+            </p>
+
+            <div className="mt-8 flex flex-wrap justify-center gap-2.5">
+              {["צילום ווידאו", "יצירת תוכן", "בינה מלאכותית", "הנחיה פרונטלית"].map((tag) => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center rounded-full border border-white/15 px-4 py-1.5 text-[13px] font-medium text-bone/60"
+                >
+                  {tag}
+                </span>
+              ))}
             </div>
           </div>
         </div>
@@ -146,14 +146,14 @@ const About = () => {
           {STORY.map((chapter, i) => (
             <ScrollReveal3D key={chapter.title} from="up" intensity="quiet" fromRotateX={6} fromY={28}>
               <article className="border-t border-white/10 py-10 first:border-t-0 first:pt-0 sm:py-12">
-                <div className="flex items-baseline gap-4">
+                <div className="flex items-baseline justify-center gap-4">
                   <span className="text-[11px] font-medium tracking-[0.22em] text-brand" dir="ltr" aria-hidden>
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <span className="section-label text-bone">{chapter.kicker}</span>
                 </div>
 
-                <h2 className="mt-5 font-display text-2xl font-bold leading-snug tracking-tight text-bone sm:text-[2rem]">
+                <h2 className="mt-5 text-center font-display text-2xl font-bold leading-snug tracking-tight text-bone sm:text-[2rem]">
                   {chapter.title}
                 </h2>
 
@@ -177,12 +177,12 @@ const About = () => {
       <section className="pb-14 sm:pb-20">
         <div className="container-site max-w-3xl">
           <ScrollReveal3D from="up" intensity="quiet" fromRotateX={6} fromY={24}>
-            <div className="rounded-[1.5rem] border border-brand/30 bg-brand/[0.06] p-7 sm:p-10">
-              <span className="section-label mb-4 flex text-brand">
+            <div className="rounded-[1.5rem] border border-brand/30 bg-brand/[0.06] p-7 text-center sm:p-10">
+              <span className="section-label mb-4 text-brand">
                 <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
                 החזון
               </span>
-              <p className="font-display text-lg font-bold leading-snug tracking-tight text-bone sm:text-2xl">
+              <p className="mx-auto max-w-2xl font-display text-lg font-bold leading-snug tracking-tight text-bone sm:text-2xl">
                 {VISION}
               </p>
             </div>

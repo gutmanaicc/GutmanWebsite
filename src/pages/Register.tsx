@@ -3,7 +3,6 @@ import BackButton from "../components/BackButton";
 import RegisterForm from "../components/RegisterForm";
 import { AccentWord } from "../components/SectionHeader";
 import { ScrollReveal3D } from "../components/motion";
-import { WhatsAppIcon } from "../components/icons";
 import { ACTIVE_COURSES } from "../data/courses";
 import { SITE } from "../data/site";
 import { useSeo } from "../lib/seo";
@@ -46,90 +45,74 @@ const Register = () => {
         />
 
         <div className="container-site relative py-10 sm:py-14 lg:py-16">
-          <div className="mb-8 flex justify-start">
+          <div className="mb-8 flex w-full justify-start">
             <BackButton fallbackTo="/" />
           </div>
 
-          <div className="grid gap-10 lg:grid-cols-[1fr_1.05fr] lg:items-start lg:gap-16">
-            {/* צד ההסבר */}
-            <div className="lg:sticky lg:top-28">
-              <span className="section-label mb-5 flex text-bone">
-                <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
-                הרשמה
-              </span>
+          {/* פתיח ממורכז */}
+          <div className="mx-auto max-w-3xl text-center">
+            <span className="section-label mb-5 text-bone">
+              <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
+              הרשמה
+            </span>
 
-              <h1 className="display-2 text-bone">
-                נשמור לכם <AccentWord>מקום</AccentWord>
-              </h1>
+            <h1 className="display-2 text-bone">
+              נשמור לכם <AccentWord>מקום</AccentWord>
+            </h1>
 
-              <p className="mt-6 max-w-md text-base leading-relaxed text-bone/65 sm:text-lg">
-                הקבוצות קטנות בכוונה, כדי שלכל משתתף יהיה מקום לשאול, לתרגל ולקבל פידבק. השאירו
-                פרטים ונחזור אליכם עם כל המידע.
-              </p>
+            <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-bone/65 sm:text-lg">
+              הקבוצות קטנות בכוונה, כדי שלכל משתתף יהיה מקום לשאול, לתרגל ולקבל פידבק. השאירו פרטים
+              ונחזור אליכם עם כל המידע.
+            </p>
+          </div>
 
-              <ul className="mt-10 space-y-px overflow-hidden rounded-[1.25rem] bg-white/10">
-                {PROMISES.map((promise, i) => (
-                  <li key={promise.title} className="bg-canvas p-6 sm:p-7">
-                    <div className="flex items-baseline gap-3.5">
-                      <span
-                        className="text-[11px] font-medium tracking-[0.22em] text-brand"
-                        dir="ltr"
-                        aria-hidden
-                      >
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <div>
-                        <h2 className="font-display text-lg font-bold leading-snug tracking-tight text-bone">
-                          {promise.title}
-                        </h2>
-                        <p className="mt-1.5 text-[15px] leading-relaxed text-bone/55">
-                          {promise.text}
-                        </p>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+          {/* הטופס עצמו, במרכז העמוד */}
+          <ScrollReveal3D from="up" intensity="quiet" fromRotateX={5} fromY={22}>
+            <div
+              id="registration-form"
+              className="mx-auto mt-10 w-full max-w-xl scroll-mt-24 overflow-hidden rounded-[1.75rem] bg-paper text-ink shadow-float sm:mt-12"
+            >
+              <div className="bg-canvas px-6 pb-7 pt-8 text-center text-bone sm:px-9">
+                <h2 className="font-display text-[1.5rem] font-bold leading-tight tracking-tight sm:text-[1.75rem]">
+                  השאירו פרטים
+                </h2>
+                <p className="mx-auto mt-2.5 max-w-md text-sm leading-relaxed text-bone/55">
+                  שלוש דקות, ואנחנו חוזרים אליכם. בלי התחייבות ובלי ספאם.
+                </p>
+              </div>
 
-              <div className="mt-8 flex flex-wrap items-center gap-4">
-                <a
-                  href={SITE.contact.whatsapp}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex min-h-11 items-center gap-2.5 rounded-full border border-white/15 px-5 text-sm font-medium text-bone/70 transition-colors duration-300 hover:border-white/45 hover:text-bone"
-                >
-                  <WhatsAppIcon size={17} className="shrink-0 text-[#25D366]" />
-                  מעדיפים וואטסאפ?
-                </a>
-                <Link
-                  to="/courses"
-                  className="inline-flex min-h-11 items-center px-2 text-sm text-bone/50 underline-offset-4 transition-colors duration-200 hover:text-bone hover:underline"
-                >
-                  עוד לא בטוחים? לכל הסדנאות
-                </Link>
+              <div className="px-6 pb-9 pt-7 sm:px-9">
+                <RegisterForm leadSource="register-page" headless />
               </div>
             </div>
+          </ScrollReveal3D>
 
-            {/* הטופס עצמו */}
-            <ScrollReveal3D from="up" intensity="quiet" fromRotateX={5} fromY={22}>
-              <div
-                id="registration-form"
-                className="scroll-mt-24 overflow-hidden rounded-[1.75rem] bg-paper text-ink shadow-float"
-              >
-                <div className="bg-canvas px-6 pb-7 pt-8 text-bone sm:px-9">
-                  <h2 className="font-display text-[1.5rem] font-bold leading-tight tracking-tight sm:text-[1.75rem]">
-                    השאירו פרטים
-                  </h2>
-                  <p className="mt-2.5 max-w-md text-sm leading-relaxed text-bone/55">
-                    שלוש דקות, ואנחנו חוזרים אליכם. בלי התחייבות ובלי ספאם.
-                  </p>
-                </div>
+          {/* מה מקבלים אחרי שמשאירים פרטים */}
+          <ul className="mx-auto mt-12 grid max-w-4xl gap-px overflow-hidden rounded-[1.25rem] bg-white/10 sm:mt-14 sm:grid-cols-3">
+            {PROMISES.map((promise, i) => (
+              <li key={promise.title} className="bg-canvas p-6 text-center sm:p-7">
+                <span
+                  className="block text-[11px] font-medium tracking-[0.22em] text-brand"
+                  dir="ltr"
+                  aria-hidden
+                >
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <h2 className="mt-3 font-display text-lg font-bold leading-snug tracking-tight text-bone">
+                  {promise.title}
+                </h2>
+                <p className="mt-1.5 text-[15px] leading-relaxed text-bone/55">{promise.text}</p>
+              </li>
+            ))}
+          </ul>
 
-                <div className="px-6 pb-9 pt-7 sm:px-9">
-                  <RegisterForm leadSource="register-page" headless />
-                </div>
-              </div>
-            </ScrollReveal3D>
+          <div className="mt-8 flex justify-center">
+            <Link
+              to="/courses"
+              className="inline-flex min-h-11 items-center px-2 text-sm text-bone/50 underline-offset-4 transition-colors duration-200 hover:text-bone hover:underline"
+            >
+              עוד לא בטוחים? לכל הסדנאות
+            </Link>
           </div>
         </div>
       </section>

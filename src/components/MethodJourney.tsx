@@ -92,14 +92,16 @@ const MethodJourney = () => {
           />
           <ol className="mx-auto mt-10 max-w-2xl space-y-px overflow-hidden rounded-[1.25rem] bg-white/10">
             {STEPS.map((step, i) => (
-              <li key={step.title} className="bg-canvas p-6">
+              <li key={step.title} className="bg-canvas p-6 text-center">
                 <span className="text-[11px] font-medium tracking-[0.22em] text-brand" dir="ltr">
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <h3 className="mt-2 font-display text-xl font-bold tracking-tight text-bone">
                   {step.title}
                 </h3>
-                <p className="mt-2 text-[15px] leading-relaxed text-bone/55">{step.text}</p>
+                <p className="mx-auto mt-2 max-w-md text-[15px] leading-relaxed text-bone/55">
+                  {step.text}
+                </p>
               </li>
             ))}
           </ol>

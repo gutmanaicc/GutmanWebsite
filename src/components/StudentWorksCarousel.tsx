@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 import type { StudentWork } from "../data/studentWorksData";
@@ -9,18 +9,40 @@ type Props = {
 };
 
 /**
- * Horizontal student-works carousel:
- * - Mobile: snap center + peek neighbors
- * - Active slide autoplays (muted/loop); others pause
- * - Arrow / dot / swipe keep activeIndex + autoplay in sync
+ * חץ ניווט צף: יושב במרכז הגובה של הסרטון בצד המסך, מעל שולי הקרוסלה,
+ * כדי שאפשר יהיה לדפדף בסרטונים בלי להזיז את היד למעלה.
+ */
+const arrowClass =
+  "absolute top-1/2 z-[2] inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-canvas/80 text-bone backdrop-blur-sm transition-[transform,border-color,background-color] duration-200 hover:border-white/60 hover:bg-white/15 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand sm:h-12 sm:w-12";
+
+/** כמה עותקים של הרשימה נמתחים על הסרט. שלושה = עותק לפני, האמצעי, ואחד אחרי. */
+const COPIES = 3;
+
+/**
+ * קרוסלת תוצרי תלמידים, בלי התחלה ובלי סוף.
+ *
+ * הרשימה נפרסת שלוש פעמים ברצף והמשתמש תמיד עומד בעותק האמצעי. כשהוא
+ * חוצה אותו, מזיזים אותו בשקט עותק אחד אחורה או קדימה - בלי אנימציה
+ * ובאותו פריים של הרינדור. מכיוון שהעותקים זהים, העין לא רואה קפיצה,
+ * והסרטון האחרון פשוט ממשיך לראשון.
  */
 const StudentWorksCarousel = ({ works }: Props) => {
   const reduced = useReducedMotion();
   const scrollerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLElement | null)[]>([]);
-  const videoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
+  const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
   const programmaticUntil = useRef(0);
-  const [activeIndex, setActiveIndex] = useState(0);
+  const normalizeTimer = useRef(0);
+
+  const count = works.length;
+  /** האינדקס שממנו מתחילים: תחילת העותק האמצעי */
+  const origin = count;
+  const slides = useMemo(
+    () => Array.from({ length: count * COPIES }, (_, i) => works[i % count]),
+    [works, count],
+  );
+
+  const [activeIndex, setActiveIndex] = useState(origin);
   const [pausedByUser, setPausedByUser] = useState(false);
   const [showToggleIcon, setShowToggleIcon] = useState<"play" | "pause" | null>(null);
 
@@ -30,44 +52,64 @@ const StudentWorksCarousel = ({ works }: Props) => {
       const card = cardRefs.current[index];
       if (!track || !card) return;
 
-      // Absolute target scrollLeft (works in LTR and RTL; no page jump)
-      const cardOffset =
-        card.getBoundingClientRect().left -
-        track.getBoundingClientRect().left +
-        track.scrollLeft;
-      const trackCenter = track.clientWidth / 2;
-      const cardCenter = cardOffset + card.clientWidth / 2;
-      const targetScroll = cardCenter - trackCenter;
+      /*
+       * מרכוז יחסי ולא מוחלט: ב-RTL כרום סופר scrollLeft בטווח שלילי,
+       * ולכן חישוב "יעד מוחלט" נחתך ל-0 והכרטיס נתקע בקצה. הפרש בין
+       * מרכז הכרטיס למרכז המסילה במרחב המסך עובד זהה בשני הכיוונים.
+       */
+      const cardRect = card.getBoundingClientRect();
+      const trackRect = track.getBoundingClientRect();
+      const delta = cardRect.left + cardRect.width / 2 - (trackRect.left + trackRect.width / 2);
+      if (Math.abs(delta) < 1) return;
 
-      track.scrollTo({
-        left: targetScroll,
+      track.scrollBy({
+        left: delta,
         behavior: smooth && !reduced ? "smooth" : "auto",
       });
     },
     [reduced],
   );
 
-  const goTo = useCallback(
-    (index: number) => {
-      if (!works.length) return;
-      const next = ((index % works.length) + works.length) % works.length;
-      programmaticUntil.current = performance.now() + (reduced ? 80 : 450);
-      setActiveIndex(next);
-      setPausedByUser(false);
-      centerCard(next, !reduced);
+  /**
+   * מחזיר את המשתמש לעותק האמצעי אחרי שהגלילה נחה.
+   * הקפיצה מיידית ובלי אנימציה, ולכן היא לא נראית.
+   */
+  const scheduleNormalize = useCallback(
+    (index: number, delay: number) => {
+      window.clearTimeout(normalizeTimer.current);
+      const target = (((index % count) + count) % count) + origin;
+      if (target === index) return;
+
+      normalizeTimer.current = window.setTimeout(() => {
+        programmaticUntil.current = performance.now() + 400;
+        centerCard(target, false);
+        setActiveIndex(target);
+      }, delay);
     },
-    [works.length, centerCard, reduced],
+    [centerCard, count, origin],
   );
 
-  // Instant-center index 0 on mount; re-center after layout settles
+  const goTo = useCallback(
+    (index: number) => {
+      if (!count) return;
+      programmaticUntil.current = performance.now() + (reduced ? 100 : 700);
+      setActiveIndex(index);
+      setPausedByUser(false);
+      centerCard(index, !reduced);
+      scheduleNormalize(index, reduced ? 120 : 680);
+    },
+    [count, centerCard, reduced, scheduleNormalize],
+  );
+
+  // Instant-center the origin slide on mount; re-center after layout settles
   useEffect(() => {
-    if (!works.length) return;
+    if (!count) return;
     programmaticUntil.current = performance.now() + 600;
-    cardRefs.current = cardRefs.current.slice(0, works.length);
+    cardRefs.current = cardRefs.current.slice(0, count * COPIES);
 
     let cancelled = false;
     const run = () => {
-      if (!cancelled) centerCard(0, false);
+      if (!cancelled) centerCard(origin, false);
     };
 
     run();
@@ -83,7 +125,7 @@ const StudentWorksCarousel = ({ works }: Props) => {
         if (performance.now() <= programmaticUntil.current) run();
       });
       ro.observe(track);
-      const first = cardRefs.current[0];
+      const first = cardRefs.current[origin];
       if (first) ro.observe(first);
     }
 
@@ -101,7 +143,9 @@ const StudentWorksCarousel = ({ works }: Props) => {
       window.clearTimeout(stop);
       ro?.disconnect();
     };
-  }, [works.length, centerCard]);
+  }, [count, origin, centerCard]);
+
+  useEffect(() => () => window.clearTimeout(normalizeTimer.current), []);
 
   // Keep active card centered on track resize
   useEffect(() => {
@@ -113,14 +157,14 @@ const StudentWorksCarousel = ({ works }: Props) => {
     });
     ro.observe(track);
     return () => ro.disconnect();
-  }, [activeIndex, centerCard, works.length]);
+  }, [activeIndex, centerCard]);
 
   // Track active slide via swipe / manual scroll (skip while arrow animation runs)
   useEffect(() => {
     const scroller = scrollerRef.current;
-    if (!scroller || !works.length) return;
+    if (!scroller || !count) return;
 
-    const slides = Array.from(scroller.querySelectorAll<HTMLElement>("[data-slide-index]"));
+    const cards = Array.from(scroller.querySelectorAll<HTMLElement>("[data-slide-index]"));
     const ratios = new Map<number, number>();
 
     const observer = new IntersectionObserver(
@@ -132,7 +176,7 @@ const StudentWorksCarousel = ({ works }: Props) => {
           if (Number.isNaN(idx)) continue;
           ratios.set(idx, entry.intersectionRatio);
         }
-        let best = 0;
+        let best = origin;
         let bestRatio = -1;
         ratios.forEach((ratio, idx) => {
           if (ratio > bestRatio) {
@@ -141,19 +185,19 @@ const StudentWorksCarousel = ({ works }: Props) => {
           }
         });
         setActiveIndex((prev) => (prev === best ? prev : best));
+        /* גם גרירה ידנית מוחזרת לעותק האמצעי, אחרי שהאצבע עוזבת והתנופה נחה */
+        scheduleNormalize(best, 700);
       },
       { root: scroller, threshold: [0.35, 0.5, 0.65, 0.8] },
     );
 
-    slides.forEach((slide) => observer.observe(slide));
+    cards.forEach((card) => observer.observe(card));
     return () => observer.disconnect();
-  }, [works]);
+  }, [count, origin, scheduleNormalize]);
 
   // Autoplay active, pause others
   useEffect(() => {
-    works.forEach((work, index) => {
-      const video = videoRefs.current.get(work.id);
-      if (!video) return;
+    videoRefs.current.forEach((video, index) => {
       if (index === activeIndex && !pausedByUser) {
         video.muted = true;
         const playPromise = video.play();
@@ -163,12 +207,10 @@ const StudentWorksCarousel = ({ works }: Props) => {
         if (index !== activeIndex) video.currentTime = 0;
       }
     });
-  }, [activeIndex, pausedByUser, works]);
+  }, [activeIndex, pausedByUser, slides]);
 
   const toggleActivePlayback = () => {
-    const work = works[activeIndex];
-    if (!work) return;
-    const video = videoRefs.current.get(work.id);
+    const video = videoRefs.current.get(activeIndex);
     if (!video) return;
 
     if (video.paused) {
@@ -183,11 +225,13 @@ const StudentWorksCarousel = ({ works }: Props) => {
     window.setTimeout(() => setShowToggleIcon(null), 700);
   };
 
-  if (!works.length) return null;
+  if (!count) return null;
 
   // RTL: index 0 is rightmost; right arrow = -1, left arrow = +1
   const goRight = () => goTo(activeIndex - 1);
   const goLeft = () => goTo(activeIndex + 1);
+  /** המיקום בתוך הרשימה האמיתית, בלי קשר לעותק שבו אנחנו עומדים */
+  const logicalIndex = ((activeIndex % count) + count) % count;
 
   return (
     <section className="py-10 sm:py-12">
@@ -204,122 +248,129 @@ const StudentWorksCarousel = ({ works }: Props) => {
         />
 
         <div className="relative mt-6">
-          {/* Desktop controls */}
-          <div className="mb-4 hidden items-center justify-between md:flex">
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={goRight}
-                className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/25 bg-white/[0.06] text-bone transition-[transform,border-color,background-color] duration-200 hover:-translate-y-0.5 hover:border-white/60 hover:bg-white/15 active:scale-95"
-                aria-label="הסרטון מימין"
-              >
-                <ChevronRight className="h-6 w-6" aria-hidden />
-              </button>
-              <button
-                type="button"
-                onClick={goLeft}
-                className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/25 bg-white/[0.06] text-bone transition-[transform,border-color,background-color] duration-200 hover:-translate-y-0.5 hover:border-white/60 hover:bg-white/15 active:scale-95"
-                aria-label="הסרטון משמאל"
-              >
-                <ChevronLeft className="h-6 w-6" aria-hidden />
-              </button>
-            </div>
-            <p className="text-sm font-medium text-bone/50" dir="ltr">
-              {activeIndex + 1} / {works.length}
-            </p>
-          </div>
+          {/* החצים יושבים על הצדדים בגובה הסרטון, כדי שהגלילה תהיה נוחה */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={goRight}
+              className={`${arrowClass} right-1 sm:right-2 lg:right-4`}
+              aria-label="הסרטון מימין"
+            >
+              <ChevronRight className="h-6 w-6" aria-hidden />
+            </button>
+            <button
+              type="button"
+              onClick={goLeft}
+              className={`${arrowClass} left-1 sm:left-2 lg:left-4`}
+              aria-label="הסרטון משמאל"
+            >
+              <ChevronLeft className="h-6 w-6" aria-hidden />
+            </button>
 
-          <div
-            ref={scrollerRef}
-            className="relative flex snap-x snap-mandatory scroll-p-4 gap-4 overflow-x-auto px-[max(1rem,calc((100%-min(92vw,1100px))/2))] pb-3 [overflow-anchor:none] [scrollbar-width:none] [-ms-overflow-style:none] md:gap-5 md:px-[max(1.5rem,calc((100%-1000px)/2))] lg:px-[max(2rem,calc((100%-1100px)/2))] [&::-webkit-scrollbar]:hidden"
-            dir="rtl"
-            style={{ scrollPaddingInline: "max(1rem, calc(50% - 140px))" }}
-          >
-            {works.map((work, index) => {
-              const isActive = index === activeIndex;
-              return (
-                <article
-                  key={work.id}
-                  ref={(el) => {
-                    cardRefs.current[index] = el;
-                  }}
-                  data-slide-index={index}
-                  className={`relative w-[72%] max-w-[280px] shrink-0 snap-center overflow-hidden rounded-3xl border transition-[box-shadow,transform,border-color,opacity] duration-300 md:w-[220px] lg:w-[240px] ${
-                    isActive
-                      ? "z-[1] scale-100 border-[#FF2D85]/50 opacity-100 shadow-[0_0_28px_rgba(255,45,133,0.35)]"
-                      : "scale-90 border-white/10 opacity-30"
-                  }`}
-                >
-                  <button
-                    type="button"
-                    className="relative block aspect-[9/16] w-full overflow-hidden bg-[#191919] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2D85]/50"
-                    onClick={() => {
-                      if (isActive) toggleActivePlayback();
-                      else goTo(index);
+            <div
+              ref={scrollerRef}
+              /* הריפוד בצדדים שווה בדיוק לחצי מסילה פחות חצי כרטיס, אחרת
+                 הכרטיס הראשון והאחרון לא יכולים להגיע למרכז המסך */
+              className="relative flex snap-x snap-mandatory gap-4 overflow-x-auto px-[calc(50%-min(36vw,140px))] pb-3 [overflow-anchor:none] [scrollbar-width:none] [-ms-overflow-style:none] md:gap-5 md:px-[calc(50%-110px)] lg:px-[calc(50%-120px)] [&::-webkit-scrollbar]:hidden"
+              dir="rtl"
+              style={{ scrollPaddingInline: "0px" }}
+            >
+              {slides.map((work, index) => {
+                const isActive = index === activeIndex;
+                /* רק השכנים הקרובים טוענים מדיה בפועל; השאר שומרים מקום בלבד */
+                const distance = Math.abs(index - activeIndex);
+                const preload = isActive ? "auto" : distance <= 2 ? "metadata" : "none";
+
+                return (
+                  <article
+                    key={`${work.id}-${index}`}
+                    ref={(el) => {
+                      cardRefs.current[index] = el;
                     }}
-                    aria-label={
+                    data-slide-index={index}
+                    className={`relative w-[min(72vw,280px)] shrink-0 snap-center overflow-hidden rounded-3xl border transition-[box-shadow,transform,border-color,opacity] duration-300 md:w-[220px] lg:w-[240px] ${
                       isActive
-                        ? pausedByUser
-                          ? `נגן: ${work.title}`
-                          : `השהה: ${work.title}`
-                        : `עבור לסרטון: ${work.title}`
-                    }
+                        ? "z-[1] scale-100 border-[#FF2D85]/50 opacity-100 shadow-[0_0_28px_rgba(255,45,133,0.35)]"
+                        : "scale-90 border-white/10 opacity-30"
+                    }`}
+                    aria-hidden={distance > 2 ? true : undefined}
                   >
-                    <video
-                      ref={(el) => {
-                        if (el) videoRefs.current.set(work.id, el);
-                        else videoRefs.current.delete(work.id);
+                    <button
+                      type="button"
+                      className="relative block aspect-[9/16] w-full overflow-hidden bg-[#191919] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2D85]/50"
+                      tabIndex={distance > 2 ? -1 : undefined}
+                      onClick={() => {
+                        if (isActive) toggleActivePlayback();
+                        else goTo(index);
                       }}
-                      src={work.video}
-                      className="h-full w-full object-cover"
-                      muted
-                      playsInline
-                      loop
-                      preload={isActive ? "auto" : "metadata"}
-                    />
+                      aria-label={
+                        isActive
+                          ? pausedByUser
+                            ? `נגן: ${work.title}`
+                            : `השהה: ${work.title}`
+                          : `עבור לסרטון: ${work.title}`
+                      }
+                    >
+                      <video
+                        ref={(el) => {
+                          if (el) videoRefs.current.set(index, el);
+                          else videoRefs.current.delete(index);
+                        }}
+                        src={work.video}
+                        className="h-full w-full object-cover"
+                        muted
+                        playsInline
+                        loop
+                        preload={preload}
+                      />
 
-                    <AnimatePresence>
-                      {isActive && showToggleIcon && (
-                        <motion.span
-                          key={showToggleIcon}
-                          initial={reduced ? false : { opacity: 0, scale: 0.7 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={reduced ? undefined : { opacity: 0, scale: 0.85 }}
-                          transition={{ duration: 0.2 }}
-                          className="pointer-events-none absolute inset-0 flex items-center justify-center"
-                        >
-                          <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-[#191919]/55 text-white backdrop-blur-sm">
-                            {showToggleIcon === "play" ? (
-                              <Play className="h-6 w-6 fill-white" />
-                            ) : (
-                              <Pause className="h-6 w-6 fill-white" />
-                            )}
+                      <AnimatePresence>
+                        {isActive && showToggleIcon && (
+                          <motion.span
+                            key={showToggleIcon}
+                            initial={reduced ? false : { opacity: 0, scale: 0.7 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={reduced ? undefined : { opacity: 0, scale: 0.85 }}
+                            transition={{ duration: 0.2 }}
+                            className="pointer-events-none absolute inset-0 flex items-center justify-center"
+                          >
+                            <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-[#191919]/55 text-white backdrop-blur-sm">
+                              {showToggleIcon === "play" ? (
+                                <Play className="h-6 w-6 fill-white" />
+                              ) : (
+                                <Pause className="h-6 w-6 fill-white" />
+                              )}
+                            </span>
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+
+                      {isActive && pausedByUser && !showToggleIcon && (
+                        <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                          <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#FF2D85] text-white shadow-lg">
+                            <Play className="h-5 w-5 fill-white" />
                           </span>
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
-
-                    {isActive && pausedByUser && !showToggleIcon && (
-                      <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                        <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#FF2D85] text-white shadow-lg">
-                          <Play className="h-5 w-5 fill-white" />
                         </span>
-                      </span>
-                    )}
-                  </button>
+                      )}
+                    </button>
 
-                  <div className="bg-white/[0.04] px-3 py-3 text-right">
-                    <h3 className="truncate text-sm font-semibold text-bone">{work.title}</h3>
-                    <p className="mt-0.5 truncate text-xs text-bone/50">{work.author}</p>
-                  </div>
-                </article>
-              );
-            })}
+                    <div className="bg-white/[0.04] px-3 py-3 text-center">
+                      <h3 className="truncate text-sm font-semibold text-bone">{work.title}</h3>
+                      <p className="mt-0.5 truncate text-xs text-bone/50">{work.author}</p>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
           </div>
+
+          <p className="mt-4 text-center text-sm font-medium text-bone/50" dir="ltr">
+            {logicalIndex + 1} / {count}
+          </p>
 
           {/* Pagination dots, same RTL order as slides (index 0 = rightmost) */}
           <div
-            className="mt-4 flex items-center justify-center gap-2"
+            className="mt-3 flex items-center justify-center gap-2"
             dir="rtl"
             role="tablist"
             aria-label="ניווט סרטונים"
@@ -329,14 +380,14 @@ const StudentWorksCarousel = ({ works }: Props) => {
                 key={work.id}
                 type="button"
                 role="tab"
-                aria-selected={index === activeIndex}
+                aria-selected={index === logicalIndex}
                 aria-label={`סרטון ${index + 1}`}
                 className="flex h-11 w-6 items-center justify-center"
-                onClick={() => goTo(index)}
+                onClick={() => goTo(origin + index)}
               >
                 <span
                   className={`block h-2.5 rounded-full transition-all ${
-                    index === activeIndex ? "w-6 bg-brand" : "w-2.5 bg-white/25"
+                    index === logicalIndex ? "w-6 bg-brand" : "w-2.5 bg-white/25"
                   }`}
                   aria-hidden
                 />

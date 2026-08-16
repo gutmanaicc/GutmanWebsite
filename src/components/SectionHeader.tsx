@@ -4,17 +4,26 @@ type Props = {
   index?: string;
   title: React.ReactNode;
   sub?: string;
+  /**
+   * נשמר לצורך תאימות לאחור בלבד. כל הכותרות באתר ממורכזות,
+   * ולכן הדגל הזה כבר לא משנה את הפריסה.
+   */
   center?: boolean;
   as?: "h1" | "h2";
   /** Tighter spacing for dense pages (e.g. course detail). */
   compact?: boolean;
 };
 
-const SectionHeader = ({ kicker, index, title, sub, center, as = "h2", compact }: Props) => {
+/**
+ * כותרת סקשן אחידה לכל האתר - תמיד ממורכזת.
+ * המרכוז הוא החלטה גלובלית ולא פר-סקשן, כדי שהקצב של הדף יישאר זהה
+ * מלמעלה עד למטה ולא יקפוץ בין יישור לימין ליישור למרכז.
+ */
+const SectionHeader = ({ kicker, index, title, sub, as = "h2", compact }: Props) => {
   const Tag = as;
   return (
     <div
-      className={`${compact ? "mb-5 max-w-3xl" : "mb-12 max-w-4xl sm:mb-14"}${center ? " mx-auto text-center" : ""}`}
+      className={`mx-auto text-center ${compact ? "mb-5 max-w-3xl" : "mb-12 max-w-4xl sm:mb-14"}`}
       data-reveal
     >
       {kicker && (
@@ -28,14 +37,18 @@ const SectionHeader = ({ kicker, index, title, sub, center, as = "h2", compact }
           {kicker}
         </span>
       )}
-      <Tag className={compact ? "text-2xl font-semibold tracking-tight sm:text-3xl" : "display-2 text-ink"}>
+      <Tag
+        className={
+          compact ? "text-2xl font-semibold tracking-tight sm:text-3xl" : "display-2 text-ink"
+        }
+      >
         {title}
       </Tag>
       {sub && (
         <p
-          className={`leading-relaxed text-muted ${
+          className={`mx-auto leading-relaxed text-muted ${
             compact ? "mt-2 text-sm sm:text-base" : "mt-5 max-w-2xl text-base sm:text-lg"
-          }${center ? " mx-auto" : ""}`}
+          }`}
         >
           {sub}
         </p>

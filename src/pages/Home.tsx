@@ -10,7 +10,6 @@ import StackingCourses from "../components/StackingCourses";
 import NightHero from "../components/NightHero";
 import InstructorsShowcase from "../components/InstructorsShowcase";
 import Pressable from "../components/Pressable";
-import { WhatsAppIcon } from "../components/icons";
 import { StaggerGroup, StaggerItem, ScrollReveal3D } from "../components/motion";
 import { GENERAL_FAQ, SITE } from "../data/site";
 import { useRegisterModal } from "../context/RegisterModalContext";
@@ -23,7 +22,7 @@ const WHY_FROM = ["left", "right", "up", "left", "right"] as const;
 const MARQUEE_ITEMS = SITE.principles.map((p) => p.title);
 
 const Home = () => {
-  const { inlinePrefill, setInlinePrefill } = useRegisterModal();
+  const { inlinePrefill, setInlinePrefill, openRegisterModal } = useRegisterModal();
 
   useSeo({
     title: `${SITE.name} | ${SITE.tagline}`,
@@ -50,16 +49,16 @@ const Home = () => {
 
       <section id="finder" className="py-14 sm:py-20 lg:py-24">
         <div className="container-site">
-          <div className="grid gap-8 lg:grid-cols-2 lg:items-start lg:gap-12">
-            <SectionHeader
-              kicker="המנחה"
-              title={<>לא בטוחים? <AccentWord>נכוון</AccentWord> אתכם.</>}
-              sub="שתי שאלות קצרות, והמנחה של האקדמיה ימליץ על המסלול שמתאים למטרה שלכם. בסוף, מעבירים אתכם ישר לטופס עם המסלול שכבר נבחר."
-            />
-            <ScrollReveal3D from="left" intensity="quiet" fromRotateX={8} fromY={28}>
+          <SectionHeader
+            kicker="המנחה"
+            title={<>לא בטוחים? <AccentWord>נכוון</AccentWord> אתכם.</>}
+            sub="שתי שאלות קצרות, והמנחה של האקדמיה ימליץ על המסלול שמתאים למטרה שלכם. בסוף, מעבירים אתכם ישר לטופס עם המסלול שכבר נבחר."
+          />
+          <ScrollReveal3D from="up" intensity="quiet" fromRotateX={8} fromY={28}>
+            <div className="mx-auto w-full max-w-2xl">
               <ChatFinder onResult={handleFinderResult} />
-            </ScrollReveal3D>
-          </div>
+            </div>
+          </ScrollReveal3D>
         </div>
       </section>
 
@@ -136,14 +135,14 @@ const Home = () => {
 
       <section id="registration-form" className="scroll-mt-24 py-14 sm:py-20 lg:py-24">
         <div className="container-site">
-          <div className="grid gap-8 lg:grid-cols-2 lg:items-center lg:gap-12">
-            <SectionHeader
-              as="h2"
-              kicker="הצעד הבא"
-              title={<>מוכנים? <AccentWord>השאירו פרטים.</AccentWord></>}
-              sub="נחזור אליכם עם כל הפרטים על המסלול, תאריכים כשייסגרו, ותשובות לכל שאלה. בלי ספאם."
-            />
-            <ScrollReveal3D from="right" intensity="quiet" fromRotateX={7} fromY={24}>
+          <SectionHeader
+            as="h2"
+            kicker="הצעד הבא"
+            title={<>מוכנים? <AccentWord>השאירו פרטים.</AccentWord></>}
+            sub="נחזור אליכם עם כל הפרטים על המסלול, תאריכים כשייסגרו, ותשובות לכל שאלה. בלי ספאם."
+          />
+          <ScrollReveal3D from="up" intensity="quiet" fromRotateX={7} fromY={24}>
+            <div className="mx-auto w-full max-w-xl">
               <RegisterForm
                 preselectedCourse={inlinePrefill.courseId}
                 initialGoal={inlinePrefill.initialGoal}
@@ -151,8 +150,8 @@ const Home = () => {
                 title="השאירו פרטים "
                 sub="אם עברתם דרך המנחה, המסלול כבר נבחר בשבילכם."
               />
-            </ScrollReveal3D>
-          </div>
+            </div>
+          </ScrollReveal3D>
         </div>
       </section>
 
@@ -187,15 +186,12 @@ const Home = () => {
               {SITE.hero.primaryCta}
             </Pressable>
             <Pressable
-              as="a"
-              href={SITE.contact.whatsapp}
-              target="_blank"
-              rel="noopener noreferrer"
+              type="button"
               className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/15 px-6 text-sm font-medium text-bone/70 transition-colors duration-300 hover:border-white/40 hover:text-bone"
               rippleTone="pink"
+              onClick={() => openRegisterModal({ leadSource: "home-closing" })}
             >
-              <WhatsAppIcon size={17} className="shrink-0 text-[#25D366]" />
-              דברו איתנו בוואטסאפ
+              השאירו פרטים ונחזור אליכם
             </Pressable>
           </div>
         </div>

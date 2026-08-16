@@ -135,10 +135,15 @@ const Header = () => {
           <div className="flex shrink-0 items-center justify-end gap-2 sm:flex-1 sm:gap-2.5">
             <Pressable
               type="button"
-              className="navbar-lead-cta inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-full bg-bone px-3.5 text-[13px] font-medium text-ink transition-[transform,background-color] duration-200 hover:-translate-y-0.5 hover:bg-white sm:min-h-11 sm:px-5 sm:text-sm"
+              className="navbar-lead-cta group/cta relative inline-flex min-h-10 shrink-0 items-center justify-center gap-2 overflow-hidden rounded-full px-4 text-[13px] font-semibold text-white sm:min-h-11 sm:px-5 sm:text-sm"
               onClick={() => openRegisterModal({ leadSource: "navbar-cta" })}
+              rippleTone="pink"
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
+              {/* נקודה פועמת: רומזת שמישהו באמת עונה בצד השני */}
+              <span className="relative flex h-1.5 w-1.5 shrink-0" aria-hidden>
+                <span className="navbar-lead-cta-ping absolute inline-flex h-full w-full rounded-full bg-white/70" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-white" />
+              </span>
               השאירו פרטים
             </Pressable>
 

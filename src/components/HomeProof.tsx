@@ -38,14 +38,14 @@ const QuoteRow = ({
       <button
         type="button"
         onClick={() => !popupJustClosed() && onOpen(item)}
-        className="w-full py-8 text-right sm:py-10"
+        className="w-full py-8 text-center sm:py-10"
       >
         <span className="block">
           <span className="block">
             <span className="block text-[clamp(1.35rem,2.6vw,2.1rem)] font-semibold leading-[1.25] tracking-tight text-bone">
               {item.quote}
             </span>
-            <span className="mt-3 block max-w-2xl text-sm leading-relaxed text-bone/55 sm:text-base">
+            <span className="mx-auto mt-3 block max-w-2xl text-sm leading-relaxed text-bone/55 sm:text-base">
               {item.text}
             </span>
             <span className="mt-4 inline-flex items-center gap-2 text-xs font-medium text-bone/40 transition-colors group-hover:text-brand">

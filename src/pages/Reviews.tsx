@@ -31,21 +31,21 @@ const Reviews = () => {
       <section className="border-b border-white/10 py-14 sm:py-20">
         <div className="container-site">
           <BackButton />
-          <div className="mt-6 flex flex-col items-start gap-6 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <span className="section-label mb-4 text-bone/45">
-                <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
-                מה אומרים
-              </span>
-              <h1 className="display-2 text-bone">
-                מילה במילה, <AccentWord>מההודעות שקיבלנו.</AccentWord>
-              </h1>
-              <p className="mt-5 max-w-xl text-base leading-relaxed text-bone/60 sm:text-lg">
-                לא כתבנו את זה. אלה ההודעות עצמן, כפי שנשלחו אחרי המפגשים. לחצו על כל אחת כדי לראות
-                את הצילום המקורי.
-              </p>
+          <div className="mx-auto mt-6 flex max-w-3xl flex-col items-center text-center">
+            <span className="section-label mb-4 text-bone/45">
+              <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
+              מה אומרים
+            </span>
+            <h1 className="display-2 text-bone">
+              מילה במילה, <AccentWord>מההודעות שקיבלנו.</AccentWord>
+            </h1>
+            <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-bone/60 sm:text-lg">
+              לא כתבנו את זה. אלה ההודעות עצמן, כפי שנשלחו אחרי המפגשים. לחצו על כל אחת כדי לראות את
+              הצילום המקורי.
+            </p>
+            <div className="mt-7">
+              <ReviewsRatingBadge linked={false} />
             </div>
-            <ReviewsRatingBadge linked={false} />
           </div>
         </div>
       </section>
@@ -59,7 +59,7 @@ const Reviews = () => {
                 key={item.id}
                 type="button"
                 onClick={() => !popupJustClosed() && setLightbox(item)}
-                className="group mb-5 block w-full break-inside-avoid overflow-hidden rounded-2xl border border-white/12 bg-white/[0.03] p-5 text-right transition-colors hover:border-white/30 hover:bg-white/[0.06]"
+                className="group mb-5 block w-full break-inside-avoid overflow-hidden rounded-2xl border border-white/12 bg-white/[0.03] p-5 text-center transition-colors hover:border-white/30 hover:bg-white/[0.06]"
                 initial={reduced ? false : { opacity: 0, y: 22 }}
                 whileInView={reduced ? undefined : { opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-60px" }}

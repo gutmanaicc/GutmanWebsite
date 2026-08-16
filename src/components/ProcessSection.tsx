@@ -1,11 +1,18 @@
 import { useRef } from "react";
-import { motion, useScroll, useSpring, useTransform, useReducedMotion, type MotionValue } from "framer-motion";
+import {
+  motion,
+  useScroll,
+  useSpring,
+  useTransform,
+  useReducedMotion,
+  type MotionValue,
+} from "framer-motion";
 import SectionHeader, { AccentWord } from "./SectionHeader";
 import { SITE } from "../data/site";
 
 /**
- * "איך זה עובד" כטיימליין שנחשף בגלילה: קו ורוד בצד הפתיחה (ימין ב-RTL)
- * שנמתח עם הגלילה, וכל שלב עולה מהחושך בדיוק ברגע שהקו מגיע אליו.
+ * "איך זה עובד" כטיימליין ממורכז שנפתח בגלילה: קו ורוד יורד במרכז העמוד
+ * ונמתח עם ההתקדמות, וכל שלב נחשף מהחושך בדיוק ברגע שהקו מגיע אליו.
  * הכל נגזר מאותו scrollYProgress, כך שהקו והתוכן נעים ביחד ולא בנפרד.
  */
 
@@ -27,24 +34,22 @@ type StepProps = {
 const Step = ({ step, index, progress, reduced }: StepProps) => {
   const [from, to] = bandFor(index);
   const opacity = useTransform(progress, [from, to], [0, 1]);
-  const y = useTransform(progress, [from, to], [42, 0]);
-  const blur = useTransform(progress, [from, to], [8, 0]);
+  const y = useTransform(progress, [from, to], [46, 0]);
+  const blur = useTransform(progress, [from, to], [10, 0]);
   const filter = useTransform(blur, (b) => `blur(${b}px)`);
+  const scale = useTransform(progress, [from, to], [0.96, 1]);
   /* העיגול נדלק מעט אחרי שהקו חוצה אותו */
-  const dotScale = useTransform(progress, [from, from + (to - from) * 0.6], [0.5, 1]);
+  const dotScale = useTransform(progress, [from, from + (to - from) * 0.6], [0.55, 1]);
   const dotBg = useTransform(progress, [from, to], ["#0d0c11", "#ff5f9e"]);
   const dotColor = useTransform(progress, [from, to], ["#6b6b6b", "#ffffff"]);
   const dotBorder = useTransform(progress, [from, to], ["rgba(255,255,255,0.18)", "#ff5f9e"]);
-
-  const motionStyle = reduced ? undefined : { opacity, y, filter };
+  const glow = useTransform(progress, [from, to], [0, 1]);
 
   return (
-    <motion.li
-      className="relative grid gap-3 py-9 pr-10 sm:grid-cols-[10rem_1fr] sm:gap-8 sm:py-12 sm:pr-14"
-      style={motionStyle}
-    >
+    <li className="relative flex flex-col items-center pb-14 text-center last:pb-0 sm:pb-20">
+      {/* הנקודה יושבת על הקו המרכזי ונדלקת כשההתקדמות מגיעה אליה */}
       <motion.span
-        className="absolute right-0 top-10 flex h-9 w-9 translate-x-1/2 items-center justify-center rounded-full border text-xs font-semibold sm:top-14"
+        className="relative z-[1] flex h-11 w-11 items-center justify-center rounded-full border text-xs font-semibold sm:h-12 sm:w-12 sm:text-[13px]"
         dir="ltr"
         style={
           reduced
@@ -53,19 +58,29 @@ const Step = ({ step, index, progress, reduced }: StepProps) => {
         }
         aria-hidden
       >
-        {String(index + 1).padStart(2, "0")}
+        <motion.span
+          className="pointer-events-none absolute -inset-2 rounded-full bg-brand/25 blur-md"
+          style={reduced ? { opacity: 0.7 } : { opacity: glow }}
+          aria-hidden
+        />
+        <span className="relative">{String(index + 1).padStart(2, "0")}</span>
       </motion.span>
 
-      <div>
-        <span className="section-label mb-2">שלב {String(index + 1).padStart(2, "0")}</span>
-        <h3 className="font-display text-2xl font-bold leading-snug tracking-tight text-bone sm:text-[1.8rem]">
+      <motion.div
+        className="mx-auto mt-6 max-w-xl"
+        style={reduced ? undefined : { opacity, y, filter, scale }}
+      >
+        <span className="section-label mb-2.5 justify-center text-bone/45">
+          שלב {String(index + 1).padStart(2, "0")}
+        </span>
+        <h3 className="font-display text-2xl font-bold leading-snug tracking-tight text-bone sm:text-[1.75rem]">
           {step.title}
         </h3>
-      </div>
-      <p className="max-w-xl text-base leading-relaxed text-bone/55 sm:pt-8 sm:text-lg">{step.text}</p>
-
-      <span className="absolute bottom-0 left-0 right-10 h-px bg-white/10 sm:right-14" aria-hidden />
-    </motion.li>
+        <p className="mx-auto mt-3.5 max-w-lg text-[15px] leading-relaxed text-bone/55 sm:text-base">
+          {step.text}
+        </p>
+      </motion.div>
+    </li>
   );
 };
 
@@ -74,7 +89,7 @@ const ProcessSection = () => {
   const listRef = useRef<HTMLOListElement>(null);
   const { scrollYProgress } = useScroll({
     target: listRef,
-    offset: ["start 0.9", "end 0.75"],
+    offset: ["start 0.85", "end 0.8"],
   });
   const progress = useSpring(scrollYProgress, { stiffness: 110, damping: 26, mass: 0.5 });
 
@@ -91,11 +106,14 @@ const ProcessSection = () => {
           }
         />
 
-        <ol ref={listRef} className="relative mr-4 sm:mr-6">
-          {/* מסילה עמומה + מילוי ורוד שנמתח עם הגלילה */}
-          <span className="absolute right-0 top-2 bottom-2 w-px bg-white/10" aria-hidden />
+        <ol ref={listRef} className="relative mx-auto max-w-3xl">
+          {/* מסילה עמומה במרכז + מילוי ורוד שנמתח עם הגלילה */}
+          <span
+            className="absolute inset-y-6 left-1/2 w-px -translate-x-1/2 bg-white/10"
+            aria-hidden
+          />
           <motion.span
-            className="absolute right-0 top-2 bottom-2 w-px origin-top bg-brand"
+            className="absolute inset-y-6 left-1/2 w-px -translate-x-1/2 origin-top bg-brand"
             style={reduced ? { scaleY: 1 } : { scaleY: progress }}
             aria-hidden
           />

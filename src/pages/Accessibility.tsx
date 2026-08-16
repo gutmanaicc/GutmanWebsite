@@ -99,12 +99,6 @@ const Accessibility = () => {
           <li>
             דוא״ל: <a href={`mailto:${COORDINATOR.email}`} dir="ltr">{COORDINATOR.email}</a>
           </li>
-          <li>
-            וואטסאפ:{" "}
-            <a href={SITE.contact.whatsapp} target="_blank" rel="noopener noreferrer">
-              שליחת הודעה
-            </a>
-          </li>
         </ul>
         <p>
           ניתן לפנות אלינו בכל שאלה, הצעה או בקשה להתאמת נגישות. נשתדל להשיב בתוך שני ימי
