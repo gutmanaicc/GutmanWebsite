@@ -58,9 +58,20 @@ export default async function handler(req: any, res: any) {
     return res.status(400).json({ ok: false, error: "missing_required_fields" });
   }
 
+  /*
+   * ליד לא הולך לאיבוד, בשום מצב.
+   *
+   * גם כשאין מפתח וגם כשפיירברי נופלת, הליד המלא נרשם ביומן של Vercel
+   * בשורה אחת שאפשר לחפש לפי LEAD_CAPTURE. זה לא תחליף ל-CRM, אבל זו
+   * הרשת שמתחת: אפשר לשלוף ממנה כל פנייה ולהזין אותה ידנית.
+   */
+  const audit = (reason: string) =>
+    console.log(`LEAD_CAPTURE ${reason} ${JSON.stringify(lead)}`);
+
   const token = process.env.FIREBERRY_TOKEN;
   if (!token) {
     console.warn("FIREBERRY_TOKEN is not set - lead accepted but not forwarded to Fireberry");
+    audit("not_forwarded_no_token");
     return res.status(200).json({ ok: true, forwarded: false });
   }
 
@@ -84,14 +95,15 @@ export default async function handler(req: any, res: any) {
 
     const text = await response.text();
     if (!response.ok) {
-      console.error("Fireberry rejected the lead", response.status, text);
-      /* הליד לא אבד: מחזירים שגיאה כדי שהאתר יוכל לשמור גיבוי מקומי */
+      console.error("Fireberry rejected the lead", response.status, text.slice(0, 500));
+      audit("fireberry_rejected");
       return res.status(502).json({ ok: false, error: "fireberry_error", status: response.status });
     }
 
     return res.status(200).json({ ok: true, forwarded: true });
   } catch (error) {
     console.error("Fireberry request failed", error);
+    audit("fireberry_unreachable");
     return res.status(502).json({ ok: false, error: "fireberry_unreachable" });
   }
 }
