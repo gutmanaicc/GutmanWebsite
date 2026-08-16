@@ -15,24 +15,6 @@ export type NavTrack = {
   children?: NavTrackChild[];
 };
 
-export const BUSINESS_SUBTRACKS: NavTrackChild[] = [
-  {
-    slug: "business-crm",
-    label: "בניית מערכת CRM",
-    href: "/courses/business-crm",
-  },
-  {
-    slug: "business-payments",
-    label: "מערכת למעקב תשלומים",
-    href: "/courses/business-payments",
-  },
-  {
-    slug: "business-landing-page",
-    label: "בניית דף נחיתה",
-    href: "/courses/business-landing-page",
-  },
-];
-
 export const NAV_TRACKS: NavTrack[] = [
   {
     slug: "ai-for-therapists",
@@ -61,10 +43,5 @@ export const NAV_TRACKS: NavTrack[] = [
   },
 ];
 
-/** Slugs that belong under the business owners parent track. */
-export const BUSINESS_SUBTRACK_SLUGS = BUSINESS_SUBTRACKS.map((t) => t.slug);
-
 /** Legacy slug → canonical slug redirects for course pages. */
-export const COURSE_SLUG_ALIASES: Record<string, string> = {
-  "ai-landing-page": "business-landing-page",
-};
+export const COURSE_SLUG_ALIASES: Record<string, string> = {};

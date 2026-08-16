@@ -75,12 +75,19 @@ const SHOWCASE_META: Record<string, ShowcaseMeta> = {
     level: "מתאים לכל רמה",
     skills: ["תסריט", "וידאו AI", "עריכה"],
   },
-  "ai-business-systems": {
-    accent: "3 מסלולי משנה לעסק",
+  "ai-fashion": {
+    accent: "לוקבוק וקמפיין אופנה",
     duration: "5 מפגשים",
     format: "פרונטלי",
-    level: "ללא רקע טכני",
-    skills: ["CRM", "תשלומים", "דף נחיתה"],
+    level: "מתאים לכל רמה",
+    skills: ["השראה", "ויזואל AI", "קמפיין"],
+  },
+  "ai-for-therapists": {
+    accent: "תהליך עבודה לקליניקה",
+    duration: "5 מפגשים",
+    format: "פרונטלי",
+    level: "ללא ניסיון קודם",
+    skills: ["תיעוד", "ניסוח", "מעקב"],
   },
 };
 
@@ -266,8 +273,6 @@ const MOBILE_CARD_THEME: Record<
   social: { bg: "#FF2D85", tone: "dark" },
   students: { bg: "#F4F4F2", tone: "light" },
   video: { bg: "#191919", tone: "dark" },
-  business: { bg: "#EDE6DC", tone: "light" },
-  landing: { bg: "#F4F4F2", tone: "light" },
 };
 
 /**

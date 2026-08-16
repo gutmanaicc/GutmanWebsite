@@ -21,21 +21,6 @@ export const AiWorkerWindow = () => (
   </Link>
 );
 
-export const CrmWindow = () => (
-  <Link to="/courses/ai-business-systems" className="mock-window">
-    <WindowChrome title="מערכת ניהול · העסק שלי" />
-    <div className="mw-body" aria-hidden="true">
-      <span className="mw-row">רונית לוי · עיצוב לוגו<span className="st">הצעה נשלחה</span></span>
-      <span className="mw-row">סטודיו אלמוג · ליווי חודשי<span className="st">ממתין לתשלום</span></span>
-      <span className="mw-row">יואב כהן · סדנה לצוות<span className="st">נסגר ✓</span></span>
-    </div>
-    <div className="mw-caption">
-      <b>CRM ומעקב תשלומים</b>
-      <span>מסלול בעלי עסקים</span>
-    </div>
-  </Link>
-);
-
 export const StoryboardWindow = () => (
   <Link to="/courses/ai-video-content" className="mock-window">
     <WindowChrome title="סטוריבורד · קמפיין השקה" />
@@ -66,39 +51,13 @@ export const StudyWindow = () => (
   </Link>
 );
 
-export const LandingWindow = () => (
-  <Link to="/courses/business-landing-page" className="mock-window">
-    <WindowChrome title="דף נחיתה · בבנייה" />
-    <div className="mw-body" aria-hidden="true">
-      <div className="mw-blocks">
-        <span className="mw-block mw-block-hero" />
-        <span className="mw-block mw-block-half" />
-        <span className="mw-block mw-block-cta" />
-      </div>
-      <span className="mw-bubble">הסקשן הראשון מוכן. עכשיו נכתוב את ההבטחה המרכזית ונחבר טופס לידים.</span>
-    </div>
-    <div className="mw-caption">
-      <b>דף נחיתה שאתם בונים לבד</b>
-      <span>מסלול דף נחיתה</span>
-    </div>
-  </Link>
-);
-
-export const MOCK_WINDOWS = [
-  AiWorkerWindow,
-  CrmWindow,
-  StoryboardWindow,
-  StudyWindow,
-  LandingWindow,
-] as const;
+export const MOCK_WINDOWS = [AiWorkerWindow, StoryboardWindow, StudyWindow] as const;
 
 export const getMockWindowForVisual = (visual: string) => {
   const map: Record<string, typeof AiWorkerWindow> = {
     social: AiWorkerWindow,
-    business: CrmWindow,
     video: StoryboardWindow,
     students: StudyWindow,
-    landing: LandingWindow,
   };
   return map[visual] ?? AiWorkerWindow;
 };

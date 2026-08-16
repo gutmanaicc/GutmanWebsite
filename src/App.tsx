@@ -1,4 +1,3 @@
-import { lazy, Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
 import { RegisterModalProvider } from "./context/RegisterModalContext";
@@ -15,15 +14,10 @@ import Register from "./pages/Register";
 import ThankYou from "./pages/ThankYou";
 import NotFound from "./pages/NotFound";
 
-/** Lazy so coming-soon.css does not leak onto the marketing site. */
-const ComingSoon = lazy(() => import("./pages/ComingSoon"));
-
 const App = () => (
   <RegisterModalProvider>
     <WaitlistModalProvider>
-    <Suspense fallback={null}>
       <Routes>
-        <Route path="/coming-soon" element={<ComingSoon />} />
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
@@ -38,7 +32,6 @@ const App = () => (
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
-    </Suspense>
     </WaitlistModalProvider>
   </RegisterModalProvider>
 );

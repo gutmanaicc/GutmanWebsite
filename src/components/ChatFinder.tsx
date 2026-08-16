@@ -5,31 +5,32 @@ import { useRegisterModal } from "../context/RegisterModalContext";
 import { springPress, springSoft } from "../lib/motion";
 import Pressable from "./Pressable";
 
-type AudienceKey = "pro" | "business" | "student";
+/**
+ * המנחה מפנה אך ורק לסדנאות שפתוחות להרשמה עכשיו. אין כאן אפשרות
+ * שמובילה לסדנה שלא רצה, כדי שאף אחד לא יגיע לעמוד של סדנה שאי אפשר
+ * להירשם אליה.
+ */
+type AudienceKey = "pro" | "therapy" | "student";
 
 const Q1: { key: AudienceKey; label: string }[] = [
-  { key: "pro", label: "איש/אשת מקצוע. סושיאל, וידאו, קריאייטיב או שיווק" },
-  { key: "business", label: "בעל/ת עסק או עצמאי/ת" },
+  { key: "pro", label: "איש/אשת מקצוע. סושיאל, וידאו, אופנה או קריאייטיב" },
+  { key: "therapy", label: "מטפל/ת, פסיכולוג/ית או איש/אשת מקצוע בתחום הטיפול" },
   { key: "student", label: "סטודנט/ית" },
 ];
 
 const Q2: Record<AudienceKey, { label: string; slug: string }[]> = {
   pro: [
     { label: "לנהל יותר לקוחות סושיאל בפחות זמן", slug: "social-media-ai" },
-    { label: "לשלב AI בהפקת וידאו ותוכן", slug: "ai-video-content" },
-    { label: "לבנות דפי נחיתה ללקוחות או לעצמי", slug: "business-landing-page" },
-    { label: "מערכת מסודרת ללקוחות ותשלומים", slug: "ai-business-systems" },
+    { label: "לשלב AI בהפקת וידאו ובעריכה", slug: "ai-video-content" },
+    { label: "ליצור ויזואלים ואופנה עם AI", slug: "ai-fashion" },
   ],
-  business: [
-    { label: "בניית מערכת CRM לעסק", slug: "business-crm" },
-    { label: "מערכת למעקב תשלומים", slug: "business-payments" },
-    { label: "דף נחיתה לעסק או לשירות שלי", slug: "business-landing-page" },
-    { label: "תוכן וסושיאל לעסק, בשיטה", slug: "social-media-ai" },
+  therapy: [
+    { label: "לחסוך זמן בתיעוד ובעבודה השוטפת", slug: "ai-for-therapists" },
+    { label: "לבנות נוכחות ותוכן לקליניקה", slug: "social-media-ai" },
   ],
   student: [
     { label: "ללמוד למבחנים ולנהל את הלימודים עם AI", slug: "ai-for-students" },
     { label: "ליצור תוכן וסרטונים ברמה גבוהה", slug: "ai-video-content" },
-    { label: "לבנות דף נחיתה לפרויקט או רעיון", slug: "business-landing-page" },
   ],
 };
 
