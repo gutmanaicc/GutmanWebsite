@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "syllabus:pdf": "node scripts/build-syllabus-pdfs.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^9.122.0",

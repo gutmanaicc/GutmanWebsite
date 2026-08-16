@@ -49,7 +49,7 @@ const Preloader = () => {
     <AnimatePresence>
       {visible && (
         <motion.div
-          className="fixed inset-0 z-[120] flex items-center justify-center bg-[#0a0a0b]"
+          className="preloader fixed inset-0 z-[120] flex items-center justify-center bg-[#0a0a0b]"
           exit={{ y: "-100%" }}
           transition={{ duration: 0.75, ease: [0.76, 0, 0.24, 1] }}
           aria-hidden

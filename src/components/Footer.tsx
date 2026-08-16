@@ -13,7 +13,7 @@ const iconBadgeClass =
  * No course list, no YouTube.
  */
 const Footer = () => (
-  <footer className="bg-ink text-white">
+  <footer className="site-footer bg-ink text-white">
     {/* עמודה צרה וממורכזת: הפוטר סוגר את העמוד ולא נפרש לרוחב המסך */}
     <div className="mx-auto flex w-full max-w-md flex-col items-center justify-center px-5 py-12 text-center sm:py-14">
       <Logo height={32} className="max-h-8 w-auto sm:max-h-9" />

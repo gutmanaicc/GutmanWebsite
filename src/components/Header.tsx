@@ -104,7 +104,7 @@ const Header = () => {
   return (
     <>
       <header
-        className={`sticky top-0 z-50 w-full border-b transition-[background-color,border-color,backdrop-filter] duration-500 ${
+        className={`site-header sticky top-0 z-50 w-full border-b transition-[background-color,border-color,backdrop-filter] duration-500 ${
           scrolled
             ? "border-white/10 bg-canvas/95 backdrop-blur-sm"
             : "border-transparent bg-transparent"

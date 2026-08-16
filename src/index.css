@@ -1007,22 +1007,78 @@
   }
 
   /* מסמך הסילבוס בהדפסה: משטח לבן, בלי קישוטי רקע ובלי חיתוך בלוקים */
+  /**
+   * הדפסה ויצוא ל-PDF.
+   *
+   * המסמך המיוצא הוא מסמך שיווקי שנשלח ללקוחות, ולכן אסור שייכנס
+   * אליו שום דבר מכרום של האתר: תפריט, פוטר, באנר מדידה, כפתור
+   * נגישות, רשת רקע או גרעין פילם. בלי זה העמוד הראשון של הקובץ
+   * יצא ריק, עם התפריט והבאנר בלבד.
+   */
   @media print {
+    @page {
+      margin: 14mm 12mm 16mm;
+    }
+
+    html,
+    body {
+      background: #fff !important;
+      /* ההדפסה נחתכה באמצע כי הגוף היה נעול לגובה המסך */
+      height: auto !important;
+      overflow: visible !important;
+    }
+
+    /* כל מה שאינו המסמך עצמו. מכוון לכרום של האתר בלבד: ל-header
+       ול-footer שבתוך מסמך הסילבוס יש תוכן אמיתי שחייב להיכנס לקובץ. */
+    .site-header,
+    .site-footer,
+    body > div > nav,
+    .film-grain,
+    .page-lines,
+    .grid-canvas,
+    .a11y-launcher,
+    .a11y-panel,
+    .preloader,
+    .navbar-lead-cta,
+    [role="dialog"],
+    [aria-label="הסכמת עוגיות"],
+    [data-print-hide] {
+      display: none !important;
+    }
+
+    /* אנימציות גלילה לא מסתיימות בהדפסה, וכל מה שממתין לחשיפה נשאר שקוף */
+    [data-reveal],
+    [data-reveal]:not(.revealed) {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+
+    main {
+      display: block !important;
+    }
+
+    main > div {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+
     .syllabus-doc {
       background: #fff;
       padding: 0;
+      box-shadow: none !important;
+      border-radius: 0 !important;
     }
 
     .syllabus-doc li,
-    .syllabus-doc article {
+    .syllabus-doc article,
+    .syllabus-doc h2,
+    .syllabus-doc h3 {
       break-inside: avoid;
     }
 
-    .film-grain,
-    .page-lines,
-    header nav,
-    footer {
-      display: none !important;
+    .syllabus-doc h2,
+    .syllabus-doc h3 {
+      break-after: avoid;
     }
   }
 

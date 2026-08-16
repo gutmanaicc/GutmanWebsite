@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import Lenis from "lenis";
 import Header from "./Header";
 import Footer from "./Footer";
@@ -55,11 +55,18 @@ const ScrollManager = () => {
 };
 
 /**
- * מעבר עמוד עדין: העמוד הנכנס עולה ומתבהר, היוצא נמוג מהר.
+ * מעבר עמוד עדין: העמוד הנכנס עולה ומתבהר.
  *
- * mode="wait" ולא "popLayout" בכוונה: popLayout מוציא את הילד היוצא
- * מזרימת הפריסה, וזה שובר כל AnimatePresence מקונן בתוך העמוד - הפופאפים
- * נשארו תקועים ב-DOM אחרי סגירה במקום להיעלם.
+ * אין כאן אנימציית יציאה ואין AnimatePresence, וזה מכוון.
+ *
+ * הגרסה הקודמת עטפה את ה-Outlet ב-AnimatePresence עם mode="wait".
+ * הבעיה: React Router מחליף את תוכן ה-Outlet ברגע שהנתיב משתנה, בעוד
+ * שהאלמנט היוצא עדיין מונפש. שני התהליכים התנגשו, והאלמנט הנכנס נשאר
+ * תקוע על opacity 0 - כלומר עמוד לבן לגמרי. זה קרה בפועל למשתמשים
+ * שלחצו על הלוגו מתוך עמוד פנימי.
+ *
+ * עכשיו ה-key מרנדר מחדש את המעטפת בכל ניווט, ה-initial רץ, ואין שום
+ * תיאום בין נכנס ליוצא שיכול להיתקע.
  */
 const PageTransition = () => {
   const { pathname } = useLocation();
@@ -68,17 +75,14 @@ const PageTransition = () => {
   if (reduced) return <Outlet />;
 
   return (
-    <AnimatePresence mode="wait" initial={false}>
-      <motion.div
-        key={pathname}
-        initial={{ opacity: 0, y: 26 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, transition: { duration: 0.18, ease: "easeIn" } }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <Outlet />
-      </motion.div>
-    </AnimatePresence>
+    <motion.div
+      key={pathname}
+      initial={{ opacity: 0, y: 26 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <Outlet />
+    </motion.div>
   );
 };
 
