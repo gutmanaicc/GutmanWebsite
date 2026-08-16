@@ -52,7 +52,7 @@ const ImageLightbox = ({
           />
 
           <motion.div
-            className="relative flex max-h-full w-full max-w-md flex-col overflow-hidden rounded-2xl bg-[#141416] shadow-float"
+            className="relative flex max-h-[88vh] w-full max-w-md flex-col overflow-hidden rounded-2xl bg-[#141416] shadow-float"
             initial={reduced ? false : { opacity: 0, scale: 0.96, y: 16 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.97, y: 10 }}
@@ -71,7 +71,7 @@ const ImageLightbox = ({
             </div>
 
             {/* התמונה נגללת בתוך הפופאפ, כך שגם צילום ארוך מאוד נשאר קריא */}
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain" data-lenis-prevent>
               <img src={src ?? ""} alt={alt} className="block w-full" draggable={false} />
             </div>
           </motion.div>

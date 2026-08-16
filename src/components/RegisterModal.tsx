@@ -90,7 +90,7 @@ const RegisterModal = () => {
               </p>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-7 pt-7 sm:px-9 sm:pb-9">
+            <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-7 pt-7 sm:px-9 sm:pb-9" data-lenis-prevent>
               <RegisterForm
                 key={`modal-${options.courseId ?? "any"}-${options.leadSource ?? "register-modal"}`}
                 preselectedCourse={options.courseId}

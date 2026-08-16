@@ -11,7 +11,12 @@ import { SITE } from "../data/site";
  * הלופ הוא WebP מונפש ולא אלמנט וידאו, בכוונה: תמונה מונפשת לא כפופה
  * למדיניות הניגון האוטומטי של הדפדפן, ולכן היא רצה גם בתוך iframe שבו
  * autoplay חסום. קודם נטענת תמונה סטטית קלה לצביעה מיידית, והלופ נפתח
- * מעליה בדעיכה כשהוא מפוענח. תנועה מופחתת נשארת עם התמונה הסטטית בלבד.
+ * מעליה בדעיכה כשהוא מפוענח.
+ *
+ * הלופ נטען תמיד, גם כשמערכת ההפעלה מבקשת תנועה מופחתת. זו תנועת רקע
+ * אווירית ואיטית ולא פרלקסה שמזיזה את העמוד, והרבה משתמשים מדליקים את
+ * ההגדרה הזו מסיבות שאינן קשורות. מי שבוחר במפורש לעצור אנימציות בתפריט
+ * הנגישות של האתר מקבל את התמונה הסטטית, דרך הכלל ב-CSS.
  */
 
 const IMAGE = "/images/hero-night.jpg";
@@ -65,17 +70,15 @@ const NightHero = () => {
           fetchPriority="high"
           decoding="async"
         />
-        {!reduced && (
-          <img
-            src={LOOP}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover object-bottom transition-opacity duration-[1200ms] ease-out"
-            style={{ opacity: loopReady ? 1 : 0 }}
-            onLoad={() => setLoopReady(true)}
-            decoding="async"
-            aria-hidden
-          />
-        )}
+        <img
+          src={LOOP}
+          alt=""
+          className="hero-loop absolute inset-0 h-full w-full object-cover object-bottom transition-opacity duration-[1200ms] ease-out"
+          style={{ opacity: loopReady ? 1 : 0 }}
+          onLoad={() => setLoopReady(true)}
+          decoding="async"
+          aria-hidden
+        />
       </motion.div>
 
       {/* שכבות קריאות: כהה למעלה לניווט, הילה מרכזית לטקסט, מעבר לקנבס למטה */}
@@ -142,12 +145,17 @@ const NightHero = () => {
             <span className="relative">{SITE.hero.primaryCta}</span>
           </Link>
 
-          <a
-            href="#finder"
+          <button
+            type="button"
+            onClick={() =>
+              document
+                .getElementById("finder")
+                ?.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" })
+            }
             className="inline-flex min-h-12 items-center justify-center px-5 text-sm text-bone/55 underline-offset-[6px] transition-colors duration-300 hover:text-bone hover:underline sm:text-[15px]"
           >
             {SITE.hero.secondaryCta}
-          </a>
+          </button>
         </motion.div>
       </motion.div>
 

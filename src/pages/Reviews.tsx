@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
 import { motion, useReducedMotion } from "framer-motion";
 import BackButton from "../components/BackButton";
@@ -24,17 +24,6 @@ const Reviews = () => {
   });
 
   const close = useCallback(() => setLightbox(null), []);
-
-  useEffect(() => {
-    if (!lightbox) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
-    document.addEventListener("keydown", onKey);
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
-    };
-  }, [lightbox, close]);
 
   return (
     <>

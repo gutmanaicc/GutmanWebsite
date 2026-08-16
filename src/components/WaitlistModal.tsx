@@ -144,7 +144,7 @@ const WaitlistModal = () => {
               )}
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-8 pt-7 sm:px-8">
+            <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-8 pt-7 sm:px-8" data-lenis-prevent>
               {status === "success" ? (
                 <div className="py-2 text-center">
                   <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-brand/10 text-2xl text-brand">

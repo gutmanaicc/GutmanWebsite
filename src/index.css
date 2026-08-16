@@ -75,6 +75,11 @@
     font-weight: 700;
   }
 
+  /* עצירת אנימציות מתפריט הנגישות מחליפה את הלופ בתמונה הסטטית שמתחתיו */
+  .a11y-reduce-motion .hero-loop {
+    display: none;
+  }
+
   /* כותרת ההירו: נפח אמיתי מעל הסרטון. שכבות צל שנבנות כלפי מטה נותנות
      גוף לאותיות, וההילה הכהה מתחתן מפרידה אותן מהשמיים שמאחור. */
   .hero-title {
@@ -409,6 +414,18 @@
 
   .faq-compact .faq-icon {
     @apply h-7 w-7;
+  }
+
+  /* המספר/ראשי התיבות ברקע הכרטיס: קווי מתאר בלבד, מתחזק בהובר */
+  .course-card-ghost {
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(242, 241, 236, 0.07);
+    transition: -webkit-text-stroke-color 0.6s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .course-card:hover .course-card-ghost {
+    -webkit-text-stroke-color: rgba(255, 95, 158, 0.28);
+    transform: translateY(-6px);
   }
 
   /* Course cards - bento grid (lift/tilt handled by MagneticCard) */

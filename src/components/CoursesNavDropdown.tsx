@@ -92,7 +92,8 @@ const CoursesNavDropdown = ({ linkClassName }: Props) => {
             exit={reduced ? undefined : { opacity: 0, y: 6 }}
             transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
           >
-            <div className="w-[min(92vw,380px)] overflow-hidden rounded-[1.25rem] border border-white/12 bg-[#141416]/97 shadow-float backdrop-blur-xl">
+            <div className="w-[min(92vw,380px)] overflow-hidden rounded-[1.25rem] border border-white/12 shadow-float"
+              style={{ backgroundColor: "#141416" }}>
               <div className="px-5 pb-2 pt-5">
                 <span className="section-label text-bone">
                   <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
