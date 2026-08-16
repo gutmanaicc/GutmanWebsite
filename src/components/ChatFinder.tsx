@@ -5,36 +5,28 @@ import { useRegisterModal } from "../context/RegisterModalContext";
 import { springPress, springSoft } from "../lib/motion";
 import Pressable from "./Pressable";
 
-type AudienceKey = "creative" | "therapist" | "business" | "student";
+/**
+ * המנחה מפנה אך ורק לסדנאות שפתוחות להרשמה עכשיו. אין כאן אפשרות
+ * שמובילה לסדנה שלא רצה, כדי שאף אחד לא יגיע לעמוד של סדנה שאי אפשר
+ * להירשם אליה.
+ */
+type AudienceKey = "pro" | "therapy" | "student";
 
 const Q1: { key: AudienceKey; label: string }[] = [
-  { key: "creative", label: "איש/אשת מקצוע. סושיאל, וידאו או קריאייטיב" },
-  { key: "therapist", label: "מטפל/ת או פסיכולוג/ית" },
-  { key: "business", label: "בעל/ת עסק או עצמאי/ת" },
+  { key: "pro", label: "איש/אשת מקצוע. סושיאל, וידאו, אופנה או קריאייטיב" },
+  { key: "therapy", label: "מטפל/ת, פסיכולוג/ית או איש/אשת מקצוע בתחום הטיפול" },
   { key: "student", label: "סטודנט/ית" },
 ];
 
-/**
- * כל יעד כאן חייב להיות מסלול פעיל שקיים גם בבורר של טופס הלידים.
- *
- * הגרסה הקודמת הפנתה לארבעה מסלולי עסקים שקיימים בקוד אבל לא ברשימת
- * המסלולים של הטופס. המשתמש קיבל כרטיס תוצאה משכנע, ואז נחת על טופס
- * שבו שדה החובה "איזה מסלול מעניין אתכם" נראה ריק - כי הסלאג לא התאים
- * לאף אפשרות - בזמן שהוולידציה עברה בשקט. השומר למטה מונע הישנות.
- */
 const Q2: Record<AudienceKey, { label: string; slug: string }[]> = {
-  creative: [
-    { label: "לנהל יותר לקוחות סושיאל בפחות שעות", slug: "social-media-ai" },
-    { label: "לבנות תהליך הפקת וידאו ותוכן מבוסס AI", slug: "ai-video-content" },
-    { label: "להביא קמפיין אופנה מרעיון לתוצר מוגמר", slug: "ai-fashion" },
+  pro: [
+    { label: "לנהל יותר לקוחות סושיאל בפחות זמן", slug: "social-media-ai" },
+    { label: "לשלב AI בהפקת וידאו ובעריכה", slug: "ai-video-content" },
+    { label: "ליצור ויזואלים ואופנה עם AI", slug: "ai-fashion" },
   ],
-  therapist: [
-    { label: "לשלב AI ככלי עבודה תומך בקליניקה", slug: "ai-for-therapists" },
-    { label: "לעשות סדר בחומרים ובהתנהלות סביב המפגשים", slug: "ai-for-therapists" },
-  ],
-  business: [
-    { label: "לנהל את הסושיאל והתוכן של העסק בשיטה", slug: "social-media-ai" },
-    { label: "להפיק סרטונים ותוכן שיווקי לעסק", slug: "ai-video-content" },
+  therapy: [
+    { label: "לחסוך זמן בתיעוד ובעבודה השוטפת", slug: "ai-for-therapists" },
+    { label: "לבנות נוכחות ותוכן לקליניקה", slug: "social-media-ai" },
   ],
   student: [
     { label: "ללמוד למבחנים ולנהל את הלימודים עם AI", slug: "ai-for-students" },
@@ -44,7 +36,11 @@ const Q2: Record<AudienceKey, { label: string; slug: string }[]> = {
 
 /*
  * שער איכות: נופל כבר בזמן פיתוח אם מישהו יוסיף מטרה שמפנה למסלול
- * שאינו בבורר של הטופס. אותה גישה כמו enrichCourse, שזורק על תוכן חסר.
+ * שאינו בבורר של טופס הלידים.
+ *
+ * זה קרה בפועל: ארבע מטרות הפנו למסלולים שקיימים בקוד אבל לא ברשימת
+ * הטופס, והמשתמש נחת על שדה חובה שנראה ריק בזמן שהוולידציה עברה בשקט.
+ * אותה גישה כמו enrichCourse, שזורק על תוכן עמוד חסר.
  */
 if (import.meta.env.DEV) {
   const selectable = new Set<string>(LEAD_TRACKS.map((t) => t.slug));
@@ -159,13 +155,6 @@ const ChatFinder = ({ onResult }: Props) => {
   const result = resultSlug ? getCourse(resultSlug) : null;
   const progress = stepIndex(step, started);
 
-  /*
-   * מקור אחד לכל הצ'אט, עם הבחנה בין המסלולים בסיומת.
-   *
-   * קודם אותו משתמש נספר כ-chat-finder-home, chat-finder או
-   * chat-finder-modal לפי הכפתור שלחץ, ולכן אי אפשר היה למדוד כמה לידים
-   * הפיצ'ר הזה בכלל מביא.
-   */
   const goToLead = () => {
     if (!resultSlug) return;
     scrollToRegisterForm({
@@ -268,8 +257,6 @@ const ChatFinder = ({ onResult }: Props) => {
               <h3>{result.title}</h3>
               <p>{result.tagline}</p>
               <div className="chat-result-actions">
-                {/* בגודל מלא, ולא btn-small כמו השניים שאחריו: זו הפעולה
-                    שכל הצ'אט הוביל אליה, והיא צריכה להיראות ככה */}
                 <Pressable type="button" className="btn-brand btn-block" onClick={goToLead}>
                   השאירו פרטים למסלול הזה
                 </Pressable>

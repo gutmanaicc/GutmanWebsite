@@ -24,15 +24,12 @@ const Register = lazy(() => import("./pages/Register"));
 const ThankYou = lazy(() => import("./pages/ThankYou"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-/** Lazy so coming-soon.css does not leak onto the marketing site. */
-const ComingSoon = lazy(() => import("./pages/ComingSoon"));
-
 const App = () => (
   <RegisterModalProvider>
     <WaitlistModalProvider>
-    <Suspense fallback={null}>
+      {/* גבול Suspense לראוטים שנטענים בעצלתיים */}
+      <Suspense fallback={null}>
       <Routes>
-        <Route path="/coming-soon" element={<ComingSoon />} />
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
@@ -47,7 +44,7 @@ const App = () => (
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
-    </Suspense>
+      </Suspense>
     </WaitlistModalProvider>
   </RegisterModalProvider>
 );

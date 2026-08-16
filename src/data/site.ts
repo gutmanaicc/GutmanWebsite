@@ -77,10 +77,8 @@ export const SITE = {
     { title: "סרטון AI", course: "ai-video-content" },
     { title: "מערכת לימודים אישית", course: "ai-for-students" },
     { title: "תוכנית הכנה למבחן", course: "ai-for-students" },
-    { title: "מערכת CRM", course: "business-crm" },
-    { title: "מעקב חשבוניות ותשלומים", course: "business-payments" },
-    { title: "דשבורד עסקי", course: "ai-business-systems" },
-    { title: "דף נחיתה", course: "business-landing-page" },
+    { title: "לוקבוק ותמונות אופנה", course: "ai-fashion" },
+    { title: "תיעוד ומעקב בקליניקה", course: "ai-for-therapists" },
   ],
 } as const;
 
@@ -90,8 +88,8 @@ export const GOALS: GoalLink[] = [
   { goal: "אני רוצה לנהל יותר לקוחות בפחות זמן.", courseSlug: "social-media-ai" },
   { goal: "אני רוצה ללמוד למבחנים ולנהל את הלימודים בעזרת AI.", courseSlug: "ai-for-students" },
   { goal: "אני רוצה ליצור סרטונים ותוכן ברמה גבוהה עם AI.", courseSlug: "ai-video-content" },
-  { goal: "אני רוצה לעשות סדר בלקוחות, בחשבוניות ובתשלומים.", courseSlug: "business-crm" },
-  { goal: "אני רוצה לבנות דף נחיתה לעסק שלי.", courseSlug: "business-landing-page" },
+  { goal: "אני רוצה לחסוך זמן בתיעוד ובעבודה השוטפת בקליניקה.", courseSlug: "ai-for-therapists" },
+  { goal: "אני רוצה ליצור ויזואלים ואופנה עם AI.", courseSlug: "ai-fashion" },
 ];
 
 export const GENERAL_FAQ = [
@@ -117,7 +115,7 @@ export const GENERAL_FAQ = [
   },
   {
     q: "האם יוצאים עם תוצר מוכן?",
-    a: "כן. כל מסלול בנוי סביב תוצר: עובד AI ללקוח, מערכת לימודים, פרויקט וידאו, מערכת CRM או דף נחיתה. בונים אותו במהלך המפגשים, לא אחריהם.",
+    a: "כן. כל מסלול בנוי סביב תוצר: עובד AI ללקוח, מערכת לימודים, פרויקט וידאו, לוקבוק אופנה או תהליך עבודה לקליניקה. בונים אותו במהלך המפגשים, לא אחריהם.",
   },
   {
     q: "האם עובדים על פרויקט אישי?",

@@ -116,10 +116,6 @@ export const COURSE_INSTRUCTOR_MAP: Record<
   "ai-video-content": { instructorIds: ["ron-gutman"], bioKey: "video" },
   "ai-fashion": { instructorIds: ["hadar-ben-dor"], bioKey: "fashion" },
   "ai-for-therapists": { instructorIds: ["ron-gutman"], bioKey: "therapists" },
-  "ai-business-systems": { instructorIds: ["ron-gutman"], bioKey: "business" },
-  "business-crm": { instructorIds: ["ron-gutman"], bioKey: "business" },
-  "business-payments": { instructorIds: ["ron-gutman"], bioKey: "business" },
-  "business-landing-page": { instructorIds: ["ron-gutman"], bioKey: "business" },
 };
 
 export function getInstructorsForCourse(slug: string): Array<{

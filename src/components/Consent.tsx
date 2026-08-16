@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { CONSENT_KEY, loadPixel } from "../pixel";
+import { CONSENT_KEY, grantTracking, loadPixel, revokeTracking } from "../pixel";
 
 /**
- * הסכמת עוגיות כרצועת שוליים שקטה: קו שיער בתחתית המסך, טקסט אחד,
- * ושתי מילות פעולה. בלי קופסה, בלי אימוג'י, בלי לחסום את האתר.
+ * רצועת יידוע על מדידה: קו שיער בתחתית המסך, טקסט אחד, ושתי מילות
+ * פעולה. בלי קופסה, בלי אימוג'י, בלי לחסום את האתר.
+ *
+ * המדידה פועלת בברירת מחדל ומי שלוחץ "לא תודה" מכבה אותה. הבחירה
+ * נשמרת, ולכן הבאנר לא חוזר בביקורים הבאים.
  */
 export const Consent = () => {
   const [visible, setVisible] = useState(false);
@@ -12,8 +15,13 @@ export const Consent = () => {
 
   useEffect(() => {
     const v = localStorage.getItem(CONSENT_KEY);
-    if (v === "accepted") loadPixel();
-    else if (v !== "declined") {
+
+    /* מי שסירב פעם - לא נטען לו כלום, וגם הבאנר לא חוזר */
+    if (v === "declined") return;
+
+    loadPixel();
+
+    if (v !== "accepted") {
       // לא קופץ על המבקר בשנייה הראשונה
       const t = window.setTimeout(() => setVisible(true), 1200);
       return () => window.clearTimeout(t);
@@ -23,7 +31,8 @@ export const Consent = () => {
   const choose = (v: "accepted" | "declined") => {
     localStorage.setItem(CONSENT_KEY, v);
     setVisible(false);
-    if (v === "accepted") loadPixel();
+    if (v === "declined") revokeTracking();
+    else grantTracking();
   };
 
   return (
@@ -41,7 +50,7 @@ export const Consent = () => {
         >
           <div className="container-site flex flex-col gap-3 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
             <p className="text-[13px] leading-relaxed text-bone/60">
-              אנחנו מודדים תנועה באתר כדי לשפר אותו. רק אם תאשרו.
+              אנחנו מודדים תנועה באתר כדי לשפר אותו ולהתאים פרסום. אפשר לכבות בכל רגע.
             </p>
             <div className="flex shrink-0 items-center gap-5">
               <button
@@ -49,7 +58,7 @@ export const Consent = () => {
                 onClick={() => choose("declined")}
                 className="inline-flex min-h-11 items-center text-[13px] font-medium text-bone/45 underline-offset-4 transition-colors hover:text-bone hover:underline"
               >
-                לא תודה
+                לכבות מדידה
               </button>
               <button
                 type="button"
@@ -57,7 +66,7 @@ export const Consent = () => {
                 className="inline-flex min-h-10 items-center gap-2 rounded-full bg-bone px-5 text-[13px] font-medium text-ink transition-transform duration-200 hover:-translate-y-0.5"
               >
                 <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
-                אישור
+                הבנתי
               </button>
             </div>
           </div>
