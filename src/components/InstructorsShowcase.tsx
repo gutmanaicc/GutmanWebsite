@@ -3,6 +3,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { INSTRUCTORS, type Instructor } from "../data/instructorsData";
 import InstructorBioModal, { type InstructorBio } from "./InstructorBioModal";
 import SectionHeader, { AccentWord } from "./SectionHeader";
+import { popupJustClosed } from "../lib/scrollLock";
 
 /**
  * המנחים כפרופילים עגולים ממורכזים: תמונה, שם ותפקיד מתחתיה. הכל לחיץ,
@@ -26,7 +27,7 @@ export const InstructorAvatar = ({
     <motion.button
       type="button"
       className="group flex flex-col items-center text-center focus:outline-none"
-      onClick={() => onOpen({ instructor, bio })}
+      onClick={() => !popupJustClosed() && onOpen({ instructor, bio })}
       whileHover={reduced ? undefined : { y: -6 }}
       transition={{ type: "spring", stiffness: 300, damping: 22 }}
       aria-label={`${instructor.name}, ${instructor.role}. לצפייה בפרופיל`}

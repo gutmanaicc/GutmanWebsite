@@ -8,6 +8,7 @@ import { AccentWord } from "../components/SectionHeader";
 import { TESTIMONIALS, type Testimonial } from "../data/testimonialsData";
 import { SITE } from "../data/site";
 import { useSeo } from "../lib/seo";
+import { popupJustClosed } from "../lib/scrollLock";
 
 /**
  * קיר ההודעות המלא: כל העדויות במכה אחת, בלי קטגוריות ובלי סינון.
@@ -57,7 +58,7 @@ const Reviews = () => {
               <motion.button
                 key={item.id}
                 type="button"
-                onClick={() => setLightbox(item)}
+                onClick={() => !popupJustClosed() && setLightbox(item)}
                 className="group mb-5 block w-full break-inside-avoid overflow-hidden rounded-2xl border border-white/12 bg-white/[0.03] p-5 text-right transition-colors hover:border-white/30 hover:bg-white/[0.06]"
                 initial={reduced ? false : { opacity: 0, y: 22 }}
                 whileInView={reduced ? undefined : { opacity: 1, y: 0 }}

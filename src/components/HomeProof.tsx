@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import SectionHeader, { AccentWord } from "./SectionHeader";
 import StudentWorksCarousel from "./StudentWorksCarousel";
 import ImageLightbox from "./ImageLightbox";
+import { popupJustClosed } from "../lib/scrollLock";
 import { ArrowIcon } from "./icons";
 import { STUDENT_WORKS } from "../data/studentWorksData";
 import { TESTIMONIALS, type Testimonial } from "../data/testimonialsData";
@@ -36,7 +37,7 @@ const QuoteRow = ({
     >
       <button
         type="button"
-        onClick={() => onOpen(item)}
+        onClick={() => !popupJustClosed() && onOpen(item)}
         className="w-full py-8 text-right sm:py-10"
       >
         <span className="block">

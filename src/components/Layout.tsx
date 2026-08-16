@@ -19,6 +19,7 @@ const useSmoothScroll = (disabled: boolean) => {
     if (window.matchMedia("(pointer: coarse)").matches) return;
 
     const lenis = new Lenis({ lerp: 0.11, wheelMultiplier: 1 });
+    window.__lenis = lenis;
     let raf = 0;
     const loop = (time: number) => {
       lenis.raf(time);
@@ -28,6 +29,7 @@ const useSmoothScroll = (disabled: boolean) => {
 
     return () => {
       cancelAnimationFrame(raf);
+      delete window.__lenis;
       lenis.destroy();
     };
   }, [disabled]);
@@ -52,7 +54,13 @@ const ScrollManager = () => {
   return null;
 };
 
-/** מעבר עמוד עדין: העמוד הנכנס עולה ומתבהר, היוצא נמוג מהר. */
+/**
+ * מעבר עמוד עדין: העמוד הנכנס עולה ומתבהר, היוצא נמוג מהר.
+ *
+ * mode="wait" ולא "popLayout" בכוונה: popLayout מוציא את הילד היוצא
+ * מזרימת הפריסה, וזה שובר כל AnimatePresence מקונן בתוך העמוד - הפופאפים
+ * נשארו תקועים ב-DOM אחרי סגירה במקום להיעלם.
+ */
 const PageTransition = () => {
   const { pathname } = useLocation();
   const reduced = useReducedMotion();
@@ -60,7 +68,7 @@ const PageTransition = () => {
   if (reduced) return <Outlet />;
 
   return (
-    <AnimatePresence mode="popLayout" initial={false}>
+    <AnimatePresence mode="wait" initial={false}>
       <motion.div
         key={pathname}
         initial={{ opacity: 0, y: 26 }}

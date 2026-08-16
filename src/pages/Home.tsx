@@ -156,35 +156,33 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="py-14 sm:py-16 lg:py-20">
+      <section className="border-t border-white/10 py-14 sm:py-20">
         <div className="container-site">
-          <div className="rounded-[2rem] bg-bone px-5 py-12 text-ink sm:rounded-[2.5rem] sm:px-10 sm:py-16">
           <SectionHeader kicker="שאלות" title="שאלות נפוצות" center />
           <ScrollReveal3D from="up" intensity="quiet" fromRotateX={6} fromY={20}>
             <FAQAccordion items={[...GENERAL_FAQ]} />
           </ScrollReveal3D>
-          </div>
         </div>
       </section>
 
-      {/* סגירה הפוכה: על האתר השחור, הבלוק הסוגר הוא שנהב שמתעגל מעל הפוטר */}
-      <section className="mt-10 rounded-t-[3rem] bg-bone py-24 text-center text-ink sm:mt-14 sm:py-32">
+      {/* סגירה שקטה: אותו קנבס כהה, קו שיער אחד, וטיפוגרפיה במידה */}
+      <section className="border-t border-white/10 py-20 text-center sm:py-24">
         <div className="container-site flex flex-col items-center">
-          <span className="section-label mb-5">
+          <span className="section-label mb-5 text-bone">
             <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
             {SITE.hebrewName}
           </span>
-          <h2 className="display-1 max-w-4xl">
+          <h2 className="max-w-3xl font-display text-[clamp(1.8rem,4vw,3rem)] font-bold leading-[1.12] tracking-tightest text-bone">
             לא רק ללמוד. <AccentWord>לדעת.</AccentWord>
           </h2>
-          <p className="mt-6 max-w-xl text-base leading-relaxed text-ink/60 sm:text-lg">
+          <p className="mt-5 max-w-lg text-[15px] leading-relaxed text-bone/55 sm:text-base">
             מגיעים עם העסק, הלימודים או הפרויקט שלכם. יוצאים עם תוצר שעובד ושיטה שנשארת.
           </p>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-3.5">
+          <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
             <Pressable
               as="link"
               to="/courses"
-              className="btn bg-ink text-white hover:bg-black"
+              className="inline-flex min-h-11 items-center rounded-full bg-bone px-6 text-sm font-medium text-ink transition-colors duration-300 hover:bg-white"
             >
               {SITE.hero.primaryCta}
             </Pressable>
@@ -193,10 +191,10 @@ const Home = () => {
               href={SITE.contact.whatsapp}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn border border-ink/25 text-ink hover:border-ink/50"
+              className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/15 px-6 text-sm font-medium text-bone/70 transition-colors duration-300 hover:border-white/40 hover:text-bone"
               rippleTone="pink"
             >
-              <WhatsAppIcon size={19} className="shrink-0 text-[#25D366]" />
+              <WhatsAppIcon size={17} className="shrink-0 text-[#25D366]" />
               דברו איתנו בוואטסאפ
             </Pressable>
           </div>

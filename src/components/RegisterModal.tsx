@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { useScrollLock } from "../lib/scrollLock";
 import RegisterForm from "./RegisterForm";
 import { useRegisterModal } from "../context/RegisterModalContext";
 import { XIcon } from "./icons";
@@ -10,12 +11,7 @@ const RegisterModal = () => {
   const panelRef = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion();
 
-  useEffect(() => {
-    document.body.style.overflow = isOpen ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isOpen]);
+  useScrollLock(isOpen);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -64,7 +60,7 @@ const RegisterModal = () => {
             onClick={(e) => e.stopPropagation()}
             initial={reduced ? false : { opacity: 0, y: 28, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 16, scale: 0.98 }}
+            exit={{ opacity: 0, y: 16, scale: 0.98, transition: { duration: 0.18, ease: "easeIn" } }}
             transition={{ type: "spring", stiffness: 380, damping: 32 }}
           >
             {/* כותרת על רצועה כהה - הופכת את המודאל לחלק מהשפה של האתר */}
