@@ -135,27 +135,18 @@ const Syllabus = () => {
               </p>
             </div>
 
-            <footer className="mt-10 flex flex-col gap-4 border-t border-white/10 pt-7 sm:flex-row sm:items-center sm:justify-between">
-              <div className="text-xs leading-relaxed text-bone/45">
-                <p>
-                  {SITE.name} · {SITE.tagline}
-                </p>
-                <p dir="ltr" className="mt-0.5">
-                  {SITE.contact.email} · {SITE.contact.phone}
-                </p>
-              </div>
-
-              <div className="flex flex-wrap gap-3 print:hidden">
-                <Pressable
-                  type="button"
-                  className="btn-submit !w-auto"
-                  onClick={() =>
-                    openRegisterModal({ courseId: course.slug, leadSource: `syllabus-${course.slug}` })
-                  }
-                >
-                  שמרו לי מקום
-                </Pressable>
-              </div>
+            {/* בלי חתימת פרטי קשר: היא חזרה על מה שכבר בפוטר של האתר
+                וגררה את סוף המסמך למטה בלי להוסיף כלום */}
+            <footer className="mt-10 flex justify-center border-t border-white/10 pt-7 print:hidden">
+              <Pressable
+                type="button"
+                className="btn-submit !w-auto"
+                onClick={() =>
+                  openRegisterModal({ courseId: course.slug, leadSource: `syllabus-${course.slug}` })
+                }
+              >
+                שמרו לי מקום
+              </Pressable>
             </footer>
           </div>
         </article>
