@@ -91,7 +91,7 @@ const PinnedSelect = ({
       <button
         type="button"
         id={id}
-        className="flex min-h-11 w-full items-center justify-between gap-2 rounded-xl border border-line bg-white px-3.5 py-2.5 text-right text-sm text-ink outline-none transition-[border-color,box-shadow] focus-visible:border-[#FF2D85]/50 focus-visible:ring-2 focus-visible:ring-[#FF2D85]/25"
+        className="flex min-h-12 w-full items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-right text-base text-bone outline-none transition-[border-color,box-shadow] focus-visible:border-brand/50 focus-visible:ring-2 focus-visible:ring-brand/25"
         style={invalid ? { borderColor: "rgb(239 68 68)" } : undefined}
         aria-haspopup="listbox"
         aria-expanded={open}
@@ -99,8 +99,8 @@ const PinnedSelect = ({
         aria-invalid={invalid || undefined}
         onClick={() => setOpen((v) => !v)}
       >
-        <span className={value ? "text-ink" : "text-muted"}>{label}</span>
-        <span className="text-muted" aria-hidden>
+        <span className={value ? "text-bone" : "text-bone/35"}>{label}</span>
+        <span className="text-bone/45" aria-hidden>
           {open ? "▴" : "▾"}
         </span>
       </button>
@@ -110,7 +110,7 @@ const PinnedSelect = ({
           id={listId}
           role="listbox"
           aria-labelledby={id}
-          className="absolute left-0 right-0 top-full z-[100] mt-1.5 max-h-64 w-full overflow-y-auto rounded-xl border border-line bg-white py-1 shadow-float"
+          className="absolute left-0 right-0 top-full z-[100] mt-1.5 max-h-64 w-full overflow-y-auto rounded-xl border border-white/10 bg-surface-2 py-1 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.85)]"
         >
           {options.map((opt) => {
             const selected = value === opt.value;
@@ -122,8 +122,8 @@ const PinnedSelect = ({
                   aria-selected={selected}
                   className={`flex min-h-11 w-full items-center px-3.5 py-2.5 text-right text-sm font-medium transition-colors ${
                     selected
-                      ? "bg-[#FF2D85]/10 text-[#FF2D85]"
-                      : "text-ink hover:bg-[#FF2D85]/08 hover:text-[#FF2D85] focus-visible:bg-[#FF2D85]/10 focus-visible:text-[#FF2D85]"
+                      ? "bg-brand/15 text-brand"
+                      : "text-bone/80 hover:bg-white/[0.06] hover:text-bone focus-visible:bg-white/[0.08] focus-visible:text-bone"
                   }`}
                   onClick={() => {
                     onChange(opt.value);
