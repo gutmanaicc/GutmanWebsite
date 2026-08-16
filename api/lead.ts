@@ -53,12 +53,11 @@ export default async function handler(req: any, res: any) {
    * בלי לנחש - רואים מיד אם המשתנה הגיע לפונקציה.
    */
   if (req.method === "GET") {
-    const token = process.env.FIREBERRY_TOKEN ?? "";
+    /* בוליאני בלבד. אורך המפתח או כל רמז אחר עליו לא נחשפים כאן. */
     return res.status(200).json({
       ok: true,
-      fireberryConfigured: token.length > 0,
-      tokenLength: token.length,
-      objectType: process.env.FIREBERRY_OBJECT_TYPE ?? "1 (ברירת מחדל)",
+      fireberryConfigured: Boolean(process.env.FIREBERRY_TOKEN),
+      objectType: process.env.FIREBERRY_OBJECT_TYPE ?? "1",
     });
   }
 
