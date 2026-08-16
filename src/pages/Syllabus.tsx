@@ -1,5 +1,4 @@
 import { Navigate, useParams } from "react-router-dom";
-import { Download } from "lucide-react";
 import BackButton from "../components/BackButton";
 import Logo from "../components/Logo";
 import Pressable from "../components/Pressable";
@@ -13,7 +12,10 @@ import NotFound from "./NotFound";
 /**
  * מסמך הסילבוס המלא של סדנה. בנוי כמסמך ולא כעמוד שיווקי: לוגו בפינה
  * הימנית העליונה, כותרת, פרטי הסדנה, שלבי הלמידה, הכלים והתוצר.
- * מותאם להדפסה ולשמירה כ-PDF דרך כפתור ההדפסה.
+ *
+ * אין כאן כפתור הורדה. מי שרוצה עותק יכול להדפיס את העמוד מהדפדפן,
+ * וגיליון ההדפסה שב-index.css כבר מנקה ממנו את התפריט, הפוטר, באנר
+ * המדידה וכפתור הנגישות.
  */
 const Syllabus = () => {
   const { slug = "" } = useParams();
@@ -153,19 +155,6 @@ const Syllabus = () => {
                 >
                   שמרו לי מקום
                 </Pressable>
-                {/*
-                  קובץ אמיתי ולא window.print(): בדפדפנים מוטמעים - אינסטגרם,
-                  פייסבוק, ווטסאפ - הקריאה ל-print לא עושה כלום, וזה בדיוק
-                  המקום שממנו מגיעה רוב התנועה.
-                */}
-                <a
-                  href={`/syllabus/${course.slug}.pdf`}
-                  download={`סילבוס - ${course.shortTitle}.pdf`}
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-ink/25 px-6 text-sm font-medium text-ink transition-colors duration-300 hover:border-ink hover:bg-ink hover:text-white"
-                >
-                  <Download size={16} aria-hidden />
-                  הורדת הסילבוס כ-PDF
-                </a>
               </div>
             </footer>
           </div>
