@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import ChatFinder from "../components/ChatFinder";
+import ClosingCta from "../components/ClosingCta";
 import FAQAccordion from "../components/FAQAccordion";
 import HomeProof from "../components/HomeProof";
 import Marquee from "../components/Marquee";
@@ -9,20 +10,17 @@ import SectionHeader, { AccentWord } from "../components/SectionHeader";
 import StackingCourses from "../components/StackingCourses";
 import NightHero from "../components/NightHero";
 import InstructorsShowcase from "../components/InstructorsShowcase";
-import Pressable from "../components/Pressable";
-import { StaggerGroup, StaggerItem, ScrollReveal3D } from "../components/motion";
+import { ScrollReveal3D } from "../components/motion";
 import { GENERAL_FAQ, SITE } from "../data/site";
 import { useRegisterModal } from "../context/RegisterModalContext";
 import { acquirePointerStore } from "../lib/motion";
 import { useReveal } from "../lib/useReveal";
 import { orgSchema, useSeo } from "../lib/seo";
 
-const WHY_FROM = ["left", "right", "up", "left", "right"] as const;
-
 const MARQUEE_ITEMS = SITE.principles.map((p) => p.title);
 
 const Home = () => {
-  const { inlinePrefill, setInlinePrefill, openRegisterModal } = useRegisterModal();
+  const { inlinePrefill, setInlinePrefill } = useRegisterModal();
 
   useSeo({
     title: `${SITE.name} | ${SITE.tagline}`,
@@ -36,7 +34,7 @@ const Home = () => {
   useEffect(() => acquirePointerStore(), []);
 
   const handleFinderResult = (slug: string, goal?: string) => {
-    setInlinePrefill({ courseId: slug, initialGoal: goal, leadSource: "chat-finder-home" });
+    setInlinePrefill({ courseId: slug, initialGoal: goal, leadSource: "chat-finder-scrolled" });
   };
 
   return (
@@ -74,62 +72,17 @@ const Home = () => {
         <StackingCourses />
       </section>
 
-      <section className="py-14 sm:py-20 lg:py-24">
-        <div className="container-site">
-          <SectionHeader
-            kicker="למה פרונטלי"
-            title={<>לומדים <AccentWord>בזמן אמת</AccentWord></>}
-            sub="האקדמיה בנויה סביב עבודה מעשית, פידבק מיידי, ותוצר שיוצא איתכם הביתה."
-            center
-          />
-          {/* לוחות כהים על הקנבס: מספר זעיר, קו שיער שנמתח בהובר, וזוהר ורוד */}
-          <StaggerGroup
-            className="mt-12 grid gap-px overflow-hidden rounded-[1.5rem] bg-white/10 sm:grid-cols-2 lg:grid-cols-3"
-            stagger={0.06}
-          >
-            {SITE.whyFrontal.map((item, i) => (
-              <StaggerItem key={item.title} className="h-full">
-                <ScrollReveal3D
-                  className="h-full"
-                  from={WHY_FROM[i % WHY_FROM.length]}
-                  intensity="quiet"
-                  fromRotateX={6}
-                  fromY={26}
-                >
-                  <article className="why-tile group relative flex h-full flex-col bg-canvas p-7 text-bone transition-colors duration-500 sm:p-9">
-                    <span
-                      className="pointer-events-none absolute inset-x-0 top-0 h-px origin-right scale-x-0 bg-brand transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100"
-                      aria-hidden
-                    />
-                    <span
-                      className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full opacity-0 blur-3xl transition-opacity duration-700 group-hover:opacity-100"
-                      style={{ background: "radial-gradient(circle, rgba(255,95,158,0.3) 0%, rgba(255,95,158,0) 70%)" }}
-                      aria-hidden
-                    />
-
-                    <span
-                      className="text-[11px] font-medium tracking-[0.22em] text-bone/30 transition-colors duration-500 group-hover:text-brand"
-                      dir="ltr"
-                      aria-hidden
-                    >
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-
-                    <h3 className="mt-7 font-display text-xl font-bold leading-snug tracking-tight sm:text-[1.4rem]">
-                      {item.title}
-                    </h3>
-                    <p className="mt-3 text-[15px] leading-relaxed text-bone/50">{item.text}</p>
-                  </article>
-                </ScrollReveal3D>
-              </StaggerItem>
-            ))}
-          </StaggerGroup>
-        </div>
-      </section>
+      {/*
+        * "איך זה עובד" עלה לכאן במקום סקשן "למה פרונטלי" שהיה כאן קודם.
+        *
+        * שניהם ישבו על אותו עמוד וסיפרו את אותו דבר בניסוח אחר - עבודה על
+        * החומר שלכם, בזמן אמת, ויוצאים עם תוצר. אחרי האיחוד הסיפור נאמר
+        * פעם אחת, העמוד התקצר בסקשן שלם, וטופס הלידים עלה מעלה.
+        * הטקסטים של whyFrontal נשארו ב-src/data/site.ts.
+        */}
+      <ProcessSection />
 
       <HomeProof />
-
-      <ProcessSection />
 
       <InstructorsShowcase />
 
@@ -165,37 +118,16 @@ const Home = () => {
       </section>
 
       {/* סגירה שקטה: אותו קנבס כהה, קו שיער אחד, וטיפוגרפיה במידה */}
-      <section className="border-t border-white/10 py-20 text-center sm:py-24">
-        <div className="container-site flex flex-col items-center">
-          <span className="section-label mb-5 text-bone">
-            <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
-            {SITE.hebrewName}
-          </span>
-          <h2 className="max-w-3xl font-display text-[clamp(1.8rem,4vw,3rem)] font-bold leading-[1.12] tracking-tightest text-bone">
+      {/* קודם "לצפייה במסלולים" היה הכפתור המלא כאן, והשארת הפרטים הייתה המשני */}
+      <ClosingCta
+        leadSource="home-closing"
+        title={
+          <>
             לא רק ללמוד. <AccentWord>לדעת.</AccentWord>
-          </h2>
-          <p className="mt-5 max-w-lg text-[15px] leading-relaxed text-bone/55 sm:text-base">
-            מגיעים עם העסק, הלימודים או הפרויקט שלכם. יוצאים עם תוצר שעובד ושיטה שנשארת.
-          </p>
-          <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-            <Pressable
-              as="link"
-              to="/courses"
-              className="inline-flex min-h-11 items-center rounded-full bg-bone px-6 text-sm font-medium text-ink transition-colors duration-300 hover:bg-white"
-            >
-              {SITE.hero.primaryCta}
-            </Pressable>
-            <Pressable
-              type="button"
-              className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/15 px-6 text-sm font-medium text-bone/70 transition-colors duration-300 hover:border-white/40 hover:text-bone"
-              rippleTone="pink"
-              onClick={() => openRegisterModal({ leadSource: "home-closing" })}
-            >
-              השאירו פרטים ונחזור אליכם
-            </Pressable>
-          </div>
-        </div>
-      </section>
+          </>
+        }
+        sub="מגיעים עם העסק, הלימודים או הפרויקט שלכם. יוצאים עם תוצר שעובד ושיטה שנשארת."
+      />
       </div>
     </>
   );

@@ -131,7 +131,7 @@
 
   /* כרטיס נייר עם קו שיער - היחידה הבסיסית של השפה */
   .card-line {
-    @apply rounded-[1.5rem] border border-line bg-white shadow-card;
+    @apply rounded-[1.5rem] border border-white/10 bg-surface-1 shadow-card;
     transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
@@ -165,8 +165,12 @@
     animation: marquee-scroll 36s linear infinite;
   }
 
-  .marquee:hover .marquee-track {
-    animation-play-state: paused;
+  /* עצירה בהובר רק במכשיר עם עכבר. במסך מגע ההובר "נתקע" אחרי נגיעה
+     והטיקר פשוט מפסיק לזוז בלי שהמשתמש ביקש. */
+  @media (hover: hover) and (pointer: fine) {
+    .marquee:hover .marquee-track {
+      animation-play-state: paused;
+    }
   }
 
   @keyframes marquee-scroll {
@@ -341,8 +345,10 @@
     }
   }
 
+  /* min-h-11 ולא 10: 44px הוא הרף למטרת מגע, וגם הכפתור ה"קטן" משמש
+     לפעמים כקריאה לפעולה ראשית. */
   .btn-small {
-    @apply min-h-10 px-4 py-2 text-xs sm:text-sm;
+    @apply min-h-11 px-4 py-2 text-sm;
   }
 
   .btn-block {
@@ -350,16 +356,16 @@
   }
 
   .stat-pill {
-    @apply inline-flex min-h-11 items-center gap-1.5 rounded-full border border-line bg-white px-3.5 py-2 text-xs font-medium text-muted transition-[transform,box-shadow,border-color,color] duration-200 ease-out sm:min-h-0 sm:py-1 sm:px-3;
+    @apply inline-flex min-h-11 items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-2 text-xs font-medium text-bone/60 transition-[transform,box-shadow,border-color,color] duration-200 ease-out sm:min-h-0 sm:py-1 sm:px-3;
   }
 
   .stat-pill b {
-    @apply text-ink;
+    @apply text-bone;
   }
 
   @media (hover: hover) and (pointer: fine) {
     .stat-pill:hover {
-      @apply border-[#FF2D85]/35 text-ink;
+      @apply border-brand/35 text-bone;
       transform: scale(1.045);
       box-shadow:
         0 0 0 1px rgba(255, 45, 133, 0.12),
@@ -380,11 +386,11 @@
 
   /* Course detail page */
   .course-glass-card {
-    @apply rounded-3xl border border-line bg-white shadow-card;
+    @apply rounded-3xl border border-white/10 bg-surface-1 shadow-card;
   }
 
   .course-deliverable-card {
-    @apply rounded-[1.75rem] border border-line bg-white shadow-card;
+    @apply rounded-[1.75rem] border border-white/10 bg-surface-1 shadow-card;
   }
 
   .course-deliverable-featured {
@@ -398,11 +404,14 @@
     @apply transition-[transform,box-shadow,border-color] duration-300 ease-out;
   }
 
-  .course-lift-card:hover {
-    @apply -translate-y-1.5 border-[#FF2D85]/30;
-    box-shadow:
-      0 24px 48px -16px rgba(255, 45, 133, 0.14),
-      0 8px 24px -10px rgba(18, 18, 18, 0.1);
+  /* מגודר: בנגיעה ההובר נשאר דלוק והכרטיס נתקע מורם */
+  @media (hover: hover) and (pointer: fine) {
+    .course-lift-card:hover {
+      @apply -translate-y-1.5 border-[#FF2D85]/30;
+      box-shadow:
+        0 24px 48px -16px rgba(255, 45, 133, 0.14),
+        0 8px 24px -10px rgba(18, 18, 18, 0.1);
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -413,7 +422,7 @@
   }
 
   .course-hero-meta {
-    @apply flex flex-wrap items-stretch gap-1 rounded-2xl border border-line bg-white p-1 shadow-card sm:flex-nowrap;
+    @apply flex flex-wrap items-stretch gap-1 rounded-2xl border border-white/10 bg-surface-1 p-1 shadow-card sm:flex-nowrap;
   }
 
   .course-hero-meta-item {
@@ -425,11 +434,11 @@
   }
 
   .course-hero-meta-label {
-    @apply block text-[10px] font-semibold uppercase tracking-wider text-muted leading-none;
+    @apply block text-[10px] font-semibold uppercase tracking-wider text-bone/45 leading-none;
   }
 
   .course-hero-meta-value {
-    @apply mt-0.5 block text-xs font-semibold text-ink sm:text-sm leading-snug;
+    @apply mt-0.5 block text-xs font-semibold text-bone sm:text-sm leading-snug;
   }
 
   .course-register-banner {
@@ -477,9 +486,11 @@
     transition: -webkit-text-stroke-color 0.6s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  .course-card:hover .course-card-ghost {
-    -webkit-text-stroke-color: rgba(255, 95, 158, 0.28);
-    transform: translateY(-6px);
+  @media (hover: hover) and (pointer: fine) {
+    .course-card:hover .course-card-ghost {
+      -webkit-text-stroke-color: rgba(255, 45, 133, 0.28);
+      transform: translateY(-6px);
+    }
   }
 
   /* Course cards - bento grid (lift/tilt handled by MagneticCard) */
@@ -487,12 +498,14 @@
     @apply transition-[box-shadow,border-color] duration-300 ease-out;
   }
 
-  .course-card:hover {
-    border-color: rgb(255 45 133 / 0.3);
-    @apply shadow-2xl;
-    box-shadow:
-      0 25px 50px -12px rgba(255, 45, 133, 0.12),
-      0 8px 24px -8px rgba(25, 25, 25, 0.1);
+  @media (hover: hover) and (pointer: fine) {
+    .course-card:hover {
+      border-color: rgb(255 45 133 / 0.3);
+      @apply shadow-2xl;
+      box-shadow:
+        0 25px 50px -12px rgba(255, 45, 133, 0.12),
+        0 8px 24px -8px rgba(25, 25, 25, 0.1);
+    }
   }
 
   .course-card:focus-within {
@@ -509,7 +522,7 @@
   }
 
   .course-card-pill {
-    @apply inline-flex items-center gap-1.5 rounded-full border border-line bg-paper px-3 py-1.5 text-xs font-medium text-ink transition-[transform,box-shadow,border-color] duration-200 ease-out;
+    @apply inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-xs font-medium text-bone/75 transition-[transform,box-shadow,border-color] duration-200 ease-out;
   }
 
   .course-card-pill svg {
@@ -630,14 +643,16 @@
   }
 
   .field label {
-    @apply mb-2 block text-[13px] font-medium tracking-wide text-ink/55;
+    @apply mb-2 block text-[13px] font-medium tracking-wide text-bone/60;
   }
 
   /* שדות שקועים: משטח חם מעט כהה מהכרטיס, קו שיער, בלי צל */
   .field input,
   .field select,
   .field textarea {
-    @apply w-full rounded-xl border border-ink/10 bg-white px-4 py-3 text-[15px] text-ink outline-none;
+    /* 16px ולא פחות: ספארי במובייל מזמזם את כל העמוד בכל פוקוס על שדה
+       שגופנו קטן מ-16px, וזה קרה בכל שדה של טופס הלידים הראשי. */
+    @apply w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-base text-bone outline-none placeholder:text-bone/35;
     transition:
       border-color 220ms cubic-bezier(0.22, 1, 0.36, 1),
       box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -645,12 +660,12 @@
 
   .field input::placeholder,
   .field textarea::placeholder {
-    @apply text-ink/35;
+    @apply text-bone/35;
   }
 
   /* שדה נעול (למשל שם הסדנה בטופס רשימת ההמתנה): נראה מולא מראש */
   .field input[readonly] {
-    @apply cursor-default border-ink/[0.07] bg-ink/[0.04] text-ink/60;
+    @apply cursor-default border-white/[0.07] bg-white/[0.03] text-bone/50;
   }
 
   .field input:focus,
@@ -694,11 +709,11 @@
   }
 
   .lead-form {
-    @apply rounded-3xl border border-line bg-white p-6 text-ink shadow-card sm:p-8;
+    @apply rounded-3xl border border-white/10 bg-surface-1 p-6 text-bone shadow-card sm:p-8;
   }
 
   .lead-form h3 {
-    @apply text-xl font-bold tracking-tight text-ink sm:text-2xl;
+    @apply text-xl font-bold tracking-tight text-bone sm:text-2xl;
   }
 
   /* Forms inside the register modal must never stay hidden by scroll-reveal */
@@ -708,7 +723,7 @@
   }
 
   .form-sub {
-    @apply mt-2 text-sm text-muted;
+    @apply mt-2 text-sm text-bone/55;
   }
 
   .form-row {
@@ -732,16 +747,18 @@
   }
 
   .form-note {
-    @apply mt-3.5 text-center text-xs leading-relaxed text-ink/40;
+    @apply mt-3.5 text-center text-xs leading-relaxed text-bone/40;
   }
 
   /* ChatFinder */
+  /* הצ'אט היה חלון לבן על אתר כהה, ולכן כותרת התוצאה יצאה שנהב על לבן
+     ולא הייתה קריאה. עכשיו הוא משטח כהה ככל השאר. */
   .chat-shell {
-    @apply overflow-hidden rounded-2xl border border-line bg-white shadow-card;
+    @apply overflow-hidden rounded-2xl border border-white/10 bg-[#141318] shadow-[0_24px_60px_-24px_rgba(0,0,0,0.8)];
   }
 
   .chat-bar {
-    @apply flex items-center gap-3 border-b border-line px-4 py-3;
+    @apply flex items-center gap-3 border-b border-white/10 px-4 py-3;
   }
 
   .chat-progress {
@@ -749,7 +766,7 @@
   }
 
   .chat-progress-dot {
-    @apply h-1.5 w-1.5 rounded-full bg-line transition-[background-color,transform] duration-200;
+    @apply h-1.5 w-1.5 rounded-full bg-white/20 transition-[background-color,transform] duration-200;
   }
 
   .chat-progress-dot.is-active {
@@ -769,7 +786,7 @@
   }
 
   .chat-dots span {
-    @apply h-2.5 w-2.5 rounded-full bg-line;
+    @apply h-2.5 w-2.5 rounded-full bg-white/20;
   }
 
   .chat-dots span:first-child {
@@ -785,7 +802,7 @@
   }
 
   .chat-bar-title {
-    @apply text-xs font-semibold tracking-wide text-muted;
+    @apply text-xs font-semibold tracking-wide text-bone/50;
   }
 
   .chat-body {
@@ -797,15 +814,15 @@
   }
 
   .chat-msg.bot {
-    @apply bg-paper text-ink;
+    @apply bg-white/[0.06] text-bone;
   }
 
   .chat-msg.user {
-    @apply mr-auto bg-ink text-white;
+    @apply mr-auto bg-brand text-white;
   }
 
   .chat-typing span {
-    @apply mx-0.5 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-muted;
+    @apply mx-0.5 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-bone/40;
   }
 
   .chat-choices {
@@ -813,7 +830,7 @@
   }
 
   .chat-choice {
-    @apply min-h-11 rounded-xl border border-line bg-white px-4 py-3 text-right text-sm font-medium text-ink transition-[colors,border-color,box-shadow,transform] hover:border-[#FF2D85]/35 hover:bg-paper hover:shadow-[0_0_0_1px_rgba(255,45,133,0.12)] active:scale-[0.97];
+    @apply min-h-11 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-right text-sm font-medium text-bone transition-[colors,border-color,box-shadow,transform] hover:border-brand/40 hover:bg-white/[0.08] active:scale-[0.97];
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -831,11 +848,11 @@
   }
 
   .chat-result-card h3 {
-    @apply text-base font-bold;
+    @apply text-base font-bold text-bone;
   }
 
   .chat-result-card p {
-    @apply mt-1 text-sm text-muted;
+    @apply mt-1 text-sm text-bone/60;
   }
 
   .chat-result-actions {
@@ -843,7 +860,7 @@
   }
 
   .chat-restart {
-    @apply text-xs text-muted underline-offset-2 hover:text-ink hover:underline;
+    @apply min-h-11 text-xs text-bone/45 underline-offset-2 hover:text-bone hover:underline;
   }
 
   /* MockWindows */
@@ -1008,9 +1025,21 @@
 
   /* מסמך הסילבוס בהדפסה: משטח לבן, בלי קישוטי רקע ובלי חיתוך בלוקים */
   @media print {
+    /*
+     * המסמך עבר למשטח כהה במסך, ולכן כל הטקסט שלו שנהב. בהדפסה הרקע
+     * לבן, ובלי הכפייה הזו הדף היה יוצא מהמדפסת ריק.
+     */
     .syllabus-doc {
       background: #fff;
       padding: 0;
+      border: 0;
+      box-shadow: none;
+    }
+
+    .syllabus-doc,
+    .syllabus-doc * {
+      color: #191919 !important;
+      border-color: rgba(25, 25, 25, 0.15) !important;
     }
 
     .syllabus-doc li,

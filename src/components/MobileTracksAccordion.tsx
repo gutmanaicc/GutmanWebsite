@@ -15,7 +15,7 @@ const Chevron = ({ open }: { open: boolean }) => (
     fill="none"
     stroke="currentColor"
     strokeWidth="2.2"
-    className={`shrink-0 text-muted transition-transform duration-200 ease-out ${open ? "rotate-180" : ""}`}
+    className={`shrink-0 text-bone/50 transition-transform duration-200 ease-out ${open ? "rotate-180" : ""}`}
     aria-hidden
   >
     <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
@@ -42,7 +42,7 @@ const MobileTracksAccordion = ({ onNavigate }: Props) => {
         [
           "flex min-h-11 items-center rounded-xl px-4 text-sm font-medium transition-colors",
           nested ? "pr-6 text-[13px]" : "text-sm",
-          isActive ? "bg-[#FF2D85]/10 text-ink" : "text-ink hover:bg-[#F4F4F2]",
+          isActive ? "bg-[#FF2D85]/15 text-bone" : "text-bone/70 hover:bg-white/10 hover:text-bone",
         ].join(" ")
       }
       onClick={onNavigate}
@@ -64,7 +64,7 @@ const MobileTracksAccordion = ({ onNavigate }: Props) => {
             className={({ isActive }) =>
               [
                 "flex min-h-11 flex-1 items-center rounded-xl px-4 text-sm font-medium transition-colors",
-                isActive ? "bg-[#FF2D85]/10 text-ink" : "text-ink hover:bg-[#F4F4F2]",
+                isActive ? "bg-[#FF2D85]/15 text-bone" : "text-bone/70 hover:bg-white/10 hover:text-bone",
               ].join(" ")
             }
             onClick={onNavigate}
@@ -73,7 +73,7 @@ const MobileTracksAccordion = ({ onNavigate }: Props) => {
           </NavLink>
           <button
             type="button"
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-ink hover:bg-[#F4F4F2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2D85]/40"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-bone/70 hover:bg-white/10 hover:text-bone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2D85]/40"
             aria-expanded={businessOpen}
             aria-controls={businessPanelId}
             aria-label={businessOpen ? "סגירת מסלולי משנה" : "פתיחת מסלולי משנה"}
@@ -110,7 +110,7 @@ const MobileTracksAccordion = ({ onNavigate }: Props) => {
     <div className="rounded-2xl">
       <button
         type="button"
-        className="flex min-h-12 w-full items-center justify-between rounded-full px-4 py-3 text-right text-base font-medium text-ink hover:bg-white/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2D85]/40"
+        className="flex min-h-12 w-full items-center justify-between rounded-full px-4 py-3 text-right text-base font-medium text-bone/70 transition-colors hover:bg-white/10 hover:text-bone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2D85]/40"
         aria-expanded={tracksOpen}
         aria-controls={panelId}
         onClick={() => setTracksOpen((o) => !o)}
@@ -131,7 +131,7 @@ const MobileTracksAccordion = ({ onNavigate }: Props) => {
             transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
             style={{ overflow: "hidden" }}
           >
-            <ul className="mt-1 space-y-0.5 rounded-2xl bg-[#F4F4F2]/80 p-1.5">{NAV_TRACKS.map(renderTrack)}</ul>
+            <ul className="mt-1 space-y-0.5 rounded-2xl bg-white/[0.04] p-1.5">{NAV_TRACKS.map(renderTrack)}</ul>
             <NavLink
               to="/courses"
               className="mt-1 flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-semibold text-[#FF2D85] hover:bg-[#FF2D85]/10"

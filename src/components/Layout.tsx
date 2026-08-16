@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import Lenis from "lenis";
 import Header from "./Header";
 import Footer from "./Footer";
@@ -9,7 +9,7 @@ import { Consent } from "./Consent";
 import AccessibilityMenu from "./AccessibilityMenu";
 import RegisterModal from "./RegisterModal";
 import WaitlistModal from "./WaitlistModal";
-import { CursorTrail, ParallaxGridCanvas } from "./motion";
+import { ParallaxGridCanvas } from "./motion";
 import { REGISTRATION_FORM_ID, scrollToRegistrationForm } from "../lib/registration";
 
 /** גלילה חלקה עם אינרציה (lenis) - הבסיס של תחושת orbix. עכבר בלבד. */
@@ -35,6 +35,27 @@ const useSmoothScroll = (disabled: boolean) => {
   }, [disabled]);
 };
 
+/**
+ * איפוס גלילה במעבר עמוד.
+ *
+ * window.scrollTo לבדו לא מספיק כאן: Lenis מחזיק מיקום גלילה משלו ודוחף
+ * אותו בחזרה בפריים הבא, ולכן העמוד החדש נפתח באמצע או בתחתית - וזה
+ * נראה למשתמש כאילו העמוד לא נטען. מאפסים דרך Lenis כשהוא קיים, ורק
+ * כגיבוי דרך החלון (מובייל, או reduced motion, שבהם Lenis לא רץ).
+ *
+ * force כדי שהאיפוס יעבוד גם כש-Lenis עצור בגלל פופאפ פתוח, ו-resize
+ * בפריים הבא כי גובה העמוד החדש עוד לא נמדד ברגע המעבר.
+ */
+const resetScroll = () => {
+  const lenis = window.__lenis;
+  if (!lenis) {
+    window.scrollTo(0, 0);
+    return;
+  }
+  lenis.scrollTo(0, { immediate: true, force: true });
+  requestAnimationFrame(() => window.__lenis?.resize());
+};
+
 const ScrollManager = () => {
   const { pathname, hash } = useLocation();
   useEffect(() => {
@@ -49,17 +70,23 @@ const ScrollManager = () => {
         return;
       }
     }
-    window.scrollTo(0, 0);
+    resetScroll();
   }, [pathname, hash]);
   return null;
 };
 
 /**
- * מעבר עמוד עדין: העמוד הנכנס עולה ומתבהר, היוצא נמוג מהר.
+ * מעבר עמוד עדין: העמוד הנכנס עולה ומתבהר.
  *
- * mode="wait" ולא "popLayout" בכוונה: popLayout מוציא את הילד היוצא
- * מזרימת הפריסה, וזה שובר כל AnimatePresence מקונן בתוך העמוד - הפופאפים
- * נשארו תקועים ב-DOM אחרי סגירה במקום להיעלם.
+ * בלי AnimatePresence בכוונה. הגרסה הקודמת השתמשה ב-mode="wait", שמעכב את
+ * הרכבת העמוד החדש עד שאנימציית היציאה מסתיימת. כשמשתמש לוחץ על שני
+ * לינקים ברצף מהיר, המעבר השני נכנס באמצע היציאה של הראשון, AnimatePresence
+ * נתקע בין שני מצבים והעמוד החדש פשוט לא מורכב - זה מה שנראה כמו "העמוד
+ * לא נטען". popLayout לא פתרון: הוא מוציא את הילד היוצא מזרימת הפריסה
+ * ושובר כל AnimatePresence מקונן בתוך העמוד (הפופאפים נתקעים ב-DOM).
+ *
+ * ה-key על pathname מספיק: React מרכיב מחדש בכל שינוי נתיב, ולכן initial
+ * מתנגן שוב. בלי אנימציית יציאה אין מצב ביניים שאפשר להיתקע בו.
  */
 const PageTransition = () => {
   const { pathname } = useLocation();
@@ -68,17 +95,14 @@ const PageTransition = () => {
   if (reduced) return <Outlet />;
 
   return (
-    <AnimatePresence mode="wait" initial={false}>
-      <motion.div
-        key={pathname}
-        initial={{ opacity: 0, y: 26 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, transition: { duration: 0.18, ease: "easeIn" } }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <Outlet />
-      </motion.div>
-    </AnimatePresence>
+    <motion.div
+      key={pathname}
+      initial={{ opacity: 0, y: 26 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <Outlet />
+    </motion.div>
   );
 };
 
@@ -90,7 +114,6 @@ const Layout = () => {
   <div className="relative min-h-screen bg-canvas">
     <Preloader />
     <ParallaxGridCanvas />
-    <CursorTrail />
     {/* גרעין פילם - טקסטורת סטודיו מעל הכול, מתחת למודאלים */}
     <div className="film-grain pointer-events-none fixed inset-0 z-[30]" aria-hidden />
     {/* קווי עמודות דקיקים לאורך כל העמוד, בסגנון orbix */}

@@ -3,6 +3,8 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 import type { StudentWork } from "../data/studentWorksData";
 import SectionHeader, { AccentWord } from "./SectionHeader";
+import Pressable from "./Pressable";
+import { useRegisterModal } from "../context/RegisterModalContext";
 
 type Props = {
   works: StudentWork[];
@@ -28,6 +30,7 @@ const COPIES = 3;
  */
 const StudentWorksCarousel = ({ works }: Props) => {
   const reduced = useReducedMotion();
+  const { openRegisterModal } = useRegisterModal();
   const scrollerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLElement | null)[]>([]);
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
@@ -368,18 +371,33 @@ const StudentWorksCarousel = ({ works }: Props) => {
                           : `עבור לסרטון: ${work.title}`
                       }
                     >
-                      <video
-                        ref={(el) => {
-                          if (el) videoRefs.current.set(index, el);
-                          else videoRefs.current.delete(index);
-                        }}
-                        src={work.video}
-                        className="h-full w-full object-cover"
-                        muted
-                        playsInline
-                        loop
-                        preload={preload}
-                      />
+                      {/*
+                       * רק השכנים הקרובים מקבלים אלמנט וידאו אמיתי.
+                       *
+                       * הרשימה נפרסת שלוש פעמים בשביל הלופ האינסופי, ולכן בלי
+                       * התנאי הזה יושבים בעמוד 27 אלמנטי וידאו בבת אחת. לטלפון
+                       * יש מספר קטן ומוגבל של מפענחי וידאו בחומרה, וכשחורגים
+                       * ממנו הדפדפן עובר לפענוח תוכנה או מתחיל להחליף מפענחים
+                       * הלוך ושוב - ואז כל העמוד נתקע, לא רק הקרוסלה.
+                       */}
+                      {distance <= 2 ? (
+                        <video
+                          ref={(el) => {
+                            if (el) videoRefs.current.set(index, el);
+                            else videoRefs.current.delete(index);
+                          }}
+                          src={work.video}
+                          className="h-full w-full object-cover"
+                          muted
+                          playsInline
+                          preload={preload}
+                          onEnded={() => {
+                            if (isActive) goTo(index + 1);
+                          }}
+                        />
+                      ) : (
+                        <div className="h-full w-full bg-[#191919]" aria-hidden />
+                      )}
 
                       <AnimatePresence>
                         {isActive && showToggleIcon && (
@@ -451,6 +469,27 @@ const StudentWorksCarousel = ({ works }: Props) => {
               </button>
             ))}
           </div>
+        </div>
+
+        {/*
+         * בקשה צמודה לתוצרים.
+         *
+         * זה הרגע שבו המבקר הכי משוכנע - הוא בדיוק ראה תשעה סרטונים
+         * שתלמידים באמת בנו - והקרוסלה נגמרה קודם בלי לבקש ממנו כלום,
+         * בעמוד הבית ובעמודי הקורס גם יחד.
+         */}
+        <div className="mt-8 flex flex-col items-center text-center">
+          <p className="max-w-md text-[15px] leading-relaxed text-bone/55">
+            כל אחד מהסרטונים האלה נבנה במסלול, על ידי מישהו שהתחיל מאפס.
+          </p>
+          <Pressable
+            type="button"
+            className="btn btn-brand mt-5 w-full max-w-xs sm:w-auto sm:max-w-none sm:px-8"
+            rippleTone="pink"
+            onClick={() => openRegisterModal({ leadSource: "student-works" })}
+          >
+            רוצה לבנות כאלה
+          </Pressable>
         </div>
       </div>
     </section>

@@ -9,8 +9,11 @@
  *                           (accounts). אם רוצים לפתוח אנשי קשר במקום,
  *                           מגדירים 2.
  *
- * בלי FIREBERRY_TOKEN הפונקציה עדיין מחזירה הצלחה ורושמת אזהרה, כדי
- * שהטפסים באתר לא ייפלו לפני שהמפתח הוגדר.
+ * בלי FIREBERRY_TOKEN הפונקציה מחזירה 503, והאתר מציג למשתמש את מסלולי
+ * הגיבוי (טלפון ומייל) במקום לומר לו שקיבלנו את הפרטים. כדי לקבל את
+ * ההתנהגות הסלחנית הישנה, בתצוגה מקדימה למשל, מגדירים במפורש:
+ *
+ *   ALLOW_UNCONFIGURED_LEADS=1
  */
 
 const FIREBERRY_URL = "https://api.fireberry.com/api/record";
@@ -60,8 +63,20 @@ export default async function handler(req: any, res: any) {
 
   const token = process.env.FIREBERRY_TOKEN;
   if (!token) {
-    console.warn("FIREBERRY_TOKEN is not set - lead accepted but not forwarded to Fireberry");
-    return res.status(200).json({ ok: true, forwarded: false });
+    /*
+     * בלי טוקן אין לאן להעביר את הליד, ולכן זו כשלון ולא הצלחה.
+     *
+     * קודם הוחזר כאן 200, והאתר הציג "קיבלנו, נחזור אליכם" בזמן שהליד
+     * נשאר רק ב-localStorage של הגולש ואף אחד לא ידע עליו. השתקה כזו
+     * מותרת רק כשמכריזים עליה במפורש דרך ALLOW_UNCONFIGURED_LEADS,
+     * למשל בסביבת תצוגה מקדימה.
+     */
+    if (process.env.ALLOW_UNCONFIGURED_LEADS === "1") {
+      console.warn("FIREBERRY_TOKEN is not set - lead accepted but NOT forwarded (explicitly allowed)");
+      return res.status(200).json({ ok: true, forwarded: false });
+    }
+    console.error("FIREBERRY_TOKEN is not set - refusing to silently drop a lead");
+    return res.status(503).json({ ok: false, error: "crm_not_configured" });
   }
 
   const objectType = process.env.FIREBERRY_OBJECT_TYPE ?? "1";

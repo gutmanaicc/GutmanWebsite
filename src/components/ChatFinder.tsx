@@ -1,37 +1,63 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { getCourse } from "../data/courses";
+import { getCourse, LEAD_TRACKS } from "../data/courses";
 import { useRegisterModal } from "../context/RegisterModalContext";
 import { springPress, springSoft } from "../lib/motion";
 import Pressable from "./Pressable";
 
-type AudienceKey = "pro" | "business" | "student";
+type AudienceKey = "creative" | "therapist" | "business" | "student";
 
 const Q1: { key: AudienceKey; label: string }[] = [
-  { key: "pro", label: "איש/אשת מקצוע. סושיאל, וידאו, קריאייטיב או שיווק" },
+  { key: "creative", label: "איש/אשת מקצוע. סושיאל, וידאו או קריאייטיב" },
+  { key: "therapist", label: "מטפל/ת או פסיכולוג/ית" },
   { key: "business", label: "בעל/ת עסק או עצמאי/ת" },
   { key: "student", label: "סטודנט/ית" },
 ];
 
+/**
+ * כל יעד כאן חייב להיות מסלול פעיל שקיים גם בבורר של טופס הלידים.
+ *
+ * הגרסה הקודמת הפנתה לארבעה מסלולי עסקים שקיימים בקוד אבל לא ברשימת
+ * המסלולים של הטופס. המשתמש קיבל כרטיס תוצאה משכנע, ואז נחת על טופס
+ * שבו שדה החובה "איזה מסלול מעניין אתכם" נראה ריק - כי הסלאג לא התאים
+ * לאף אפשרות - בזמן שהוולידציה עברה בשקט. השומר למטה מונע הישנות.
+ */
 const Q2: Record<AudienceKey, { label: string; slug: string }[]> = {
-  pro: [
-    { label: "לנהל יותר לקוחות סושיאל בפחות זמן", slug: "social-media-ai" },
-    { label: "לשלב AI בהפקת וידאו ותוכן", slug: "ai-video-content" },
-    { label: "לבנות דפי נחיתה ללקוחות או לעצמי", slug: "business-landing-page" },
-    { label: "מערכת מסודרת ללקוחות ותשלומים", slug: "ai-business-systems" },
+  creative: [
+    { label: "לנהל יותר לקוחות סושיאל בפחות שעות", slug: "social-media-ai" },
+    { label: "לבנות תהליך הפקת וידאו ותוכן מבוסס AI", slug: "ai-video-content" },
+    { label: "להביא קמפיין אופנה מרעיון לתוצר מוגמר", slug: "ai-fashion" },
+  ],
+  therapist: [
+    { label: "לשלב AI ככלי עבודה תומך בקליניקה", slug: "ai-for-therapists" },
+    { label: "לעשות סדר בחומרים ובהתנהלות סביב המפגשים", slug: "ai-for-therapists" },
   ],
   business: [
-    { label: "בניית מערכת CRM לעסק", slug: "business-crm" },
-    { label: "מערכת למעקב תשלומים", slug: "business-payments" },
-    { label: "דף נחיתה לעסק או לשירות שלי", slug: "business-landing-page" },
-    { label: "תוכן וסושיאל לעסק, בשיטה", slug: "social-media-ai" },
+    { label: "לנהל את הסושיאל והתוכן של העסק בשיטה", slug: "social-media-ai" },
+    { label: "להפיק סרטונים ותוכן שיווקי לעסק", slug: "ai-video-content" },
   ],
   student: [
     { label: "ללמוד למבחנים ולנהל את הלימודים עם AI", slug: "ai-for-students" },
     { label: "ליצור תוכן וסרטונים ברמה גבוהה", slug: "ai-video-content" },
-    { label: "לבנות דף נחיתה לפרויקט או רעיון", slug: "business-landing-page" },
   ],
 };
+
+/*
+ * שער איכות: נופל כבר בזמן פיתוח אם מישהו יוסיף מטרה שמפנה למסלול
+ * שאינו בבורר של הטופס. אותה גישה כמו enrichCourse, שזורק על תוכן חסר.
+ */
+if (import.meta.env.DEV) {
+  const selectable = new Set<string>(LEAD_TRACKS.map((t) => t.slug));
+  const orphans = Object.values(Q2)
+    .flat()
+    .map((g) => g.slug)
+    .filter((slug) => !selectable.has(slug));
+  if (orphans.length) {
+    throw new Error(
+      `ChatFinder מפנה למסלולים שלא קיימים בבורר של טופס הלידים: ${[...new Set(orphans)].join(", ")}`,
+    );
+  }
+}
 
 type Msg = { kind: "bot"; text: string } | { kind: "user"; text: string } | { kind: "typing" };
 type Step = "q1" | "q2" | "result" | null;
@@ -133,12 +159,19 @@ const ChatFinder = ({ onResult }: Props) => {
   const result = resultSlug ? getCourse(resultSlug) : null;
   const progress = stepIndex(step, started);
 
+  /*
+   * מקור אחד לכל הצ'אט, עם הבחנה בין המסלולים בסיומת.
+   *
+   * קודם אותו משתמש נספר כ-chat-finder-home, chat-finder או
+   * chat-finder-modal לפי הכפתור שלחץ, ולכן אי אפשר היה למדוד כמה לידים
+   * הפיצ'ר הזה בכלל מביא.
+   */
   const goToLead = () => {
     if (!resultSlug) return;
     scrollToRegisterForm({
       courseId: resultSlug,
       initialGoal: lastGoal,
-      leadSource: "chat-finder",
+      leadSource: "chat-finder-inline",
     });
   };
 
@@ -235,7 +268,9 @@ const ChatFinder = ({ onResult }: Props) => {
               <h3>{result.title}</h3>
               <p>{result.tagline}</p>
               <div className="chat-result-actions">
-                <Pressable type="button" className="btn-primary btn-small" onClick={goToLead}>
+                {/* בגודל מלא, ולא btn-small כמו השניים שאחריו: זו הפעולה
+                    שכל הצ'אט הוביל אליה, והיא צריכה להיראות ככה */}
+                <Pressable type="button" className="btn-brand btn-block" onClick={goToLead}>
                   השאירו פרטים למסלול הזה
                 </Pressable>
                 <Pressable

@@ -195,7 +195,7 @@ const SubTracksGrid = ({
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
           {tracks.map((sub) => (
             <MotionItem key={sub.slug}>
-              <article className="flex h-full flex-col rounded-2xl border border-line bg-white/90 p-4 shadow-sm">
+              <article className="flex h-full flex-col rounded-2xl border border-white/10 bg-surface-1 p-4 shadow-card">
                 <span className="text-[11px] font-semibold tracking-wide text-[#FF2D85]">{parent.shortTitle}</span>
                 <h3 className="mt-1.5 text-base font-bold text-ink">{sub.shortTitle}</h3>
                 <p className="mt-2 flex-1 text-sm leading-relaxed text-muted">{sub.cardSubtitle}</p>
@@ -352,7 +352,7 @@ const CourseDetail = () => {
               <div className="mt-4 flex flex-wrap items-center justify-center gap-2.5">
                 <Pressable
                   type="button"
-                  className="btn btn-small cursor-pointer bg-[#FF2D85] text-white shadow-pill hover:brightness-105"
+                  className="btn cursor-pointer bg-[#FF2D85] text-white shadow-pill hover:brightness-105"
                   rippleTone="pink"
                   onClick={() => openRegisterModal({ courseId: course.slug, leadSource: course.leadSource })}
                 >
@@ -401,7 +401,7 @@ const CourseDetail = () => {
               const Icon = AUDIENCE_ICONS[profile.icon];
               return (
                 <MotionItem key={`${courseKey}-${profile.title}`}>
-                  <article className="group relative flex gap-3.5 overflow-hidden rounded-2xl border border-zinc-200/80 bg-white/70 p-5 shadow-sm backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-[#FF2D85]/40 hover:shadow-md motion-reduce:hover:translate-y-0">
+                  <article className="group relative flex gap-3.5 overflow-hidden rounded-2xl border border-white/10 bg-surface-1 p-5 shadow-card backdrop-blur-md transition-all duration-300 hover:border-brand/40 motion-reduce:hover:translate-y-0">
                     <span
                       className="pointer-events-none absolute inset-y-0 right-0 w-1 origin-right scale-y-0 rounded-l bg-[#FF2D85] transition-transform duration-300 group-hover:scale-y-100"
                       aria-hidden
@@ -410,8 +410,8 @@ const CourseDetail = () => {
                       <Icon size={18} />
                     </span>
                     <div className="min-w-0 flex-1 text-right">
-                      <h3 className="mb-1 text-lg font-bold text-zinc-900">{profile.title}</h3>
-                      <p className="text-sm leading-relaxed text-zinc-600">{profile.description}</p>
+                      <h3 className="mb-1 text-lg font-bold text-bone">{profile.title}</h3>
+                      <p className="text-sm leading-relaxed text-bone/60">{profile.description}</p>
                     </div>
                   </article>
                 </MotionItem>
@@ -592,7 +592,7 @@ const CourseDetail = () => {
                   </ul>
                 </div>
 
-                <div className="relative rounded-2xl border border-white/20 bg-white/95 shadow-xl backdrop-blur-xl">
+                <div className="relative rounded-2xl border border-white/10 bg-surface-1 shadow-card backdrop-blur-xl">
                   <RegisterForm
                     key={courseKey}
                     preselectedCourse={course.slug}
@@ -609,7 +609,7 @@ const CourseDetail = () => {
       </MotionSection>
 
       {/* FAQ - bottom of page */}
-      <MotionSection resetKey={`${courseKey}-faq`} className="bg-white/40 py-10 sm:py-12">
+      <MotionSection resetKey={`${courseKey}-faq`} className="py-10 sm:py-12">
         <div className="container-site max-w-3xl">
           <MotionItem>
             <SectionHeader

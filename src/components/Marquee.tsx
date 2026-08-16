@@ -28,14 +28,26 @@ const Marquee = ({ items, className = "" }: Props) => {
     x.set(next);
   });
 
+  /*
+   * המרווח יושב על הטקסט עצמו, ולא כ-gap בין האלמנטים.
+   *
+   * קודם הטקסט והכוכב היו בתוך flex עם gap-14, ובין הפריטים היה gap-14
+   * נוסף - אבל שתי השורות שמרכיבות את הלולאה ישבו צמודות זו לזו בלי שום
+   * מרווח. בתפר שביניהן הכוכב האחרון נדבק לטקסט הראשון של השורה הבאה.
+   *
+   * להוסיף gap בין השורות לא היה פותר: חישוב הלולאה נשען על scrollWidth
+   * חלקי שתיים, וכל מרווח נוסף היה מזיז את נקודת הגלגול ויוצר קפיצה.
+   * כשכל פריט נושא את הריפוד שלו, שתי השורות מתחברות בלי תפר והמרווח
+   * סביב כל כוכב זהה לאורך כל הרצועה.
+   */
   const row = (dup: boolean) => (
-    <div className="flex shrink-0 items-center gap-14" aria-hidden={dup || undefined}>
+    <div className="flex shrink-0 items-center" aria-hidden={dup || undefined}>
       {items.map((item, i) => (
         <span
           key={`${item}-${i}`}
-          className="flex select-none items-center gap-14 whitespace-nowrap text-sm font-medium tracking-wide text-bone/70"
+          className="flex select-none items-center whitespace-nowrap text-sm font-medium tracking-wide text-bone/70"
         >
-          {item}
+          <span className="px-14">{item}</span>
           <span className="text-brand" aria-hidden>
             ✦
           </span>

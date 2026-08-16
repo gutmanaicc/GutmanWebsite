@@ -14,7 +14,12 @@ import { useEffect } from "react";
 
 declare global {
   interface Window {
-    __lenis?: { stop: () => void; start: () => void };
+    __lenis?: {
+      stop: () => void;
+      start: () => void;
+      scrollTo: (target: number, options?: { immediate?: boolean; force?: boolean }) => void;
+      resize: () => void;
+    };
   }
 }
 

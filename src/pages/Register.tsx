@@ -70,7 +70,7 @@ const Register = () => {
           <ScrollReveal3D from="up" intensity="quiet" fromRotateX={5} fromY={22}>
             <div
               id="registration-form"
-              className="mx-auto mt-10 w-full max-w-xl scroll-mt-24 overflow-hidden rounded-[1.75rem] bg-paper text-ink shadow-float sm:mt-12"
+              className="mx-auto mt-10 w-full max-w-xl scroll-mt-24 overflow-hidden rounded-[1.75rem] border border-white/10 bg-surface-1 text-bone shadow-card sm:mt-12"
             >
               <div className="bg-canvas px-6 pb-7 pt-8 text-center text-bone sm:px-9">
                 <h2 className="font-display text-[1.5rem] font-bold leading-tight tracking-tight sm:text-[1.75rem]">

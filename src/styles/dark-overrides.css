@@ -1,7 +1,12 @@
 /* ============================================================
    היפוך כהה גלובלי: טקסט "דיו" שיושב ישירות על הקנבס הכהה הופך
-   לשנהב; בתוך משטח בהיר (כרטיס לבן, גלולה, טופס) הוא נשאר כהה.
-   כך העמודים הפנימיים עוברים לשחור בלי לשכתב כל קומפוננטה.
+   לשנהב; בתוך משטח בהיר שנשאר בהיר הוא נשאר כהה.
+
+   הרשימה למטה התכווצה משמעותית. משטחים שהיו כאן - טופס הלידים,
+   חלון הצ'אט, כרטיסי הקורס וסרגל הנתונים - הומרו למשטחים כהים
+   אמיתיים, ולכן להשאיר אותם ברשימה היה הופך את הכלל הזה לבאג:
+   הוא היה מכריח טקסט כהה על רקע כהה. בדיוק זה קרה לכל תוויות
+   טופס הלידים, שיצאו ביחס ניגודיות של 1.06.
    ============================================================ */
 main .text-ink,
 main .text-\[\#191919\] {
@@ -12,19 +17,13 @@ main .text-muted {
   color: #a5a49c;
 }
 
-main :is([class*="bg-white"], [class*="bg-bone"], [class*="bg-paper"], [class*="bg-\[\#F4F4F2\]"], .surface-light, .card-line, .course-glass-card, .course-deliverable-card, .course-hero-meta, .mock-window, .stat-pill, .lead-form) :is(.text-ink, .text-\[\#191919\]),
+/* מה שנשאר באמת בהיר: כפתורים בשנהב מלא ומשטחי לבן מפורשים ב-JSX */
+main :is([class*="bg-white"], [class*="bg-bone"], [class*="bg-paper"], [class*="bg-\[\#F4F4F2\]"], .surface-light) :is(.text-ink, .text-\[\#191919\]),
 main :is(.text-ink, .text-\[\#191919\])[class*="bg-white"],
 main :is(.text-ink, .text-\[\#191919\])[class*="bg-bone"] {
   color: #191919;
 }
 
-main :is([class*="bg-white"], [class*="bg-bone"], [class*="bg-paper"], [class*="bg-\[\#F4F4F2\]"], .surface-light, .card-line, .course-glass-card, .course-deliverable-card, .course-hero-meta, .mock-window, .stat-pill, .lead-form) .text-muted {
+main :is([class*="bg-white"], [class*="bg-bone"], [class*="bg-paper"], [class*="bg-\[\#F4F4F2\]"], .surface-light) .text-muted {
   color: #6b6b6b;
-}
-
-/* משטחים בהירים שיושבים עכשיו על שחור מקבלים קו הפרדה עדין במקום צל כבד */
-main .card-line,
-main .course-glass-card,
-main .course-deliverable-card {
-  border-color: rgba(242, 241, 236, 0.14);
 }

@@ -56,7 +56,9 @@ const RegisterModal = () => {
           <motion.div
             ref={panelRef}
             key="register-modal-panel"
-            className="relative z-10 flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-t-[1.75rem] bg-paper text-ink shadow-float sm:max-h-[90vh] sm:rounded-[1.75rem]"
+            /* dvh ולא vh: ב-iOS סרגל הדפדפן נכלל ב-vh, ולכן כפתור השליחה
+               נחתך מתחתיו בדיוק כשצריך ללחוץ עליו */
+            className="relative z-10 flex max-h-[92dvh] w-full max-w-xl flex-col overflow-hidden rounded-t-[1.75rem] bg-paper text-ink shadow-float sm:max-h-[90dvh] sm:rounded-[1.75rem]"
             onClick={(e) => e.stopPropagation()}
             initial={reduced ? false : { opacity: 0, y: 28, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}

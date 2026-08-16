@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import BackButton from "../components/BackButton";
+import ClosingCta from "../components/ClosingCta";
 import CourseCard from "../components/CourseCard";
 import UpcomingCourseCard from "../components/UpcomingCourseCard";
 import { AccentWord } from "../components/SectionHeader";
@@ -106,6 +107,18 @@ const Courses = () => {
           </StaggerGroup>
         </div>
       </section>
+
+      {/* מי שהגיע לתחתית הרשת ולא בחר מסלול היה יוצא מהאתר בלי שנשאל אותו כלום */}
+      <ClosingCta
+        leadSource="courses-closing"
+        title={
+          <>
+            לא בטוחים איזה מסלול <AccentWord>מתאים לכם?</AccentWord>
+          </>
+        }
+        sub="השאירו פרטים ונעבור אתכם על האפשרויות. בלי לדחוף אתכם למשהו שלא מתאים."
+        cta="עזרו לי לבחור"
+      />
     </div>
   );
 };

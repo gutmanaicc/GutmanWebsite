@@ -1,17 +1,27 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { SITE } from "../data/site";
+import { useMediaQuery } from "../lib/motion";
+import { useRegisterModal } from "../context/RegisterModalContext";
+import Pressable from "./Pressable";
 
 /**
  * הירו בלילה: ציור מלא מסך של שדה פורח מתחת לשמי כוכבים, עם טיפוגרפיית
  * תצוגה סריפית במרכז. התמונה חיה - לופ פלינדרום שקט של עשב שנע ומסכים
  * שנושמים.
  *
- * הלופ הוא WebP מונפש ולא אלמנט וידאו, בכוונה: תמונה מונפשת לא כפופה
- * למדיניות הניגון האוטומטי של הדפדפן, ולכן היא רצה גם בתוך iframe שבו
- * autoplay חסום. קודם נטענת תמונה סטטית קלה לצביעה מיידית, והלופ נפתח
- * מעליה בדעיכה כשהוא מפוענח.
+ * הלופ הוא וידאו ולא WebP מונפש. הגרסה הקודמת הייתה WebP של 2.76MB ב-170
+ * פריימים, ו-WebP מונפש מפוענח במעבד בלבד - אין לו מסלול פענוח בחומרה. בטלפון
+ * זה אומר ליבה שעסוקה בפענוח רקע בזמן שהיא אמורה לצייר את הגלילה, וזה מה
+ * שגרם לתקיעות. וידאו מפוענח בחומרה וכמעט לא נוגע במעבד.
+ *
+ * הפורמט הקודם נבחר במקור כדי לעקוף את מדיניות הניגון האוטומטי, שחוסמת וידאו
+ * בתוך iframe בלי allow="autoplay". המחיר כאן מקובל: כשהניגון חסום נשארת
+ * התמונה הסטטית, שגם ככה נצבעת ראשונה.
+ *
+ * קודם נטענת תמונה סטטית קלה לצביעה מיידית, והלופ נפתח מעליה בדעיכה כשהוא
+ * מוכן לניגון.
  *
  * הלופ נטען תמיד, גם כשמערכת ההפעלה מבקשת תנועה מופחתת. זו תנועת רקע
  * אווירית ואיטית ולא פרלקסה שמזיזה את העמוד, והרבה משתמשים מדליקים את
@@ -20,7 +30,8 @@ import { SITE } from "../data/site";
  */
 
 const IMAGE = "/images/hero-night.jpg";
-const LOOP = "/images/hero-night-loop.webp";
+const LOOP_WEBM = "/videos/hero-night-loop.webm";
+const LOOP_MP4 = "/videos/hero-night-loop.mp4";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -38,19 +49,55 @@ const rise = (delay: number) => ({
 const NightHero = () => {
   const reduced = useReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [loopReady, setLoopReady] = useState(false);
+  const { openRegisterModal } = useRegisterModal();
+  /* מסך מגע = טלפון. שם מוותרים על הפרלקסה, ראו הערה למטה */
+  const coarse = useMediaQuery("(pointer: coarse)");
+
+  const still = reduced || coarse;
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end start"],
   });
-  /* הרקע נשאר מאחור: זז מעט ומתעמעם בזמן שהתוכן מפנה את המקום */
+  /*
+   * הרקע נשאר מאחור: זז מעט בזמן שהתוכן מפנה את המקום.
+   *
+   * רק הזזה, בלי סקאלה שמשתנה בגלילה. הרקע הוא תמונה מונפשת מלאת מסך,
+   * ושינוי סקאלה מכריח את הדפדפן לרסטר אותה מחדש בכל פריים של גלילה -
+   * בעוד שהזזה טהורה נשארת אצל הקומפוזיטור ולא עולה כמעט כלום. הסקאלה
+   * נשארת קבועה כדי שההזזה לא תחשוף את שולי התמונה.
+   */
   const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "16%"]);
-  const bgScale = useTransform(scrollYProgress, [0, 1], [1.04, 1.14]);
   const contentY = useTransform(scrollYProgress, [0, 1], [0, -70]);
   const contentOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
   /* הכותרת נוטה מעט אחורה כשגוללים, כאילו היא לוח שנשען לתוך הסצנה */
   const contentTilt = useTransform(scrollYProgress, [0, 1], [0, 14]);
+
+  /*
+   * הלופ נעצר כשההירו יוצא מהמסך.
+   *
+   * דפדפנים לא תמיד עוצרים וידאו רקע שגולל אל מחוץ לתצוגה, וגם פענוח
+   * בחומרה תופס מפענח ומושך סוללה. עצירה מפורשת עדיפה על פירוק האלמנט,
+   * כי כך אין טעינה מחדש כשחוזרים לראש העמוד.
+   */
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        const video = videoRef.current;
+        if (!video) return;
+        if (entry.isIntersecting) video.play().catch(() => undefined);
+        else video.pause();
+      },
+      { rootMargin: "200px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   return (
     <section
@@ -59,8 +106,8 @@ const NightHero = () => {
     >
       {/* הציור */}
       <motion.div
-        className="absolute inset-0 z-0"
-        style={reduced ? undefined : { y: bgY, scale: bgScale }}
+        className="absolute inset-0 z-0 will-change-transform"
+        style={still ? { scale: 1.04 } : { y: bgY, scale: 1.08 }}
         aria-hidden
       >
         <img
@@ -70,15 +117,22 @@ const NightHero = () => {
           fetchPriority="high"
           decoding="async"
         />
-        <img
-          src={LOOP}
-          alt=""
+        <video
+          ref={videoRef}
           className="hero-loop absolute inset-0 h-full w-full object-cover object-bottom transition-opacity duration-[1200ms] ease-out"
           style={{ opacity: loopReady ? 1 : 0 }}
-          onLoad={() => setLoopReady(true)}
-          decoding="async"
+          onCanPlay={() => setLoopReady(true)}
+          poster={IMAGE}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
           aria-hidden
-        />
+        >
+          <source src={LOOP_WEBM} type="video/webm" />
+          <source src={LOOP_MP4} type="video/mp4" />
+        </video>
       </motion.div>
 
       {/* שכבות קריאות: כהה למעלה לניווט, הילה מרכזית לטקסט, מעבר לקנבס למטה */}
@@ -101,7 +155,15 @@ const NightHero = () => {
 
       <motion.div
         className="relative z-[2] w-full max-w-3xl text-center text-bone [perspective:1200px]"
-        style={reduced ? undefined : { y: contentY, opacity: contentOpacity, rotateX: contentTilt }}
+        /* rotateX על גוש טקסט שלם מחייב רסטור מחדש של הטיפוגרפיה בכל פריים.
+           בטלפון משאירים הזזה ושקיפות בלבד, שתיהן זולות אצל הקומפוזיטור. */
+        style={
+          reduced
+            ? undefined
+            : coarse
+              ? { y: contentY, opacity: contentOpacity }
+              : { y: contentY, opacity: contentOpacity, rotateX: contentTilt }
+        }
         initial="hidden"
         animate="show"
       >
@@ -131,19 +193,38 @@ const NightHero = () => {
         </motion.p>
 
         <motion.div
-          className="mt-11 flex flex-wrap items-center justify-center gap-3"
+          className="mt-11 flex flex-col items-center"
           variants={reduced ? undefined : rise(0.58)}
         >
-          <Link
-            to="/courses"
-            className="group relative inline-flex min-h-12 items-center justify-center overflow-hidden rounded-full border border-bone/35 px-8 text-sm font-medium text-bone transition-colors duration-500 hover:border-bone/70 hover:text-ink sm:text-[15px]"
-          >
-            <span
-              className="absolute inset-0 origin-bottom scale-y-0 bg-bone transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-y-100"
-              aria-hidden
-            />
-            <span className="relative">{SITE.hero.primaryCta}</span>
-          </Link>
+          {/*
+           * הבקשה הראשית מעל הקיפול היא השארת פרטים.
+           *
+           * קודם שני הכפתורים כאן הובילו לעיון במסלולים ולצ'אט, והבקשה
+           * היחידה בכל המסך הראשון הייתה כפתור קטן בסרגל הניווט.
+           */}
+          <div className="flex w-full items-center justify-center gap-2.5 sm:w-auto sm:gap-3">
+            <Pressable
+              type="button"
+              /* flex-1 ולא w-full: שני הכפתורים חולקים את השורה בשווה
+                 במובייל, וחוזרים לרוחב טבעי מ-sm ומעלה */
+              className="btn btn-brand flex-1 px-4 text-sm sm:flex-none sm:px-9 sm:text-[15px]"
+              rippleTone="pink"
+              onClick={() => openRegisterModal({ leadSource: "hero" })}
+            >
+              השאירו פרטים
+            </Pressable>
+
+            <Link
+              to="/courses"
+              className="group relative inline-flex min-h-12 flex-1 items-center justify-center overflow-hidden rounded-full border border-bone/35 px-4 text-sm font-medium text-bone transition-colors duration-500 hover:border-bone/70 hover:text-ink sm:flex-none sm:px-8 sm:text-[15px]"
+            >
+              <span
+                className="absolute inset-0 origin-bottom scale-y-0 bg-bone transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-y-100"
+                aria-hidden
+              />
+              <span className="relative">{SITE.hero.primaryCta}</span>
+            </Link>
+          </div>
 
           <button
             type="button"
@@ -152,7 +233,7 @@ const NightHero = () => {
                 .getElementById("finder")
                 ?.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" })
             }
-            className="inline-flex min-h-12 items-center justify-center px-5 text-sm text-bone/55 underline-offset-[6px] transition-colors duration-300 hover:text-bone hover:underline sm:text-[15px]"
+            className="mt-4 inline-flex min-h-11 items-center justify-center px-5 text-sm text-bone/55 underline-offset-[6px] transition-colors duration-300 hover:text-bone hover:underline sm:text-[15px]"
           >
             {SITE.hero.secondaryCta}
           </button>

@@ -4,6 +4,7 @@ import { buildStickyCourseSlides } from "./StickyCoursesShowcase";
 import Pressable from "./Pressable";
 import { useRegisterModal } from "../context/RegisterModalContext";
 import { getSyllabusHref } from "../data/syllabi";
+import { useMediaQuery } from "../lib/motion";
 
 const slides = buildStickyCourseSlides();
 
@@ -14,6 +15,14 @@ const slides = buildStickyCourseSlides();
  */
 const StackingCourses = () => {
   const { openRegisterModal } = useRegisterModal();
+  /*
+   * ההיסט של הערימה קטן יותר בטלפון.
+   *
+   * חמישה כרטיסים דביקים עם היסט של 1.1rem כל אחד דוחפים את האחרון
+   * 8.65rem מתחת לראש המסך, וזה נגס בחלק גדול מדי מגובה המסך בנייד.
+   */
+  const coarse = useMediaQuery("(pointer: coarse)");
+  const step = coarse ? 0.5 : 1.1;
 
   return (
     <div className="container-site flex flex-col gap-6 pb-10">
@@ -21,23 +30,25 @@ const StackingCourses = () => {
         const dark = slide.bg === "#191919";
 
         return (
-          <div key={slide.id} className="sticky" style={{ top: `calc(4.25rem + ${i * 1.1}rem)` }}>
+          <div key={slide.id} className="sticky" style={{ top: `calc(4.25rem + ${i * step}rem)` }}>
             <article
-              className={`overflow-hidden rounded-[2rem] border shadow-[0_-12px_40px_-24px_rgba(25,25,25,0.35)] sm:rounded-[2.5rem] ${
+              className={`overflow-hidden rounded-[2rem] border shadow-[0_-12px_40px_-24px_rgba(0,0,0,0.7)] sm:rounded-[2.5rem] ${
                 dark ? "border-white/12" : "surface-light border-transparent"
               }`}
               style={{ background: slide.bg, color: slide.fg }}
             >
-              <div className="flex min-h-[48vh] flex-col items-center justify-center px-6 py-14 text-center sm:px-10 sm:py-16 lg:px-14 lg:py-20">
+              <div className="flex min-h-[38vh] flex-col items-center justify-center px-5 py-10 text-center sm:min-h-[48vh] sm:px-10 sm:py-16 lg:px-14 lg:py-20">
                 <span className={`section-label ${dark ? "!text-white/50" : ""}`}>
                   {slide.format} · {slide.duration} · {slide.level}
                 </span>
 
                 <h3 className="mt-5 max-w-3xl font-display text-[clamp(1.9rem,4.2vw,3.4rem)] font-bold leading-[1.08] tracking-tightest">
                   {slide.title}
-                  <span className="accent-serif mt-1 block text-[0.85em]" style={{ color: slide.accentColor }}>
-                    {slide.accent}
-                  </span>
+                  {slide.accent && (
+                    <span className="accent-serif mt-1 block text-[0.85em]" style={{ color: slide.accentColor }}>
+                      {slide.accent}
+                    </span>
+                  )}
                 </h3>
 
                 <p
@@ -61,10 +72,11 @@ const StackingCourses = () => {
                   ))}
                 </div>
 
-                <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
+                {/* במובייל: הראשי ברוחב מלא, ושני המשניים חולקים שורה אחת מתחתיו */}
+                <div className="mt-7 flex w-full flex-col items-center gap-2.5 sm:mt-9 sm:w-auto sm:flex-row sm:flex-wrap sm:justify-center sm:gap-3">
                   <Pressable
                     type="button"
-                    className={`btn ${
+                    className={`btn w-full sm:w-auto ${
                       dark
                         ? "bg-white text-ink shadow-pill hover:bg-white/90"
                         : "bg-ink text-white shadow-pill hover:bg-black"
@@ -76,7 +88,7 @@ const StackingCourses = () => {
                   </Pressable>
                   <Link
                     to={getSyllabusHref(slide.id)}
-                    className={`btn border-2 font-semibold ${
+                    className={`btn w-full border-2 font-semibold sm:w-auto ${
                       dark
                         ? "border-white/45 text-white hover:border-white hover:bg-white/10"
                         : "border-ink/45 text-ink hover:border-ink hover:bg-ink/5"

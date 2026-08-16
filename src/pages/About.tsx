@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import BackButton from "../components/BackButton";
+import ClosingCta from "../components/ClosingCta";
 import SectionHeader, { AccentWord } from "../components/SectionHeader";
 import { ScrollReveal3D } from "../components/motion";
 import MethodJourney from "../components/MethodJourney";
@@ -9,6 +10,7 @@ import { ArrowIcon } from "../components/icons";
 import { SITE } from "../data/site";
 import { ACTIVE_COURSES } from "../data/courses";
 import { orgSchema, useSeo } from "../lib/seo";
+import { useReveal } from "../lib/useReveal";
 
 const PORTRAIT = "/images/ron-portrait.jpg";
 
@@ -59,6 +61,13 @@ const VISION =
 const About = () => {
   const reduced = useReducedMotion();
   const heroRef = useRef<HTMLElement>(null);
+
+  /*
+   * בלי זה כותרת הסקשן של העמוד נשארת בלתי נראית לצמיתות: SectionHeader
+   * נושא data-reveal, והכלל [data-reveal]:not(.revealed) הוא opacity-0.
+   * useReveal הוא מי שמוסיף את .revealed, והעמוד הזה פשוט לא קרא לו.
+   */
+  useReveal();
 
   useSeo({
     title: `אודות | ${SITE.name}`,
@@ -236,6 +245,18 @@ const About = () => {
           </div>
         </div>
       </section>
+
+      {/* הסיפור האישי הוא נכס האמון החזק באתר, והעמוד נגמר קודם בלי לבקש כלום */}
+      <ClosingCta
+        leadSource="about-closing"
+        title={
+          <>
+            עכשיו ספרו לי <AccentWord>עליכם.</AccentWord>
+          </>
+        }
+        sub="קראתם את הסיפור שלי. אשמח לשמוע מה אתם רוצים לבנות, ולהגיד לכם בכנות אם ואיך אנחנו יכולים לעזור."
+        cta="השאירו פרטים ונדבר"
+      />
     </div>
   );
 };

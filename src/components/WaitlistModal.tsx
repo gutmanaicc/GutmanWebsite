@@ -116,7 +116,8 @@ const WaitlistModal = () => {
 
           <motion.div
             ref={panelRef}
-            className="relative z-10 flex max-h-[92vh] w-full max-w-md flex-col overflow-hidden rounded-t-[1.75rem] bg-paper text-ink shadow-float sm:rounded-[1.75rem]"
+            /* dvh ולא vh, אותה סיבה כמו ב-RegisterModal */
+            className="relative z-10 flex max-h-[92dvh] w-full max-w-md flex-col overflow-hidden rounded-t-[1.75rem] bg-paper text-ink shadow-float sm:rounded-[1.75rem]"
             initial={reduced ? false : { opacity: 0, y: 28, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.98, transition: { duration: 0.18, ease: "easeIn" } }}
