@@ -29,6 +29,10 @@ export type StickyCourseSlide = {
   /** Title color on that background */
   fg: string;
   accentColor: string;
+  /** הילה אטמוספרית מאחורי התוכן. rgba, כי היא מצוירת כ-radial-gradient */
+  glow: string;
+  /** קובע אם התוכן נצבע לטקסט בהיר או כהה. לא נגזר מ-bg כדי לא לנחש */
+  tone: "dark" | "light";
   duration: string;
   format: string;
   level: string;
@@ -36,18 +40,42 @@ export type StickyCourseSlide = {
   skills: string[];
 };
 
-/** Alternating ink / canvas curtains only */
 /**
  * כל השקפים כהים. הגרסה הקודמת החליפה בין כהה ללבן, והלבן ניתק את
  * הסקשן משאר האתר. הקצב נשמר עכשיו דרך גוונים כהים שונים במקום דרך
  * היפוך צבע.
+ *
+ * הגוונים כאן נפתחו. קודם הם היו #17161c, #0f0e13 ו-#1b1521 - שלושה
+ * אפורים שנבדלים בפחות מחמישה אחוזי בהירות ובקושי בגוון, ולכן הקצב
+ * שהתיאור הזה מבטיח לא נראה בפועל: חמישה כרטיסים קראו כמו אותו כרטיס
+ * חמש פעמים. עכשיו לכל כרטיס יש גוון עומק משלו ורוד, סגול, ארגמן -
+ * כולם עדיין כהים מספיק כדי לשבת על אותו קנבס.
+ *
+ * הגוונים נשארים במשפחה אחת סביב הוורוד של המותג (בערך 260-330 מעלות)
+ * ולא מתפזרים על כל הגלגל. הילה בגוון אקראי הייתה הופכת את הסקשן
+ * לקרנבל; משפחה אנלוגית נותנת חיים בלי לפרק את הזהות.
+ *
+ * accentColor נשאר ורוד המותג בכל הכרטיסים בכוונה. הטקסט הוא הזהות,
+ * וההילה היא האווירה - ורוד אחד לכל האתר, כמו שמתועד ב-tailwind.config.
+ *
+ * שני כרטיסים בהירים, ולא לבנים.
+ *
+ * הכרטיסים הכחלחלים הוחלפו באבן חמה. זו חזרה חלקית לרעיון שנפסל פעם -
+ * הגרסה ההיא החליפה כהה בלבן מלא, והלבן חתך חור בעמוד. אבן בגוון חם
+ * (#e9e3d7, #f2ece0) היא משטח מעוצב ולא חור: היא יושבת באותה משפחה
+ * של קנבס המותג #F4F4F2, ולכן היא נקראת כהמשך של האתר ולא כניתוק.
+ *
+ * הקצב שנוצר הוא כהה-בהיר-כהה-בהיר-כהה. בערימה דביקה זה מה שמבדיל
+ * בין הכרטיסים כשהם נערמים זה על זה.
  */
-const SLIDE_THEMES: Array<Pick<StickyCourseSlide, "bg" | "fg" | "accentColor">> = [
-  { bg: "#17161c", fg: BRAND.canvas, accentColor: BRAND.pink },
-  { bg: "#0f0e13", fg: BRAND.canvas, accentColor: BRAND.pink },
-  { bg: "#1b1521", fg: BRAND.canvas, accentColor: BRAND.pink },
-  { bg: "#0f0e13", fg: BRAND.canvas, accentColor: BRAND.pink },
-  { bg: "#17161c", fg: BRAND.canvas, accentColor: BRAND.pink },
+const SLIDE_THEMES: Array<
+  Pick<StickyCourseSlide, "bg" | "fg" | "accentColor" | "glow" | "tone">
+> = [
+  { bg: "#1d1424", fg: BRAND.canvas, accentColor: BRAND.pink, glow: "rgba(255,45,133,0.22)", tone: "dark" },
+  { bg: "#e9e3d7", fg: BRAND.ink, accentColor: "#D6156A", glow: "rgba(255,45,133,0.14)", tone: "light" },
+  { bg: "#221420", fg: BRAND.canvas, accentColor: BRAND.pink, glow: "rgba(255,77,148,0.20)", tone: "dark" },
+  { bg: "#f2ece0", fg: BRAND.ink, accentColor: "#D6156A", glow: "rgba(255,45,133,0.11)", tone: "light" },
+  { bg: "#1e1526", fg: BRAND.canvas, accentColor: BRAND.pink, glow: "rgba(214,92,255,0.20)", tone: "dark" },
 ];
 
 type ShowcaseMeta = {
