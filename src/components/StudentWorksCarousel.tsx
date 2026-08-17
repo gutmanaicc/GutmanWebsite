@@ -57,6 +57,13 @@ const StudentWorksCarousel = ({ works }: Props) => {
    */
   const [autoplayBlocked, setAutoplayBlocked] = useState(false);
   const [activeReady, setActiveReady] = useState(false);
+  /*
+   * "באמת מנגן", ולא "נטען" ולא "אמור לנגן".
+   *
+   * זה מה שמכריע אם מראים את הווידאו או את הפוסטר. readyState לא מספיק
+   * כי סרטון טעון-אך-עצור מצייר את הפריים הראשון, והוא שחור כאן.
+   */
+  const [activePlaying, setActivePlaying] = useState(false);
 
   /** מראה של activeIndex, לשימוש בתוך מאזינים שלא נרשמים מחדש בכל רינדור */
   const activeRef = useRef(activeIndex);
@@ -280,6 +287,7 @@ const StudentWorksCarousel = ({ works }: Props) => {
   useEffect(() => {
     setAutoplayBlocked(false);
     setActiveReady(false);
+    setActivePlaying(false);
 
     videoRefs.current.forEach((video, index) => {
       if (index === activeIndex && !pausedByUser) {
@@ -381,7 +389,15 @@ const StudentWorksCarousel = ({ works }: Props) => {
                  * שכל הקרוסלה נשארה שחורה בנייד. עכשיו יש חמישה לכל היותר.
                  */
                 const hasVideo = distance <= 2;
-                const preload = isActive ? "auto" : "metadata";
+                /*
+                 * none ולא metadata לשכנים.
+                 *
+                 * ספארי ב-iOS מתעלם מ-preload ברשת סלולרית ובמצב חיסכון,
+                 * ולכן metadata לא באמת הביא כלום שם - אבל בדסקטופ הוא כן
+                 * משך תשעה קבצים במקביל. עכשיו הפוסטר מכסה את המצב הסטטי
+                 * והבייטים של הווידאו נטענים רק לכרטיס שעומדים עליו.
+                 */
+                const preload = isActive ? "auto" : "none";
 
                 return (
                   <article
@@ -414,12 +430,33 @@ const StudentWorksCarousel = ({ works }: Props) => {
                       }
                     >
                       {/*
-                        * בסוף הסרטון עוברים לכרטיס הבא ולא חוזרים עליו בלופ:
-                        * הרצועה אמורה להתקדם לבד. הגדרת muted ידנית על
-                        * האלמנט נשארת, כי React לא משקף אותה כאטריביוט
-                        * וספארי בנייד מסרב להפעיל אוטומטית בלעדיה.
+                        * הפוסטר הוא שכבת הבסיס, תמיד, גם מתחת לווידאו.
+                        *
+                        * אטריביוט poster לבדו לא מספיק: ברגע שלווידאו יש
+                        * דאטה הדפדפן מפסיק לצייר אותו ומצייר את הפריים
+                        * הנוכחי - והפריים הראשון בסרטונים האלה שחור, כי
+                        * הם נפתחים בדעיכה משחור. כך כרטיס עצור נראה שחור
+                        * גם כשהוא נטען במלואו. תמונה אמיתית מתחת פותרת
+                        * גם את זה וגם את המקרה שבו לא ירד אף בייט.
                         */}
-                      {hasVideo ? (
+                      <img
+                        src={work.poster}
+                        alt=""
+                        className="absolute inset-0 h-full w-full object-cover"
+                        loading={distance <= 2 ? "eager" : "lazy"}
+                        decoding="async"
+                        aria-hidden
+                      />
+
+                      {/*
+                        * הווידאו נחשף רק כשהוא באמת מנגן.
+                        *
+                        * בסוף הסרטון עוברים לכרטיס הבא ולא חוזרים עליו
+                        * בלופ. muted מוגדר ידנית על האלמנט כי React לא
+                        * משקף אותו כאטריביוט וספארי בנייד מסרב להפעיל
+                        * אוטומטית בלעדיו.
+                        */}
+                      {hasVideo && (
                         <video
                           ref={(el) => {
                             if (el) {
@@ -431,7 +468,8 @@ const StudentWorksCarousel = ({ works }: Props) => {
                             }
                           }}
                           src={work.video}
-                          className="h-full w-full object-cover"
+                          className="absolute inset-0 h-full w-full object-cover transition-opacity duration-300"
+                          style={{ opacity: isActive && activePlaying ? 1 : 0 }}
                           muted
                           autoPlay={isActive}
                           playsInline
@@ -439,18 +477,27 @@ const StudentWorksCarousel = ({ works }: Props) => {
                           poster={work.poster}
                           onLoadedData={() => isActive && setActiveReady(true)}
                           onCanPlay={() => isActive && setActiveReady(true)}
+                          onPlaying={() => isActive && setActivePlaying(true)}
+                          onPause={() => isActive && setActivePlaying(false)}
+                          onWaiting={() => isActive && setActivePlaying(false)}
                           onEnded={() => {
                             if (isActive) goTo(index + 1);
                           }}
                         />
-                      ) : (
-                        <div className="h-full w-full bg-[#191919]" aria-hidden />
                       )}
 
-                      {/* הסרטון עוד נטען: משהו חי על המסך במקום מלבן שחור */}
-                      {isActive && hasVideo && !activeReady && (
+                      {/*
+                        * ספינר רק כשבאמת נטען משהו, ובלי לכסות את הפוסטר.
+                        *
+                        * קודם הוא היה אטום על #191919 והופיע בכל מצב שבו
+                        * activeReady עוד false. בטלפון שחוסם ניגון אוטומטי
+                        * הווידאו לא מתחיל להיטען בכלל, כלומר activeReady
+                        * נשאר false לנצח - והריבוע האטום הסתיר את הפוסטר
+                        * ואת הסרטון גם יחד. זה מה שנראה כמו "לא נטען".
+                        */}
+                      {isActive && hasVideo && !activeReady && !autoplayBlocked && (
                         <span
-                          className="pointer-events-none absolute inset-0 flex items-center justify-center bg-[#191919]"
+                          className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/30"
                           aria-hidden
                         >
                           <span className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-brand" />
