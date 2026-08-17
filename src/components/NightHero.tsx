@@ -200,7 +200,7 @@ const NightHero = () => {
           style={{ fontSize: "clamp(2.6rem, 8vw, 6rem)" }}
           variants={reduced ? undefined : rise(0.24)}
         >
-          במקום שבו רעיון
+          המקום שבו רעיון
           <br />
           הופך למשהו <span className="hero-title-accent">אמיתי</span>
         </motion.h1>
