@@ -50,6 +50,13 @@ const StudentWorksCarousel = ({ works }: Props) => {
   const [activeIndex, setActiveIndex] = useState(origin);
   const [pausedByUser, setPausedByUser] = useState(false);
   const [showToggleIcon, setShowToggleIcon] = useState<"play" | "pause" | null>(null);
+  /*
+   * ספארי בנייד חוסם הפעלה אוטומטית במצב חיסכון בסוללה וגם כשהמדיה
+   * עדיין לא מוכנה. בלי לדעת שזה קרה, הכרטיס נשאר שחור והמשתמש חושב
+   * שהאתר שבור. כאן שומרים את המצב ומציגים כפתור נגינה גדול.
+   */
+  const [autoplayBlocked, setAutoplayBlocked] = useState(false);
+  const [activeReady, setActiveReady] = useState(false);
 
   /** מראה של activeIndex, לשימוש בתוך מאזינים שלא נרשמים מחדש בכל רינדור */
   const activeRef = useRef(activeIndex);
@@ -257,11 +264,22 @@ const StudentWorksCarousel = ({ works }: Props) => {
 
   // Autoplay active, pause others
   useEffect(() => {
+    setAutoplayBlocked(false);
+    setActiveReady(false);
+
     videoRefs.current.forEach((video, index) => {
       if (index === activeIndex && !pausedByUser) {
+        /* חייב להיות מושתק לפני play, אחרת iOS דוחה את הבקשה */
         video.muted = true;
+        video.setAttribute("muted", "");
+        video.playsInline = true;
+        if (video.readyState >= 2) setActiveReady(true);
         const playPromise = video.play();
-        if (playPromise) playPromise.catch(() => undefined);
+        if (playPromise) {
+          playPromise
+            .then(() => setAutoplayBlocked(false))
+            .catch(() => setAutoplayBlocked(true));
+        }
       } else {
         video.pause();
         if (index !== activeIndex) video.currentTime = 0;
@@ -275,7 +293,9 @@ const StudentWorksCarousel = ({ works }: Props) => {
 
     if (video.paused) {
       setPausedByUser(false);
-      video.play().catch(() => undefined);
+      video.muted = true;
+      /* הלחיצה עצמה היא מחוות משתמש, ולכן כאן ההפעלה כבר מותרת */
+      video.play().then(() => setAutoplayBlocked(false)).catch(() => undefined);
       setShowToggleIcon("play");
     } else {
       video.pause();
@@ -337,9 +357,17 @@ const StudentWorksCarousel = ({ works }: Props) => {
             >
               {slides.map((work, index) => {
                 const isActive = index === activeIndex;
-                /* רק השכנים הקרובים טוענים מדיה בפועל; השאר שומרים מקום בלבד */
                 const distance = Math.abs(index - activeIndex);
-                const preload = isActive ? "auto" : distance <= 2 ? "metadata" : "none";
+                /*
+                 * רק חלון קטן סביב הכרטיס הפעיל מקבל אלמנט וידאו אמיתי.
+                 *
+                 * הלופ פורש את הרשימה שלוש פעמים, וזה הגיע ל-27 אלמנטי
+                 * וידאו בעמוד. לאייפון יש תקרה קשיחה על מספר הסרטונים
+                 * שאפשר לטעון בו-זמנית, ומעליה הם פשוט לא נטענים - כך
+                 * שכל הקרוסלה נשארה שחורה בנייד. עכשיו יש חמישה לכל היותר.
+                 */
+                const hasVideo = distance <= 2;
+                const preload = isActive ? "auto" : "metadata";
 
                 return (
                   <article
@@ -372,31 +400,56 @@ const StudentWorksCarousel = ({ works }: Props) => {
                       }
                     >
                       {/*
-                       * רק השכנים הקרובים מקבלים אלמנט וידאו אמיתי.
-                       *
-                       * הרשימה נפרסת שלוש פעמים בשביל הלופ האינסופי, ולכן בלי
-                       * התנאי הזה יושבים בעמוד 27 אלמנטי וידאו בבת אחת. לטלפון
-                       * יש מספר קטן ומוגבל של מפענחי וידאו בחומרה, וכשחורגים
-                       * ממנו הדפדפן עובר לפענוח תוכנה או מתחיל להחליף מפענחים
-                       * הלוך ושוב - ואז כל העמוד נתקע, לא רק הקרוסלה.
-                       */}
-                      {distance <= 2 ? (
+                        * בסוף הסרטון עוברים לכרטיס הבא ולא חוזרים עליו בלופ:
+                        * הרצועה אמורה להתקדם לבד. הגדרת muted ידנית על
+                        * האלמנט נשארת, כי React לא משקף אותה כאטריביוט
+                        * וספארי בנייד מסרב להפעיל אוטומטית בלעדיה.
+                        */}
+                      {hasVideo ? (
                         <video
                           ref={(el) => {
-                            if (el) videoRefs.current.set(index, el);
-                            else videoRefs.current.delete(index);
+                            if (el) {
+                              videoRefs.current.set(index, el);
+                              el.muted = true;
+                              el.setAttribute("muted", "");
+                            } else {
+                              videoRefs.current.delete(index);
+                            }
                           }}
                           src={work.video}
                           className="h-full w-full object-cover"
                           muted
+                          autoPlay={isActive}
                           playsInline
                           preload={preload}
+                          poster={work.poster}
+                          onLoadedData={() => isActive && setActiveReady(true)}
+                          onCanPlay={() => isActive && setActiveReady(true)}
                           onEnded={() => {
                             if (isActive) goTo(index + 1);
                           }}
                         />
                       ) : (
                         <div className="h-full w-full bg-[#191919]" aria-hidden />
+                      )}
+
+                      {/* הסרטון עוד נטען: משהו חי על המסך במקום מלבן שחור */}
+                      {isActive && hasVideo && !activeReady && (
+                        <span
+                          className="pointer-events-none absolute inset-0 flex items-center justify-center bg-[#191919]"
+                          aria-hidden
+                        >
+                          <span className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-brand" />
+                        </span>
+                      )}
+
+                      {/* ההפעלה האוטומטית נחסמה - נותנים למשתמש להפעיל בלחיצה */}
+                      {isActive && autoplayBlocked && !pausedByUser && (
+                        <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                          <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white shadow-lg">
+                            <Play className="h-6 w-6 fill-white" />
+                          </span>
+                        </span>
                       )}
 
                       <AnimatePresence>

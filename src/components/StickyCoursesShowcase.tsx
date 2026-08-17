@@ -37,12 +37,17 @@ export type StickyCourseSlide = {
 };
 
 /** Alternating ink / canvas curtains only */
+/**
+ * כל השקפים כהים. הגרסה הקודמת החליפה בין כהה ללבן, והלבן ניתק את
+ * הסקשן משאר האתר. הקצב נשמר עכשיו דרך גוונים כהים שונים במקום דרך
+ * היפוך צבע.
+ */
 const SLIDE_THEMES: Array<Pick<StickyCourseSlide, "bg" | "fg" | "accentColor">> = [
-  { bg: BRAND.ink, fg: BRAND.canvas, accentColor: BRAND.pink },
-  { bg: BRAND.canvas, fg: BRAND.ink, accentColor: BRAND.pink },
-  { bg: BRAND.ink, fg: BRAND.canvas, accentColor: BRAND.pink },
-  { bg: BRAND.canvas, fg: BRAND.ink, accentColor: BRAND.pink },
-  { bg: BRAND.ink, fg: BRAND.canvas, accentColor: BRAND.pink },
+  { bg: "#17161c", fg: BRAND.canvas, accentColor: BRAND.pink },
+  { bg: "#0f0e13", fg: BRAND.canvas, accentColor: BRAND.pink },
+  { bg: "#1b1521", fg: BRAND.canvas, accentColor: BRAND.pink },
+  { bg: "#0f0e13", fg: BRAND.canvas, accentColor: BRAND.pink },
+  { bg: "#17161c", fg: BRAND.canvas, accentColor: BRAND.pink },
 ];
 
 type ShowcaseMeta = {
@@ -151,15 +156,12 @@ type SlideChromeProps = {
 const SlideChrome = ({ slide, reduced, focused, showMock = false, compact = false }: SlideChromeProps) => {
   const { openRegisterModal } = useRegisterModal();
   const MockWindow = getMockWindowForVisual(slide.visual);
-  const isLight = slide.bg === BRAND.canvas;
   const item = revealItem(reduced);
 
-  const primaryCta = isLight
-    ? { backgroundColor: BRAND.ink, color: BRAND.canvas }
-    : { backgroundColor: BRAND.canvas, color: BRAND.ink };
-  const ghostCta = isLight
-    ? "border-[#191919]/25 text-[#191919]"
-    : "border-[#F4F4F2]/35 text-[#F4F4F2]";
+  /* כל השקפים כהים, ולכן אין יותר ענף בהיר. הענף הישן השאיר טקסט
+     בצבע דיו על רקע כהה, כלומר טקסט בלתי נראה. */
+  const primaryCta = { backgroundColor: BRAND.canvas, color: BRAND.ink };
+  const ghostCta = "border-[#F4F4F2]/35 text-[#F4F4F2]";
 
   return (
     <motion.div
@@ -175,7 +177,7 @@ const SlideChrome = ({ slide, reduced, focused, showMock = false, compact = fals
           <div
             className="glow-edge overflow-hidden rounded-[1.75rem] border border-[#FF2D85]/25 p-2.5 shadow-card sm:p-4"
             style={{
-              backgroundColor: isLight ? "rgb(255 255 255 / 0.92)" : "rgb(244 244 242 / 0.96)",
+              backgroundColor: "rgb(20 19 24 / 0.96)",
               boxShadow:
                 "0 0 0 1px rgb(255 45 133 / 0.12), 0 18px 40px -18px rgb(25 25 25 / 0.35)",
             }}
@@ -211,7 +213,7 @@ const SlideChrome = ({ slide, reduced, focused, showMock = false, compact = fals
         variants={item}
         className={`mt-2.5 max-w-md leading-relaxed ${
           compact ? "text-sm" : "mt-3 text-sm sm:mt-4 sm:text-base"
-        } ${isLight ? "text-[#191919]/70" : "text-[#F4F4F2]/75"}`}
+        } text-[#F4F4F2]/75`}
       >
         {slide.description}
       </motion.p>
@@ -223,9 +225,7 @@ const SlideChrome = ({ slide, reduced, focused, showMock = false, compact = fals
         {slide.skills.map((skill) => (
           <li
             key={skill}
-            className={`inline-flex min-h-8 items-center rounded-full border border-[#FF2D85]/35 px-3 py-1 text-xs font-medium ${
-              isLight ? "bg-[#FF2D85]/5 text-[#191919]" : "bg-[#FF2D85]/15 text-[#F4F4F2]"
-            }`}
+            className="inline-flex min-h-8 items-center rounded-full border border-[#FF2D85]/35 bg-[#FF2D85]/15 px-3 py-1 text-xs font-medium text-[#F4F4F2]"
           >
             {skill}
           </li>
@@ -276,9 +276,9 @@ const MOBILE_CARD_THEME: Record<
   Course["visual"],
   { bg: string; tone: MobileCardTone }
 > = {
-  social: { bg: "#FF2D85", tone: "dark" },
-  students: { bg: "#F4F4F2", tone: "light" },
-  video: { bg: "#191919", tone: "dark" },
+  social: { bg: "#1b1521", tone: "dark" },
+  students: { bg: "#17161c", tone: "dark" },
+  video: { bg: "#0f0e13", tone: "dark" },
 };
 
 /**
@@ -370,7 +370,6 @@ type CurtainProps = {
 const CurtainSlide = ({ slide, index, reduced }: CurtainProps) => {
   const panelRef = useRef<HTMLElement>(null);
   const [focused, setFocused] = useState(index === 0);
-  const isLight = slide.bg === BRAND.canvas;
   const zIndex = (index + 1) * 10;
 
   const { scrollYProgress } = useScroll({
@@ -393,9 +392,7 @@ const CurtainSlide = ({ slide, index, reduced }: CurtainProps) => {
       }}
     >
       <div
-        className={`pointer-events-none absolute inset-0 grid-canvas ${
-          isLight ? "opacity-55" : "opacity-[0.14]"
-        }`}
+        className="pointer-events-none absolute inset-0 grid-canvas opacity-[0.14]"
         aria-hidden
       />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[#FF2D85]/40" aria-hidden />

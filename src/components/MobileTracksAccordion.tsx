@@ -42,7 +42,7 @@ const MobileTracksAccordion = ({ onNavigate }: Props) => {
         [
           "flex min-h-11 items-center rounded-xl px-4 text-sm font-medium transition-colors",
           nested ? "pr-6 text-[13px]" : "text-sm",
-          isActive ? "bg-[#FF2D85]/15 text-bone" : "text-bone/70 hover:bg-white/10 hover:text-bone",
+          isActive ? "bg-brand/15 text-bone" : "text-bone/70 hover:bg-white/10 hover:text-bone",
         ].join(" ")
       }
       onClick={onNavigate}
@@ -64,7 +64,7 @@ const MobileTracksAccordion = ({ onNavigate }: Props) => {
             className={({ isActive }) =>
               [
                 "flex min-h-11 flex-1 items-center rounded-xl px-4 text-sm font-medium transition-colors",
-                isActive ? "bg-[#FF2D85]/15 text-bone" : "text-bone/70 hover:bg-white/10 hover:text-bone",
+                isActive ? "bg-brand/15 text-bone" : "text-bone/70 hover:bg-white/10 hover:text-bone",
               ].join(" ")
             }
             onClick={onNavigate}
@@ -73,7 +73,7 @@ const MobileTracksAccordion = ({ onNavigate }: Props) => {
           </NavLink>
           <button
             type="button"
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-bone/70 hover:bg-white/10 hover:text-bone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2D85]/40"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-bone/70 hover:bg-white/10 hover:text-bone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
             aria-expanded={businessOpen}
             aria-controls={businessPanelId}
             aria-label={businessOpen ? "סגירת מסלולי משנה" : "פתיחת מסלולי משנה"}
@@ -110,7 +110,7 @@ const MobileTracksAccordion = ({ onNavigate }: Props) => {
     <div className="rounded-2xl">
       <button
         type="button"
-        className="flex min-h-12 w-full items-center justify-between rounded-full px-4 py-3 text-right text-base font-medium text-bone/70 transition-colors hover:bg-white/10 hover:text-bone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2D85]/40"
+        className="flex min-h-12 w-full items-center justify-between rounded-full px-4 py-3 text-right text-base font-medium text-bone/70 transition-colors hover:bg-white/10 hover:text-bone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
         aria-expanded={tracksOpen}
         aria-controls={panelId}
         onClick={() => setTracksOpen((o) => !o)}

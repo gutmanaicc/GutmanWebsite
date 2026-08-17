@@ -1,11 +1,13 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Link, NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import Logo from "./Logo";
 import { useRegisterModal } from "../context/RegisterModalContext";
 import CoursesNavDropdown from "./CoursesNavDropdown";
 import MobileTracksAccordion from "./MobileTracksAccordion";
 import Pressable from "./Pressable";
+import { getRegistrationSection } from "../lib/registration";
+import { useScrollLock } from "../lib/scrollLock";
 
 type NavItem = {
   to?: string;
@@ -54,7 +56,24 @@ const Header = () => {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const location = useLocation();
-  const { openRegisterModal } = useRegisterModal();
+  const navigate = useNavigate();
+  const { scrollToRegisterForm } = useRegisterModal();
+
+  /**
+   * "השאירו פרטים" לא פותח יותר פופאפ.
+   *
+   * הפופאפ נפרס לגובה המסך בנייד, נגלל בתוך עצמו והרגיש מרוח. במקום
+   * זה: אם יש טופס בעמוד, גוללים אליו; ואם אין - עוברים לעמוד ההרשמה.
+   * כך תמיד מגיעים לטופס אמיתי בעמוד, בלי חלון שקופץ.
+   */
+  const goToLeadForm = () => {
+    setOpen(false);
+    if (getRegistrationSection()) {
+      scrollToRegisterForm({ leadSource: "navbar-cta" });
+      return;
+    }
+    navigate("/register");
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -65,12 +84,7 @@ const Header = () => {
 
   useEffect(() => setOpen(false), [location.pathname]);
 
-  useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [open]);
+  useScrollLock(open);
 
   const renderNavLink = (item: NavItem, mobile = false): ReactNode => {
     if (!item.to) return null;
@@ -104,7 +118,7 @@ const Header = () => {
   return (
     <>
       <header
-        className={`sticky top-0 z-50 w-full border-b transition-[background-color,border-color,backdrop-filter] duration-500 ${
+        className={`site-header sticky top-0 z-50 w-full border-b transition-[background-color,border-color,backdrop-filter] duration-500 ${
           scrolled
             ? "border-white/10 bg-canvas/95 backdrop-blur-sm"
             : "border-transparent bg-transparent"
@@ -136,7 +150,7 @@ const Header = () => {
             <Pressable
               type="button"
               className="navbar-lead-cta group/cta relative inline-flex min-h-10 shrink-0 items-center justify-center gap-2 overflow-hidden rounded-full px-4 text-[13px] font-semibold text-white sm:min-h-11 sm:px-5 sm:text-sm"
-              onClick={() => openRegisterModal({ leadSource: "navbar-cta" })}
+              onClick={goToLeadForm}
               rippleTone="pink"
             >
               {/* נקודה פועמת: רומזת שמישהו באמת עונה בצד השני */}
@@ -221,10 +235,7 @@ const Header = () => {
             <Pressable
               type="button"
               className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[#FF2D85] px-5 text-sm font-medium text-white shadow-[0_6px_18px_-6px_rgba(255,45,133,0.55)]"
-              onClick={() => {
-                setOpen(false);
-                openRegisterModal({ leadSource: "navbar-cta" });
-              }}
+              onClick={goToLeadForm}
             >
               השאירו פרטים
             </Pressable>

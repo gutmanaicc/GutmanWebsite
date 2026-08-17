@@ -134,17 +134,6 @@ const About = () => {
             <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-bone/65 sm:text-lg">
               {SITE.founder.title} · {SITE.tagline}
             </p>
-
-            <div className="mt-8 flex flex-wrap justify-center gap-2.5">
-              {["צילום ווידאו", "יצירת תוכן", "בינה מלאכותית", "הנחיה פרונטלית"].map((tag) => (
-                <span
-                  key={tag}
-                  className="inline-flex items-center rounded-full border border-white/15 px-4 py-1.5 text-[13px] font-medium text-bone/60"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
           </div>
         </div>
       </section>

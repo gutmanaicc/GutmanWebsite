@@ -670,6 +670,12 @@
     @apply text-bone/35;
   }
 
+  /* רשימות נפתחות מקומיות של הדפדפן נשארות בהירות אם לא אומרים אחרת */
+  .field select option {
+    background-color: #17161c;
+    color: #f2f1ec;
+  }
+
   /* שדה נעול (למשל שם הסדנה בטופס רשימת ההמתנה): נראה מולא מראש */
   .field input[readonly] {
     @apply cursor-default border-white/[0.07] bg-white/[0.03] text-bone/50;
@@ -1032,6 +1038,18 @@
 
   /* מסמך הסילבוס בהדפסה: משטח לבן, בלי קישוטי רקע ובלי חיתוך בלוקים */
   @media print {
+    @page {
+      margin: 14mm 12mm 16mm;
+    }
+
+    html,
+    body {
+      background: #fff !important;
+      /* ההדפסה נחתכה באמצע כי הגוף היה נעול לגובה המסך */
+      height: auto !important;
+      overflow: visible !important;
+    }
+
     /*
      * המסמך עבר למשטח כהה במסך, ולכן כל הטקסט שלו שנהב. בהדפסה הרקע
      * לבן, ובלי הכפייה הזו הדף היה יוצא מהמדפסת ריק.
@@ -1054,10 +1072,41 @@
       break-inside: avoid;
     }
 
+    /* אנימציות גלילה לא מסתיימות בהדפסה, וכל מה שממתין לחשיפה נשאר שקוף */
+    [data-reveal],
+    [data-reveal]:not(.revealed) {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+
+    main {
+      display: block !important;
+    }
+
+    main > div {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+
+    /*
+     * מוסתר בהדפסה: הכרום של האתר בלבד.
+     *
+     * קודם הסלקטור היה footer חשוף, והוא הפיל גם את הפוטר של מסמך
+     * הסילבוס עצמו - זה שנושא את פרטי הקשר. מכאן המיקוד ל-site-footer.
+     */
     .film-grain,
     .page-lines,
-    header nav,
-    footer {
+    .grid-canvas,
+    .site-header,
+    .site-footer,
+    body > div > nav,
+    .a11y-launcher,
+    .a11y-panel,
+    .preloader,
+    .navbar-lead-cta,
+    [role="dialog"],
+    [aria-label="הסכמת עוגיות"],
+    [data-print-hide] {
       display: none !important;
     }
   }

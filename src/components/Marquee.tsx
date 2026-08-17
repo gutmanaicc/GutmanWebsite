@@ -48,7 +48,7 @@ const Marquee = ({ items, className = "" }: Props) => {
           className="flex select-none items-center whitespace-nowrap text-sm font-medium tracking-wide text-bone/70"
         >
           <span className="px-14">{item}</span>
-          <span className="text-brand" aria-hidden>
+          <span className="select-none text-brand" aria-hidden>
             ✦
           </span>
         </span>

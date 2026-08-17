@@ -27,7 +27,8 @@ const StackingCourses = () => {
   return (
     <div className="container-site flex flex-col gap-6 pb-10">
       {slides.map((slide, i) => {
-        const dark = slide.bg === "#191919";
+        /* כל השקפים כהים אחרי המעבר; הענף הבהיר השאיר טקסט דיו על רקע כהה */
+        const dark = true;
 
         return (
           <div key={slide.id} className="sticky" style={{ top: `calc(4.25rem + ${i * step}rem)` }}>
