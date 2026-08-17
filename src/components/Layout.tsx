@@ -12,6 +12,7 @@ import WaitlistModal from "./WaitlistModal";
 import { ParallaxGridCanvas } from "./motion";
 import { useMotionCapability } from "../lib/motion";
 import { REGISTRATION_FORM_ID, scrollToRegistrationForm } from "../lib/registration";
+import { markScrollReset } from "../lib/scrollLock";
 
 /** גלילה חלקה עם אינרציה (lenis) - הבסיס של תחושת orbix. עכבר בלבד. */
 const useSmoothScroll = (disabled: boolean) => {
@@ -48,6 +49,15 @@ const useSmoothScroll = (disabled: boolean) => {
  * בפריים הבא כי גובה העמוד החדש עוד לא נמדד ברגע המעבר.
  */
 const resetScroll = () => {
+  /*
+   * מדווחים על האיפוס לפני שמבצעים אותו.
+   *
+   * פופאפ שנסגר בגלל הניווט משחזר את מיקום הגלילה שלו בקומיט מאוחר
+   * יותר, ובלי הדיווח הזה הוא היה דורס את האיפוס והעמוד החדש היה נפתח
+   * במיקום של הקודם.
+   */
+  markScrollReset();
+
   const lenis = window.__lenis;
   if (!lenis) {
     window.scrollTo(0, 0);

@@ -61,6 +61,20 @@ export default async function handler(req: any, res: any) {
     return res.status(400).json({ ok: false, error: "missing_required_fields" });
   }
 
+  /*
+   * ליד לא הולך לאיבוד, בשום מצב.
+   *
+   * בכל מסלול שבו הליד לא הגיע ל-CRM, הפרטים המלאים נרשמים ליומן של
+   * Vercel בשורה אחת שאפשר לחפש לפי LEAD_CAPTURE. זה לא תחליף ל-CRM,
+   * אבל זו הרשת שמתחת: אפשר לשלוף ממנה כל פנייה ולהזין אותה ידנית.
+   *
+   * החזרת שגיאה למשתמש והרישום כאן הם שני דברים נפרדים. השגיאה קיימת
+   * כדי לא לשקר לגולש; הרישום קיים כדי שהעסק לא יאבד את הפנייה. בלי
+   * הרישום, השבתה של פיירברי הייתה מוחקת כל ליד שהתקבל בזמנה.
+   */
+  const audit = (reason: string) =>
+    console.log(`LEAD_CAPTURE ${reason} ${JSON.stringify(lead)}`);
+
   const token = process.env.FIREBERRY_TOKEN;
   if (!token) {
     /*
@@ -71,6 +85,7 @@ export default async function handler(req: any, res: any) {
      * מותרת רק כשמכריזים עליה במפורש דרך ALLOW_UNCONFIGURED_LEADS,
      * למשל בסביבת תצוגה מקדימה.
      */
+    audit("not_forwarded_no_token");
     if (process.env.ALLOW_UNCONFIGURED_LEADS === "1") {
       console.warn("FIREBERRY_TOKEN is not set - lead accepted but NOT forwarded (explicitly allowed)");
       return res.status(200).json({ ok: true, forwarded: false });
@@ -99,14 +114,16 @@ export default async function handler(req: any, res: any) {
 
     const text = await response.text();
     if (!response.ok) {
-      console.error("Fireberry rejected the lead", response.status, text);
-      /* הליד לא אבד: מחזירים שגיאה כדי שהאתר יוכל לשמור גיבוי מקומי */
+      /* מקוצץ: התשובה של פיירברי עלולה להחזיר את הרשומה כולה */
+      console.error("Fireberry rejected the lead", response.status, text.slice(0, 500));
+      audit("fireberry_rejected");
       return res.status(502).json({ ok: false, error: "fireberry_error", status: response.status });
     }
 
     return res.status(200).json({ ok: true, forwarded: true });
   } catch (error) {
     console.error("Fireberry request failed", error);
+    audit("fireberry_unreachable");
     return res.status(502).json({ ok: false, error: "fireberry_unreachable" });
   }
 }

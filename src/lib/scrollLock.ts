@@ -23,6 +23,21 @@ declare global {
   }
 }
 
+/**
+ * חותמת הזמן של איפוס הגלילה האחרון במעבר עמוד.
+ *
+ * ScrollManager מדווח לכאן, וזה מכריע תחרות אמיתית: כשסוגרים פופאפ
+ * בגלל ניווט, שני מנגנונים רוצים לקבוע את מיקום הגלילה של העמוד החדש.
+ * האיפוס של המעבר רץ ראשון, ואז סגירת הפופאפ מגיעה בקומיט מאוחר יותר
+ * ומחזירה את המיקום של העמוד הקודם - כך נחת /reviews באמצע העמוד אחרי
+ * ניווט מתפריט הנייד. איפוס עמוד תמיד גובר על שחזור מיקום של פופאפ.
+ */
+let lastResetAt = 0;
+
+export function markScrollReset() {
+  lastResetAt = Date.now();
+}
+
 export function useScrollLock(active: boolean) {
   useEffect(() => {
     if (!active) return;
@@ -31,6 +46,7 @@ export function useScrollLock(active: boolean) {
     const { body } = document;
     const previousOverflow = body.style.overflow;
     const scrollY = window.scrollY;
+    const lockedAt = Date.now();
 
     lenis?.stop();
     body.style.overflow = "hidden";
@@ -38,6 +54,10 @@ export function useScrollLock(active: boolean) {
     return () => {
       body.style.overflow = previousOverflow;
       lenis?.start();
+
+      /* העמוד התחלף בזמן שהפופאפ היה פתוח: המיקום הישן כבר לא רלוונטי */
+      if (lastResetAt > lockedAt) return;
+
       /*
        * השחזור עובר דרך Lenis ולא דרך window.scrollTo.
        *
