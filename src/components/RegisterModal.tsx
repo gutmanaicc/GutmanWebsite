@@ -36,7 +36,7 @@ const RegisterModal = () => {
       {isOpen ? (
         <motion.div
           key="register-modal-root"
-          className="fixed inset-0 z-[100] flex items-end justify-center p-0 sm:items-center sm:p-4"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
           role="dialog"
           aria-modal="true"
           aria-labelledby={titleId}
@@ -48,7 +48,7 @@ const RegisterModal = () => {
           {/* Backdrop - separate layer so panel stays above */}
           <button
             type="button"
-            className="absolute inset-0 z-0 bg-ink/50 backdrop-blur-sm"
+            className="absolute inset-0 z-0 bg-black/70 backdrop-blur-md"
             aria-label="סגירת טופס"
             onClick={closeRegisterModal}
           />
@@ -56,32 +56,47 @@ const RegisterModal = () => {
           <motion.div
             ref={panelRef}
             key="register-modal-panel"
-            className="relative z-10 flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-t-[1.75rem] bg-[#141318] text-bone ring-1 ring-white/10 shadow-float sm:max-h-[90vh] sm:rounded-[1.75rem]"
+            /*
+             * בועה במרכז המסך, בכל גודל מסך, כמו הפרופיל של המנחים.
+             *
+             * קודם זו הייתה מגירה נעוצה לתחתית המובייל ובפלטה בהירה על אתר
+             * כהה. dvh ולא vh: ב-iOS סרגל הדפדפן נכלל ב-vh, ולכן כפתור
+             * השליחה נחתך מתחתיו בדיוק כשצריך ללחוץ עליו.
+             */
+            className="relative z-10 flex max-h-[88dvh] w-full max-w-xl flex-col overflow-hidden rounded-[1.75rem] border border-white/10 bg-surface-1 text-bone shadow-[0_30px_80px_-20px_rgba(0,0,0,0.85)] sm:max-h-[90dvh]"
             onClick={(e) => e.stopPropagation()}
-            initial={reduced ? false : { opacity: 0, y: 28, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 16, scale: 0.98, transition: { duration: 0.18, ease: "easeIn" } }}
-            transition={{ type: "spring", stiffness: 380, damping: 32 }}
+            initial={reduced ? false : { opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.96, transition: { duration: 0.18, ease: "easeIn" } }}
+            transition={{ type: "spring", stiffness: 420, damping: 30 }}
           >
-            {/* כותרת על רצועה כהה - הופכת את המודאל לחלק מהשפה של האתר */}
-            <div className="relative shrink-0 bg-canvas px-6 pb-7 pt-7 text-bone sm:px-9 sm:pb-8 sm:pt-8">
+            {/* הילה ורודה רכה במקום רצועה כהה, שהפכה למיותרת כשהמשטח כולו כהה */}
+            <div className="relative shrink-0 px-6 pb-6 pt-7 text-bone sm:px-9 sm:pb-7 sm:pt-8">
+              <div
+                className="pointer-events-none absolute inset-x-0 top-0 h-40"
+                style={{
+                  background:
+                    "radial-gradient(70% 100% at 50% 0%, rgba(255,45,133,0.18) 0%, rgba(255,45,133,0.05) 45%, rgba(255,45,133,0) 100%)",
+                }}
+                aria-hidden
+              />
               <button
                 type="button"
-                className="absolute left-4 top-4 flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-bone/60 transition-colors duration-200 hover:border-white/45 hover:text-bone focus:outline-none focus-visible:ring-2 focus-visible:ring-bone"
+                className="absolute left-4 top-4 z-[1] flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-bone/60 transition-colors duration-200 hover:border-white/45 hover:text-bone focus:outline-none focus-visible:ring-2 focus-visible:ring-bone"
                 onClick={closeRegisterModal}
                 aria-label="סגירת טופס"
               >
                 <XIcon />
               </button>
 
-              <span className="section-label mb-4 flex">
+              <span className="section-label relative mb-4 flex">
                 <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
                 הרשמה
               </span>
-              <h2 id={titleId} className="font-display text-[1.6rem] font-bold leading-tight tracking-tight sm:text-3xl">
+              <h2 id={titleId} className="relative font-display text-[1.6rem] font-bold leading-tight tracking-tight sm:text-3xl">
                 רוצים שנשמור לכם מקום?
               </h2>
-              <p className="mt-2.5 max-w-md text-sm leading-relaxed text-bone/55">
+              <p className="relative mt-2.5 max-w-md text-sm leading-relaxed text-bone/55">
                 מלאו פרטים קצרים. נחזור אליכם עם כל המידע על המסלול, בלי התחייבות ובלי ספאם.
               </p>
             </div>

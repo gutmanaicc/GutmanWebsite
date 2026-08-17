@@ -55,8 +55,17 @@ export const InstructorAvatar = ({
         {instructor.name}
       </h3>
       <p className="mt-1.5 text-sm font-medium text-brand">{instructor.role}</p>
-      <span className="mt-3 text-xs text-bone/35 transition-colors duration-300 group-hover:text-bone/70">
-        לצפייה בפרופיל
+      {/*
+       * הרמז הוא צ'יפ נראה ולא טקסט דהוי.
+       *
+       * קודם הוא היה ב-bone/35 והסתמך על הובר כדי להתבהר, כלומר במסך מגע
+       * לא היה שום סימן שהפורטרט בכלל לחיץ.
+       */}
+      <span className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.05] px-3.5 py-1.5 text-xs font-medium text-bone/70 transition-colors duration-300 group-hover:border-brand/50 group-hover:text-bone">
+        לפרופיל המלא
+        <span className="text-brand" aria-hidden>
+          ←
+        </span>
       </span>
     </motion.button>
   );

@@ -1,4 +1,4 @@
-import { lockScroll, unlockScroll } from "../lib/scrollLock";
+import { useScrollLock } from "../lib/scrollLock";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion, animate } from "framer-motion";
 
@@ -19,13 +19,21 @@ const Preloader = () => {
   });
   const [count, setCount] = useState(0);
 
+  /*
+   * הנעילה עוברת דרך ה-hook ולא דרך קריאות ידניות.
+   *
+   * נעילה ידנית עקפה את Lenis: היא הסתירה את הגלילה של ה-body אבל
+   * המנוע המשיך לתפוס את הגלגלת, וזה בדיוק המצב שה-hook קיים כדי
+   * למנוע. הוא גם מבטיח שחרור גם אם הקומפוננטה יורדת באמצע.
+   */
+  useScrollLock(visible && !reduced);
+
   useEffect(() => {
     if (!visible) return;
     if (reduced) {
       setVisible(false);
       return;
     }
-    lockScroll();
     const counter = animate(0, 100, {
       duration: 1.45,
       ease: [0.22, 1, 0.36, 1],
@@ -42,7 +50,6 @@ const Preloader = () => {
     return () => {
       counter.stop();
       window.clearTimeout(t);
-      unlockScroll();
     };
   }, [visible, reduced]);
 

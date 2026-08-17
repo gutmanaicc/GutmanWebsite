@@ -2,7 +2,9 @@ import { useCallback, useState } from "react";
 
 import { motion, useReducedMotion } from "framer-motion";
 import BackButton from "../components/BackButton";
+import ClosingCta from "../components/ClosingCta";
 import ImageLightbox from "../components/ImageLightbox";
+import ReviewsCarousel from "../components/ReviewsCarousel";
 import ReviewsRatingBadge from "../components/ReviewsRatingBadge";
 import { AccentWord } from "../components/SectionHeader";
 import { TESTIMONIALS, type Testimonial } from "../data/testimonialsData";
@@ -52,8 +54,11 @@ const Reviews = () => {
 
       <section className="py-12 sm:py-16">
         <div className="container-site">
+          {/* מובייל: קרוסלה שמתקדמת לבד. דסקטופ: קיר העמודות המלא */}
+          <ReviewsCarousel items={TESTIMONIALS} onOpen={setLightbox} />
+
           {/* קיר בנוי בעמודות: כל הודעה בגובה הטבעי שלה */}
-          <div className="columns-1 gap-5 sm:columns-2 lg:columns-3">
+          <div className="hidden gap-5 md:block md:columns-2 lg:columns-3">
             {TESTIMONIALS.map((item, i) => (
               <motion.button
                 key={item.id}
@@ -84,6 +89,18 @@ const Reviews = () => {
           </div>
         </div>
       </section>
+
+      {/* העמוד הזה נגמר קודם באוויר: הכי הרבה הוכחה חברתית באתר, ואפס בקשה */}
+      <ClosingCta
+        leadSource="reviews-closing"
+        showRating={false}
+        title={
+          <>
+            רוצים להיות <AccentWord>ההודעה הבאה?</AccentWord>
+          </>
+        }
+        sub="כל אחת מההודעות האלה התחילה במפגש אחד. השאירו פרטים ונחזור אליכם עם כל הפרטים על המסלול שמתאים לכם."
+      />
 
       <ImageLightbox
         src={lightbox?.image ?? null}

@@ -12,10 +12,7 @@ import NotFound from "./NotFound";
 /**
  * מסמך הסילבוס המלא של סדנה. בנוי כמסמך ולא כעמוד שיווקי: לוגו בפינה
  * הימנית העליונה, כותרת, פרטי הסדנה, שלבי הלמידה, הכלים והתוצר.
- *
- * אין כאן כפתור הורדה. מי שרוצה עותק יכול להדפיס את העמוד מהדפדפן,
- * וגיליון ההדפסה שב-index.css כבר מנקה ממנו את התפריט, הפוטר, באנר
- * המדידה וכפתור הנגישות.
+ * מותאם להדפסה ולשמירה כ-PDF דרך כפתור ההדפסה.
  */
 const Syllabus = () => {
   const { slug = "" } = useParams();
@@ -45,7 +42,7 @@ const Syllabus = () => {
           <BackButton fallbackTo={`/courses/${course.slug}`} />
         </div>
 
-        <article className="overflow-hidden rounded-[1.75rem] bg-[#141318] text-bone ring-1 ring-white/10 shadow-float print:rounded-none print:shadow-none print:ring-0">
+        <article className="overflow-hidden rounded-[1.75rem] border border-white/10 bg-surface-1 text-bone shadow-card print:rounded-none print:border-0 print:bg-white print:text-black print:shadow-none">
           {/* כותרת המסמך: הלוגו בצד ימין למעלה, על רצועה כהה של המותג */}
           <header className="relative bg-canvas px-7 pb-9 pt-8 text-bone sm:px-10 sm:pb-10">
             <div className="flex items-start justify-between gap-6">
@@ -95,7 +92,7 @@ const Syllabus = () => {
                     <h3 className="font-display text-lg font-bold leading-snug tracking-tight text-bone">
                       {block.title}
                     </h3>
-                    <p className="mt-1.5 text-[15px] leading-relaxed text-bone/55">{block.text}</p>
+                    <p className="mt-1.5 text-[15px] leading-relaxed text-muted">{block.text}</p>
                   </div>
                 </li>
               ))}
@@ -135,18 +132,34 @@ const Syllabus = () => {
               </p>
             </div>
 
-            {/* בלי חתימת פרטי קשר: היא חזרה על מה שכבר בפוטר של האתר
-                וגררה את סוף המסמך למטה בלי להוסיף כלום */}
-            <footer className="mt-10 flex justify-center border-t border-white/10 pt-7 print:hidden">
-              <Pressable
-                type="button"
-                className="btn-submit !w-auto"
-                onClick={() =>
-                  openRegisterModal({ courseId: course.slug, leadSource: `syllabus-${course.slug}` })
-                }
-              >
-                שמרו לי מקום
-              </Pressable>
+            <footer className="mt-10 flex flex-col gap-4 border-t border-white/10 pt-7 sm:flex-row sm:items-center sm:justify-between">
+              <div className="text-xs leading-relaxed text-bone/45">
+                <p>
+                  {SITE.name} · {SITE.tagline}
+                </p>
+                <p dir="ltr" className="mt-0.5">
+                  {SITE.contact.email} · {SITE.contact.phone}
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-3 print:hidden">
+                <Pressable
+                  type="button"
+                  className="btn-submit !w-auto"
+                  onClick={() =>
+                    openRegisterModal({ courseId: course.slug, leadSource: `syllabus-${course.slug}` })
+                  }
+                >
+                  שמרו לי מקום
+                </Pressable>
+                <button
+                  type="button"
+                  className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/25 px-6 text-sm font-medium text-bone transition-colors duration-300 hover:border-bone hover:bg-bone hover:text-ink"
+                  onClick={() => window.print()}
+                >
+                  הדפסה או שמירה כ-PDF
+                </button>
+              </div>
             </footer>
           </div>
         </article>

@@ -21,7 +21,7 @@ const MOBILE_STICKY_STEP_PX = 12;
 export type StickyCourseSlide = {
   id: string;
   title: string;
-  accent: string;
+  accent?: string;
   href: string;
   visual: Course["visual"];
   /** Full-bleed brand background for this slide */
@@ -51,7 +51,7 @@ const SLIDE_THEMES: Array<Pick<StickyCourseSlide, "bg" | "fg" | "accentColor">> 
 ];
 
 type ShowcaseMeta = {
-  accent: string;
+  accent?: string;
   duration: string;
   format: string;
   level: string;
@@ -103,7 +103,13 @@ export function buildStickyCourseSlides(courses: Course[] = ACTIVE_COURSES): Sti
     return {
       id: course.slug,
       title: course.shortTitle,
-      accent: meta?.accent ?? course.cardSubtitle,
+      /*
+       * בלי fallback ל-cardSubtitle: הוא בדיוק מה שיושב ב-description,
+       * ולכן שני מסלולים הציגו את אותו משפט פעמיים - פעם בטיפוגרפיית
+       * תצוגה ורודה וענקית, ומיד מתחת כטקסט גוף. עדיף בלי שורת אקצנט
+       * מאשר עם כפילות.
+       */
+      accent: meta?.accent,
       href: `/courses/${course.slug}`,
       visual: course.visual,
       duration: meta?.duration ?? "5 מפגשים",

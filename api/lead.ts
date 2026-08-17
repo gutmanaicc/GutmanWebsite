@@ -9,8 +9,11 @@
  *                           (accounts). אם רוצים לפתוח אנשי קשר במקום,
  *                           מגדירים 2.
  *
- * בלי FIREBERRY_TOKEN הפונקציה עדיין מחזירה הצלחה ורושמת אזהרה, כדי
- * שהטפסים באתר לא ייפלו לפני שהמפתח הוגדר.
+ * בלי FIREBERRY_TOKEN הפונקציה מחזירה 503, והאתר מציג למשתמש את מסלולי
+ * הגיבוי (טלפון ומייל) במקום לומר לו שקיבלנו את הפרטים. כדי לקבל את
+ * ההתנהגות הסלחנית הישנה, בתצוגה מקדימה למשל, מגדירים במפורש:
+ *
+ *   ALLOW_UNCONFIGURED_LEADS=1
  */
 
 const FIREBERRY_URL = "https://api.fireberry.com/api/record";
@@ -47,20 +50,6 @@ function buildNote(lead: LeadBody): string {
 }
 
 export default async function handler(req: any, res: any) {
-  /*
-   * בדיקת בריאות: GET /api/lead מחזיר האם ההגדרות במקום, בלי לחשוף
-   * את המפתח עצמו. עוזר לענות על "הכנסתי את הטוקן, למה זה לא עובד"
-   * בלי לנחש - רואים מיד אם המשתנה הגיע לפונקציה.
-   */
-  if (req.method === "GET") {
-    /* בוליאני בלבד. אורך המפתח או כל רמז אחר עליו לא נחשפים כאן. */
-    return res.status(200).json({
-      ok: true,
-      fireberryConfigured: Boolean(process.env.FIREBERRY_TOKEN),
-      objectType: process.env.FIREBERRY_OBJECT_TYPE ?? "1",
-    });
-  }
-
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
@@ -75,18 +64,34 @@ export default async function handler(req: any, res: any) {
   /*
    * ליד לא הולך לאיבוד, בשום מצב.
    *
-   * גם כשאין מפתח וגם כשפיירברי נופלת, הליד המלא נרשם ביומן של Vercel
-   * בשורה אחת שאפשר לחפש לפי LEAD_CAPTURE. זה לא תחליף ל-CRM, אבל זו
-   * הרשת שמתחת: אפשר לשלוף ממנה כל פנייה ולהזין אותה ידנית.
+   * בכל מסלול שבו הליד לא הגיע ל-CRM, הפרטים המלאים נרשמים ליומן של
+   * Vercel בשורה אחת שאפשר לחפש לפי LEAD_CAPTURE. זה לא תחליף ל-CRM,
+   * אבל זו הרשת שמתחת: אפשר לשלוף ממנה כל פנייה ולהזין אותה ידנית.
+   *
+   * החזרת שגיאה למשתמש והרישום כאן הם שני דברים נפרדים. השגיאה קיימת
+   * כדי לא לשקר לגולש; הרישום קיים כדי שהעסק לא יאבד את הפנייה. בלי
+   * הרישום, השבתה של פיירברי הייתה מוחקת כל ליד שהתקבל בזמנה.
    */
   const audit = (reason: string) =>
     console.log(`LEAD_CAPTURE ${reason} ${JSON.stringify(lead)}`);
 
   const token = process.env.FIREBERRY_TOKEN;
   if (!token) {
-    console.warn("FIREBERRY_TOKEN is not set - lead accepted but not forwarded to Fireberry");
+    /*
+     * בלי טוקן אין לאן להעביר את הליד, ולכן זו כשלון ולא הצלחה.
+     *
+     * קודם הוחזר כאן 200, והאתר הציג "קיבלנו, נחזור אליכם" בזמן שהליד
+     * נשאר רק ב-localStorage של הגולש ואף אחד לא ידע עליו. השתקה כזו
+     * מותרת רק כשמכריזים עליה במפורש דרך ALLOW_UNCONFIGURED_LEADS,
+     * למשל בסביבת תצוגה מקדימה.
+     */
     audit("not_forwarded_no_token");
-    return res.status(200).json({ ok: true, forwarded: false });
+    if (process.env.ALLOW_UNCONFIGURED_LEADS === "1") {
+      console.warn("FIREBERRY_TOKEN is not set - lead accepted but NOT forwarded (explicitly allowed)");
+      return res.status(200).json({ ok: true, forwarded: false });
+    }
+    console.error("FIREBERRY_TOKEN is not set - refusing to silently drop a lead");
+    return res.status(503).json({ ok: false, error: "crm_not_configured" });
   }
 
   const objectType = process.env.FIREBERRY_OBJECT_TYPE ?? "1";
@@ -109,6 +114,7 @@ export default async function handler(req: any, res: any) {
 
     const text = await response.text();
     if (!response.ok) {
+      /* מקוצץ: התשובה של פיירברי עלולה להחזיר את הרשומה כולה */
       console.error("Fireberry rejected the lead", response.status, text.slice(0, 500));
       audit("fireberry_rejected");
       return res.status(502).json({ ok: false, error: "fireberry_error", status: response.status });

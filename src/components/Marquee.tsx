@@ -1,4 +1,4 @@
-import { Fragment, useRef } from "react";
+import { useRef } from "react";
 import { motion, useAnimationFrame, useMotionValue, useReducedMotion } from "framer-motion";
 
 type Props = {
@@ -29,24 +29,29 @@ const Marquee = ({ items, className = "" }: Props) => {
   });
 
   /*
-   * רשימה שטוחה: כל מילה וכל כוכב הם אלמנט נפרד באותו flex, ולכן
-   * אותו gap חל בין כולם והמרווחים יוצאים שווים בדיוק.
+   * המרווח יושב על הטקסט עצמו, ולא כ-gap בין האלמנטים.
    *
-   * קודם הכוכב ישב בתוך ה-span של המילה, ליד טקסט חשוף. טקסט חשוף
-   * הופך לפריט flex אנונימי שמתנהג אחרת, ובשורה שמערבבת עברית
-   * ואנגלית זה יצא לא אחיד: כוכב אחד נצמד למילה ואחר ריחף באמצע.
+   * קודם הטקסט והכוכב היו בתוך flex עם gap-14, ובין הפריטים היה gap-14
+   * נוסף - אבל שתי השורות שמרכיבות את הלולאה ישבו צמודות זו לזו בלי שום
+   * מרווח. בתפר שביניהן הכוכב האחרון נדבק לטקסט הראשון של השורה הבאה.
+   *
+   * להוסיף gap בין השורות לא היה פותר: חישוב הלולאה נשען על scrollWidth
+   * חלקי שתיים, וכל מרווח נוסף היה מזיז את נקודת הגלגול ויוצר קפיצה.
+   * כשכל פריט נושא את הריפוד שלו, שתי השורות מתחברות בלי תפר והמרווח
+   * סביב כל כוכב זהה לאורך כל הרצועה.
    */
   const row = (dup: boolean) => (
-    <div className="flex shrink-0 items-center gap-14" aria-hidden={dup || undefined}>
+    <div className="flex shrink-0 items-center" aria-hidden={dup || undefined}>
       {items.map((item, i) => (
-        <Fragment key={`${item}-${i}`}>
-          <span className="select-none whitespace-nowrap text-sm font-medium tracking-wide text-bone/70">
-            {item}
-          </span>
+        <span
+          key={`${item}-${i}`}
+          className="flex select-none items-center whitespace-nowrap text-sm font-medium tracking-wide text-bone/70"
+        >
+          <span className="px-14">{item}</span>
           <span className="select-none text-brand" aria-hidden>
             ✦
           </span>
-        </Fragment>
+        </span>
       ))}
     </div>
   );

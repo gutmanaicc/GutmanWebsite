@@ -15,7 +15,7 @@ const Chevron = ({ open }: { open: boolean }) => (
     fill="none"
     stroke="currentColor"
     strokeWidth="2.2"
-    className={`shrink-0 text-bone/45 transition-transform duration-200 ease-out ${open ? "rotate-180" : ""}`}
+    className={`shrink-0 text-bone/50 transition-transform duration-200 ease-out ${open ? "rotate-180" : ""}`}
     aria-hidden
   >
     <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
@@ -73,7 +73,7 @@ const MobileTracksAccordion = ({ onNavigate }: Props) => {
           </NavLink>
           <button
             type="button"
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-bone/70 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-bone/70 hover:bg-white/10 hover:text-bone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
             aria-expanded={businessOpen}
             aria-controls={businessPanelId}
             aria-label={businessOpen ? "סגירת מסלולי משנה" : "פתיחת מסלולי משנה"}
@@ -89,7 +89,7 @@ const MobileTracksAccordion = ({ onNavigate }: Props) => {
               id={businessPanelId}
               role="region"
               aria-label={`מסלולי משנה: ${track.label}`}
-              className="mt-0.5 space-y-0.5 border-r-2 border-brand/35 pr-2 mr-3"
+              className="mt-0.5 space-y-0.5 border-r-2 border-[#FF2D85]/35 pr-2 mr-3"
               initial={reduced ? false : { height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={reduced ? undefined : { height: 0, opacity: 0 }}
@@ -134,7 +134,7 @@ const MobileTracksAccordion = ({ onNavigate }: Props) => {
             <ul className="mt-1 space-y-0.5 rounded-2xl bg-white/[0.04] p-1.5">{NAV_TRACKS.map(renderTrack)}</ul>
             <NavLink
               to="/courses"
-              className="mt-1 flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-semibold text-brand hover:bg-brand/10"
+              className="mt-1 flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-semibold text-[#FF2D85] hover:bg-[#FF2D85]/10"
               onClick={onNavigate}
             >
               כל המסלולים

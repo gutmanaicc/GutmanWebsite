@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { getCourse } from "../data/courses";
+import { getCourse, LEAD_TRACKS } from "../data/courses";
 import { useRegisterModal } from "../context/RegisterModalContext";
 import { springPress, springSoft } from "../lib/motion";
 import Pressable from "./Pressable";
@@ -33,6 +33,27 @@ const Q2: Record<AudienceKey, { label: string; slug: string }[]> = {
     { label: "ליצור תוכן וסרטונים ברמה גבוהה", slug: "ai-video-content" },
   ],
 };
+
+/*
+ * שער איכות: נופל כבר בזמן פיתוח אם מישהו יוסיף מטרה שמפנה למסלול
+ * שאינו בבורר של טופס הלידים.
+ *
+ * זה קרה בפועל: ארבע מטרות הפנו למסלולים שקיימים בקוד אבל לא ברשימת
+ * הטופס, והמשתמש נחת על שדה חובה שנראה ריק בזמן שהוולידציה עברה בשקט.
+ * אותה גישה כמו enrichCourse, שזורק על תוכן עמוד חסר.
+ */
+if (import.meta.env.DEV) {
+  const selectable = new Set<string>(LEAD_TRACKS.map((t) => t.slug));
+  const orphans = Object.values(Q2)
+    .flat()
+    .map((g) => g.slug)
+    .filter((slug) => !selectable.has(slug));
+  if (orphans.length) {
+    throw new Error(
+      `ChatFinder מפנה למסלולים שלא קיימים בבורר של טופס הלידים: ${[...new Set(orphans)].join(", ")}`,
+    );
+  }
+}
 
 type Msg = { kind: "bot"; text: string } | { kind: "user"; text: string } | { kind: "typing" };
 type Step = "q1" | "q2" | "result" | null;
@@ -139,7 +160,7 @@ const ChatFinder = ({ onResult }: Props) => {
     scrollToRegisterForm({
       courseId: resultSlug,
       initialGoal: lastGoal,
-      leadSource: "chat-finder",
+      leadSource: "chat-finder-inline",
     });
   };
 
@@ -236,7 +257,7 @@ const ChatFinder = ({ onResult }: Props) => {
               <h3>{result.title}</h3>
               <p>{result.tagline}</p>
               <div className="chat-result-actions">
-                <Pressable type="button" className="btn-primary btn-small" onClick={goToLead}>
+                <Pressable type="button" className="btn-brand btn-block" onClick={goToLead}>
                   השאירו פרטים למסלול הזה
                 </Pressable>
                 <Pressable

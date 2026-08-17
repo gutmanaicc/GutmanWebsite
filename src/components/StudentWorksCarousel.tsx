@@ -3,6 +3,8 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 import type { StudentWork } from "../data/studentWorksData";
 import SectionHeader, { AccentWord } from "./SectionHeader";
+import Pressable from "./Pressable";
+import { useRegisterModal } from "../context/RegisterModalContext";
 
 type Props = {
   works: StudentWork[];
@@ -28,6 +30,7 @@ const COPIES = 3;
  */
 const StudentWorksCarousel = ({ works }: Props) => {
   const reduced = useReducedMotion();
+  const { openRegisterModal } = useRegisterModal();
   const scrollerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLElement | null)[]>([]);
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
@@ -105,13 +108,27 @@ const StudentWorksCarousel = ({ works }: Props) => {
   const goTo = useCallback(
     (index: number) => {
       if (!count) return;
+
+      /*
+       * יעד שנופל מחוץ למסילה מקופל מיד לעותק האמצעי.
+       *
+       * המסילה מרנדרת count * COPIES כרטיסים בלבד, ו-goTo נקרא גם עם
+       * activeIndex + 1 - מהחצים ומסיום סרטון. בכרטיס האחרון זה מכוון
+       * לאינדקס שלא קיים: centerCard לא מוצא ref ויוצא בשקט, וכלום לא
+       * זז עד שה-normalize מגיע כמעט שנייה אחר כך. הקיפול נותן את אותו
+       * תוכן בדיוק, רק במיקום שקיים על המסילה.
+       */
+      const total = count * COPIES;
+      const target =
+        index < 0 || index >= total ? (((index % count) + count) % count) + origin : index;
+
       programmaticUntil.current = performance.now() + (reduced ? 100 : 700);
-      setActiveIndex(index);
+      setActiveIndex(target);
       setPausedByUser(false);
-      centerCard(index, !reduced);
-      scheduleNormalize(index, reduced ? 120 : 680);
+      centerCard(target, !reduced);
+      scheduleNormalize(target, reduced ? 120 : 680);
     },
-    [count, centerCard, reduced, scheduleNormalize],
+    [count, centerCard, reduced, scheduleNormalize, origin],
   );
 
   /*
@@ -396,13 +413,17 @@ const StudentWorksCarousel = ({ works }: Props) => {
                           : `עבור לסרטון: ${work.title}`
                       }
                     >
+                      {/*
+                        * בסוף הסרטון עוברים לכרטיס הבא ולא חוזרים עליו בלופ:
+                        * הרצועה אמורה להתקדם לבד. הגדרת muted ידנית על
+                        * האלמנט נשארת, כי React לא משקף אותה כאטריביוט
+                        * וספארי בנייד מסרב להפעיל אוטומטית בלעדיה.
+                        */}
                       {hasVideo ? (
                         <video
                           ref={(el) => {
                             if (el) {
                               videoRefs.current.set(index, el);
-                              /* React לא משקף את muted כאטריביוט, ובלעדיו
-                                 ספארי בנייד מסרב להפעיל אוטומטית */
                               el.muted = true;
                               el.setAttribute("muted", "");
                             } else {
@@ -414,21 +435,22 @@ const StudentWorksCarousel = ({ works }: Props) => {
                           muted
                           autoPlay={isActive}
                           playsInline
-                          loop
                           preload={preload}
                           poster={work.poster}
                           onLoadedData={() => isActive && setActiveReady(true)}
                           onCanPlay={() => isActive && setActiveReady(true)}
+                          onEnded={() => {
+                            if (isActive) goTo(index + 1);
+                          }}
                         />
                       ) : (
-                        /* ממלא מקום עד שהכרטיס מתקרב, כדי לא לגעת בתקרת הווידאו */
-                        <span className="absolute inset-0 bg-[#1a1920]" aria-hidden />
+                        <div className="h-full w-full bg-[#191919]" aria-hidden />
                       )}
 
                       {/* הסרטון עוד נטען: משהו חי על המסך במקום מלבן שחור */}
                       {isActive && hasVideo && !activeReady && (
                         <span
-                          className="pointer-events-none absolute inset-0 flex items-center justify-center bg-[#1a1920]"
+                          className="pointer-events-none absolute inset-0 flex items-center justify-center bg-[#191919]"
                           aria-hidden
                         >
                           <span className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-brand" />
@@ -514,6 +536,27 @@ const StudentWorksCarousel = ({ works }: Props) => {
               </button>
             ))}
           </div>
+        </div>
+
+        {/*
+         * בקשה צמודה לתוצרים.
+         *
+         * זה הרגע שבו המבקר הכי משוכנע - הוא בדיוק ראה תשעה סרטונים
+         * שתלמידים באמת בנו - והקרוסלה נגמרה קודם בלי לבקש ממנו כלום,
+         * בעמוד הבית ובעמודי הקורס גם יחד.
+         */}
+        <div className="mt-8 flex flex-col items-center text-center">
+          <p className="max-w-md text-[15px] leading-relaxed text-bone/55">
+            כל אחד מהסרטונים האלה נבנה במסלול, על ידי מישהו שהתחיל מאפס.
+          </p>
+          <Pressable
+            type="button"
+            className="btn btn-brand mt-5 w-full max-w-xs sm:w-auto sm:max-w-none sm:px-8"
+            rippleTone="pink"
+            onClick={() => openRegisterModal({ leadSource: "student-works" })}
+          >
+            רוצה לבנות כאלה
+          </Pressable>
         </div>
       </div>
     </section>

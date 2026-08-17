@@ -131,7 +131,7 @@
 
   /* כרטיס נייר עם קו שיער - היחידה הבסיסית של השפה */
   .card-line {
-    @apply rounded-[1.5rem] border border-line bg-white shadow-card;
+    @apply rounded-[1.5rem] border border-white/10 bg-surface-1 shadow-card;
     transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
@@ -165,8 +165,12 @@
     animation: marquee-scroll 36s linear infinite;
   }
 
-  .marquee:hover .marquee-track {
-    animation-play-state: paused;
+  /* עצירה בהובר רק במכשיר עם עכבר. במסך מגע ההובר "נתקע" אחרי נגיעה
+     והטיקר פשוט מפסיק לזוז בלי שהמשתמש ביקש. */
+  @media (hover: hover) and (pointer: fine) {
+    .marquee:hover .marquee-track {
+      animation-play-state: paused;
+    }
   }
 
   @keyframes marquee-scroll {
@@ -202,7 +206,7 @@
   }
 
   .btn-ghost {
-    @apply btn border border-white/20 bg-white/[0.04] text-bone hover:border-white/[0.45] hover:bg-white/[0.08];
+    @apply btn border border-white/20 bg-white/[0.04] text-bone hover:border-white/45 hover:bg-white/[0.08];
   }
 
   @media (hover: hover) and (pointer: fine) {
@@ -341,8 +345,10 @@
     }
   }
 
+  /* min-h-11 ולא 10: 44px הוא הרף למטרת מגע, וגם הכפתור ה"קטן" משמש
+     לפעמים כקריאה לפעולה ראשית. */
   .btn-small {
-    @apply min-h-10 px-4 py-2 text-xs sm:text-sm;
+    @apply min-h-11 px-4 py-2 text-sm;
   }
 
   .btn-block {
@@ -350,7 +356,7 @@
   }
 
   .stat-pill {
-    @apply inline-flex min-h-11 items-center gap-1.5 rounded-full border border-white/[0.12] bg-white/[0.04] px-3.5 py-2 text-xs font-medium text-bone/60 transition-[transform,box-shadow,border-color,color] duration-200 ease-out sm:min-h-0 sm:py-1 sm:px-3;
+    @apply inline-flex min-h-11 items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-2 text-xs font-medium text-bone/60 transition-[transform,box-shadow,border-color,color] duration-200 ease-out sm:min-h-0 sm:py-1 sm:px-3;
   }
 
   .stat-pill b {
@@ -359,7 +365,7 @@
 
   @media (hover: hover) and (pointer: fine) {
     .stat-pill:hover {
-      @apply border-brand/[0.45] text-bone;
+      @apply border-brand/35 text-bone;
       transform: scale(1.045);
       box-shadow:
         0 0 0 1px rgba(255, 45, 133, 0.12),
@@ -380,11 +386,11 @@
 
   /* Course detail page */
   .course-glass-card {
-    @apply rounded-3xl border border-white/[0.12] bg-white/[0.03];
+    @apply rounded-3xl border border-white/10 bg-surface-1 shadow-card;
   }
 
   .course-deliverable-card {
-    @apply rounded-[1.75rem] border border-white/[0.12] bg-white/[0.03];
+    @apply rounded-[1.75rem] border border-white/10 bg-surface-1 shadow-card;
   }
 
   .course-deliverable-featured {
@@ -398,11 +404,14 @@
     @apply transition-[transform,box-shadow,border-color] duration-300 ease-out;
   }
 
-  .course-lift-card:hover {
-    @apply -translate-y-1.5 border-[#FF2D85]/30;
-    box-shadow:
-      0 24px 48px -16px rgba(255, 45, 133, 0.14),
-      0 8px 24px -10px rgba(18, 18, 18, 0.1);
+  /* מגודר: בנגיעה ההובר נשאר דלוק והכרטיס נתקע מורם */
+  @media (hover: hover) and (pointer: fine) {
+    .course-lift-card:hover {
+      @apply -translate-y-1.5 border-[#FF2D85]/30;
+      box-shadow:
+        0 24px 48px -16px rgba(255, 45, 133, 0.14),
+        0 8px 24px -10px rgba(18, 18, 18, 0.1);
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -413,7 +422,7 @@
   }
 
   .course-hero-meta {
-    @apply flex flex-wrap items-stretch gap-1 rounded-2xl border border-line bg-white p-1 shadow-card sm:flex-nowrap;
+    @apply flex flex-wrap items-stretch gap-1 rounded-2xl border border-white/10 bg-surface-1 p-1 shadow-card sm:flex-nowrap;
   }
 
   .course-hero-meta-item {
@@ -425,11 +434,11 @@
   }
 
   .course-hero-meta-label {
-    @apply block text-[10px] font-semibold uppercase tracking-wider text-muted leading-none;
+    @apply block text-[10px] font-semibold uppercase tracking-wider text-bone/45 leading-none;
   }
 
   .course-hero-meta-value {
-    @apply mt-0.5 block text-xs font-semibold text-ink sm:text-sm leading-snug;
+    @apply mt-0.5 block text-xs font-semibold text-bone sm:text-sm leading-snug;
   }
 
   .course-register-banner {
@@ -477,9 +486,11 @@
     transition: -webkit-text-stroke-color 0.6s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  .course-card:hover .course-card-ghost {
-    -webkit-text-stroke-color: rgba(255, 95, 158, 0.28);
-    transform: translateY(-6px);
+  @media (hover: hover) and (pointer: fine) {
+    .course-card:hover .course-card-ghost {
+      -webkit-text-stroke-color: rgba(255, 45, 133, 0.28);
+      transform: translateY(-6px);
+    }
   }
 
   /* Course cards - bento grid (lift/tilt handled by MagneticCard) */
@@ -487,12 +498,14 @@
     @apply transition-[box-shadow,border-color] duration-300 ease-out;
   }
 
-  .course-card:hover {
-    border-color: rgb(255 45 133 / 0.3);
-    @apply shadow-2xl;
-    box-shadow:
-      0 25px 50px -12px rgba(255, 45, 133, 0.12),
-      0 8px 24px -8px rgba(25, 25, 25, 0.1);
+  @media (hover: hover) and (pointer: fine) {
+    .course-card:hover {
+      border-color: rgb(255 45 133 / 0.3);
+      @apply shadow-2xl;
+      box-shadow:
+        0 25px 50px -12px rgba(255, 45, 133, 0.12),
+        0 8px 24px -8px rgba(25, 25, 25, 0.1);
+    }
   }
 
   .course-card:focus-within {
@@ -509,7 +522,7 @@
   }
 
   .course-card-pill {
-    @apply inline-flex items-center gap-1.5 rounded-full border border-line bg-paper px-3 py-1.5 text-xs font-medium text-ink transition-[transform,box-shadow,border-color] duration-200 ease-out;
+    @apply inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-xs font-medium text-bone/75 transition-[transform,box-shadow,border-color] duration-200 ease-out;
   }
 
   .course-card-pill svg {
@@ -629,15 +642,24 @@
     }
   }
 
+  /*
+   * התוויות הן הכותרת של כל שדה, ולכן הן צריכות להיקרא מיד.
+   *
+   * ב-bone/60 וב-13px הן היו עמומות מכדי לסרוק אותן, במיוחד על משטח
+   * כהה שבו טקסט בהיר "נשרף" פחות מאשר על לבן. bone/85 ו-14px מחזירים
+   * להן משקל של כותרת בלי להתחרות בערך שהמשתמש מקליד.
+   */
   .field label {
-    @apply mb-2 block text-[13px] font-medium tracking-wide text-bone/[0.55];
+    @apply mb-2 block text-sm font-medium tracking-wide text-bone/85;
   }
 
   /* שדות שקועים: משטח חם מעט כהה מהכרטיס, קו שיער, בלי צל */
   .field input,
   .field select,
   .field textarea {
-    @apply w-full rounded-xl border border-white/[0.12] bg-white/[0.05] px-4 py-3 text-[15px] text-bone outline-none;
+    /* 16px ולא פחות: ספארי במובייל מזמזם את כל העמוד בכל פוקוס על שדה
+       שגופנו קטן מ-16px, וזה קרה בכל שדה של טופס הלידים הראשי. */
+    @apply w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-base text-bone outline-none placeholder:text-bone/35;
     transition:
       border-color 220ms cubic-bezier(0.22, 1, 0.36, 1),
       box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -645,7 +667,7 @@
 
   .field input::placeholder,
   .field textarea::placeholder {
-    @apply text-bone/30;
+    @apply text-bone/35;
   }
 
   /* רשימות נפתחות מקומיות של הדפדפן נשארות בהירות אם לא אומרים אחרת */
@@ -656,7 +678,7 @@
 
   /* שדה נעול (למשל שם הסדנה בטופס רשימת ההמתנה): נראה מולא מראש */
   .field input[readonly] {
-    @apply cursor-default border-white/[0.07] bg-white/[0.02] text-bone/[0.45];
+    @apply cursor-default border-white/[0.07] bg-white/[0.03] text-bone/50;
   }
 
   .field input:focus,
@@ -688,7 +710,7 @@
   }
 
   .field .err {
-    @apply mt-1.5 block text-xs text-red-300;
+    @apply mt-1.5 block text-xs text-red-600;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -700,7 +722,7 @@
   }
 
   .lead-form {
-    @apply rounded-3xl border border-white/[0.12] bg-white/[0.03] p-6 text-bone sm:p-8;
+    @apply rounded-3xl border border-white/10 bg-surface-1 p-6 text-bone shadow-card sm:p-8;
   }
 
   .lead-form h3 {
@@ -714,7 +736,7 @@
   }
 
   .form-sub {
-    @apply mt-2 text-sm text-bone/[0.55];
+    @apply mt-2 text-sm text-bone/55;
   }
 
   .form-row {
@@ -734,53 +756,7 @@
   }
 
   .form-error-summary {
-    @apply mb-4 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-200;
-  }
-
-  /**
-   * אישור מפורש לפני שליחה.
-   *
-   * תיבת סימון ולא משפט קטן מתחת לכפתור: כך יש רגע הסכמה מתועד,
-   * והמשתמש בוחר במקום שיניחו בשמו.
-   */
-  .consent-check {
-    @apply mt-1;
-  }
-
-  .consent-check label {
-    @apply flex min-h-11 cursor-pointer items-start gap-3 py-1 text-right;
-  }
-
-  .consent-check input[type="checkbox"] {
-    @apply mt-px h-6 w-6 shrink-0 cursor-pointer appearance-none rounded-md border border-white/25 bg-white/[0.05] transition-colors;
-  }
-
-  .consent-check input[type="checkbox"]:checked {
-    @apply border-brand bg-brand;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E");
-    background-size: 74%;
-    background-position: center;
-    background-repeat: no-repeat;
-  }
-
-  .consent-check input[type="checkbox"]:focus-visible {
-    @apply outline-none ring-2 ring-brand/45 ring-offset-2 ring-offset-transparent;
-  }
-
-  .consent-check input[type="checkbox"][aria-invalid="true"] {
-    @apply border-red-400;
-  }
-
-  .consent-check span {
-    @apply text-[13px] leading-relaxed text-bone/55;
-  }
-
-  .consent-check a {
-    @apply inline-block py-1 text-bone/80 underline underline-offset-2 transition-colors hover:text-brand;
-  }
-
-  .consent-check .err {
-    @apply mt-1.5 block pr-8 text-xs text-red-300;
+    @apply mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700;
   }
 
   .form-note {
@@ -788,8 +764,10 @@
   }
 
   /* ChatFinder */
+  /* הצ'אט היה חלון לבן על אתר כהה, ולכן כותרת התוצאה יצאה שנהב על לבן
+     ולא הייתה קריאה. עכשיו הוא משטח כהה ככל השאר. */
   .chat-shell {
-    @apply overflow-hidden rounded-2xl border border-white/[0.12] bg-white/[0.03];
+    @apply overflow-hidden rounded-2xl border border-white/10 bg-[#141318] shadow-[0_24px_60px_-24px_rgba(0,0,0,0.8)];
   }
 
   .chat-bar {
@@ -805,7 +783,7 @@
   }
 
   .chat-progress-dot.is-active {
-    @apply bg-[#FF2D85]/[0.55];
+    @apply bg-[#FF2D85]/55;
   }
 
   .chat-progress-dot.is-current {
@@ -837,7 +815,7 @@
   }
 
   .chat-bar-title {
-    @apply text-xs font-semibold tracking-wide text-bone/[0.45];
+    @apply text-xs font-semibold tracking-wide text-bone/50;
   }
 
   .chat-body {
@@ -849,7 +827,7 @@
   }
 
   .chat-msg.bot {
-    @apply bg-white/[0.07] text-bone;
+    @apply bg-white/[0.06] text-bone;
   }
 
   .chat-msg.user {
@@ -865,7 +843,7 @@
   }
 
   .chat-choice {
-    @apply min-h-11 rounded-xl border border-white/[0.12] bg-white/[0.04] px-4 py-3 text-right text-sm font-medium text-bone transition-[colors,border-color,box-shadow,transform] hover:border-brand/[0.45] hover:bg-white/[0.08] active:scale-[0.97];
+    @apply min-h-11 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-right text-sm font-medium text-bone transition-[colors,border-color,box-shadow,transform] hover:border-brand/40 hover:bg-white/[0.08] active:scale-[0.97];
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -883,11 +861,11 @@
   }
 
   .chat-result-card h3 {
-    @apply text-base font-bold;
+    @apply text-base font-bold text-bone;
   }
 
   .chat-result-card p {
-    @apply mt-1 text-sm text-bone/[0.55];
+    @apply mt-1 text-sm text-bone/60;
   }
 
   .chat-result-actions {
@@ -895,17 +873,17 @@
   }
 
   .chat-restart {
-    @apply text-xs text-bone/50 underline-offset-2 hover:text-bone hover:underline;
+    @apply min-h-11 text-xs text-bone/45 underline-offset-2 hover:text-bone hover:underline;
   }
 
   /* MockWindows */
   .mock-window {
-    @apply relative block overflow-hidden rounded-2xl border border-white/[0.12] bg-white/[0.04] transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99];
+    @apply relative block overflow-hidden rounded-2xl border border-line bg-white shadow-card transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99];
     isolation: isolate;
   }
 
   .mw-bar {
-    @apply flex items-center gap-3 border-b border-white/10 px-3 py-2.5;
+    @apply flex items-center gap-3 border-b border-line px-3 py-2.5;
   }
 
   .mw-title {
@@ -1059,14 +1037,6 @@
   }
 
   /* מסמך הסילבוס בהדפסה: משטח לבן, בלי קישוטי רקע ובלי חיתוך בלוקים */
-  /**
-   * הדפסה ויצוא ל-PDF.
-   *
-   * המסמך המיוצא הוא מסמך שיווקי שנשלח ללקוחות, ולכן אסור שייכנס
-   * אליו שום דבר מכרום של האתר: תפריט, פוטר, באנר מדידה, כפתור
-   * נגישות, רשת רקע או גרעין פילם. בלי זה העמוד הראשון של הקובץ
-   * יצא ריק, עם התפריט והבאנר בלבד.
-   */
   @media print {
     @page {
       margin: 14mm 12mm 16mm;
@@ -1080,22 +1050,26 @@
       overflow: visible !important;
     }
 
-    /* כל מה שאינו המסמך עצמו. מכוון לכרום של האתר בלבד: ל-header
-       ול-footer שבתוך מסמך הסילבוס יש תוכן אמיתי שחייב להיכנס לקובץ. */
-    .site-header,
-    .site-footer,
-    body > div > nav,
-    .film-grain,
-    .page-lines,
-    .grid-canvas,
-    .a11y-launcher,
-    .a11y-panel,
-    .preloader,
-    .navbar-lead-cta,
-    [role="dialog"],
-    [aria-label="הסכמת עוגיות"],
-    [data-print-hide] {
-      display: none !important;
+    /*
+     * המסמך עבר למשטח כהה במסך, ולכן כל הטקסט שלו שנהב. בהדפסה הרקע
+     * לבן, ובלי הכפייה הזו הדף היה יוצא מהמדפסת ריק.
+     */
+    .syllabus-doc {
+      background: #fff;
+      padding: 0;
+      border: 0;
+      box-shadow: none;
+    }
+
+    .syllabus-doc,
+    .syllabus-doc * {
+      color: #191919 !important;
+      border-color: rgba(25, 25, 25, 0.15) !important;
+    }
+
+    .syllabus-doc li,
+    .syllabus-doc article {
+      break-inside: avoid;
     }
 
     /* אנימציות גלילה לא מסתיימות בהדפסה, וכל מה שממתין לחשיפה נשאר שקוף */
@@ -1114,23 +1088,26 @@
       transform: none !important;
     }
 
-    .syllabus-doc {
-      background: #fff;
-      padding: 0;
-      box-shadow: none !important;
-      border-radius: 0 !important;
-    }
-
-    .syllabus-doc li,
-    .syllabus-doc article,
-    .syllabus-doc h2,
-    .syllabus-doc h3 {
-      break-inside: avoid;
-    }
-
-    .syllabus-doc h2,
-    .syllabus-doc h3 {
-      break-after: avoid;
+    /*
+     * מוסתר בהדפסה: הכרום של האתר בלבד.
+     *
+     * קודם הסלקטור היה footer חשוף, והוא הפיל גם את הפוטר של מסמך
+     * הסילבוס עצמו - זה שנושא את פרטי הקשר. מכאן המיקוד ל-site-footer.
+     */
+    .film-grain,
+    .page-lines,
+    .grid-canvas,
+    .site-header,
+    .site-footer,
+    body > div > nav,
+    .a11y-launcher,
+    .a11y-panel,
+    .preloader,
+    .navbar-lead-cta,
+    [role="dialog"],
+    [aria-label="הסכמת עוגיות"],
+    [data-print-hide] {
+      display: none !important;
     }
   }
 
@@ -1174,7 +1151,7 @@
   }
 
   .a11y-panel {
-    @apply fixed bottom-20 left-4 z-50 w-[min(92vw,320px)] rounded-2xl border border-white/[0.12] bg-[#141318] p-4 text-bone shadow-float;
+    @apply fixed bottom-20 left-4 z-50 w-[min(92vw,320px)] rounded-2xl border border-zinc-200 bg-[#f7f7f5] p-4 text-[#121212] shadow-float;
   }
 
   .a11y-head {
@@ -1182,27 +1159,27 @@
   }
 
   .a11y-head h2 {
-    @apply text-base font-bold text-bone;
+    @apply text-base font-bold text-[#121212];
   }
 
   .a11y-x {
-    @apply flex h-8 w-8 items-center justify-center rounded-full text-bone/70 hover:bg-white/10 hover:text-bone;
+    @apply flex h-8 w-8 items-center justify-center rounded-full text-[#121212] hover:bg-zinc-200/70;
   }
 
   .a11y-label {
-    @apply mb-2 text-xs font-semibold text-bone/70;
+    @apply mb-2 text-xs font-semibold text-[#121212];
   }
 
   .a11y-font-row {
-    @apply mb-4 flex items-center justify-between rounded-xl border border-white/[0.12] bg-white/[0.04] p-2 text-bone;
+    @apply mb-4 flex items-center justify-between rounded-xl border border-zinc-200 bg-zinc-100 p-2 text-[#121212];
   }
 
   .a11y-font-row span {
-    @apply text-sm font-bold text-bone;
+    @apply text-sm font-bold text-[#121212];
   }
 
   .a11y-font-row button {
-    @apply flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.12] bg-white/[0.05] text-lg font-bold text-bone transition-colors hover:border-brand/40 hover:bg-white/10 disabled:opacity-40;
+    @apply flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 text-lg font-bold text-[#121212] transition-colors hover:border-[#FF2D85]/40 hover:bg-white disabled:opacity-40;
   }
 
   .a11y-toggles {
@@ -1210,15 +1187,15 @@
   }
 
   .a11y-toggle {
-    @apply flex w-full items-center justify-between gap-3 rounded-xl border border-white/[0.12] bg-white/[0.04] px-3 py-2.5 text-sm font-medium text-bone transition-colors;
+    @apply flex w-full items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2.5 text-sm font-medium text-[#121212] transition-colors;
   }
 
   .a11y-toggle.on {
-    @apply border-[#FF2D85]/[0.35] bg-[#FF2D85]/10;
+    @apply border-[#FF2D85]/35 bg-[#FF2D85]/10;
   }
 
   .a11y-toggle-label {
-    @apply text-right text-bone;
+    @apply text-right text-[#121212];
   }
 
   /* OFF: grey track + light thumb */
@@ -1227,7 +1204,7 @@
   }
 
   .a11y-knob {
-    @apply absolute top-0.5 h-[1.375rem] w-[1.375rem] rounded-full border border-white/20 bg-bone shadow-sm transition-transform duration-200 ease-out;
+    @apply absolute top-0.5 h-[1.375rem] w-[1.375rem] rounded-full border border-zinc-200 bg-zinc-50 shadow-sm transition-transform duration-200 ease-out;
     right: 0.125rem;
   }
 
@@ -1237,17 +1214,17 @@
   }
 
   .a11y-toggle.on .a11y-knob {
-    @apply border-brand bg-brand;
+    @apply border-[#121212] bg-[#121212];
     transform: translateX(-1.25rem);
   }
 
   .a11y-reset,
   .a11y-statement-link {
-    @apply mt-3 w-full rounded-xl border border-white/[0.12] bg-white/[0.04] py-2.5 text-sm font-semibold text-bone transition-colors hover:border-brand/40 hover:bg-white/10 hover:text-brand;
+    @apply mt-3 w-full rounded-xl border border-zinc-200 bg-zinc-50 py-2.5 text-sm font-semibold text-[#121212] transition-colors hover:border-[#FF2D85]/40 hover:bg-white hover:text-[#FF2D85];
   }
 
   .a11y-statement-link {
-    @apply mt-2 border-transparent bg-transparent font-medium text-bone/80 underline decoration-brand/50 underline-offset-2 hover:border-transparent hover:bg-transparent hover:text-brand;
+    @apply mt-2 border-transparent bg-transparent font-medium text-[#121212] underline decoration-[#FF2D85]/50 underline-offset-2 hover:border-transparent hover:bg-transparent hover:text-[#FF2D85];
   }
 
   .a11y-modal-backdrop {
@@ -1255,15 +1232,15 @@
   }
 
   .a11y-modal {
-    @apply max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-white/[0.12] bg-[#141318] p-5 text-bone;
+    @apply max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-zinc-200 bg-[#f7f7f5] p-5 text-[#121212];
   }
 
   .a11y-statement h3 {
-    @apply mt-4 font-bold text-bone;
+    @apply mt-4 font-bold text-[#121212];
   }
 
   .a11y-statement p {
-    @apply mt-2 text-sm leading-relaxed text-bone/70;
+    @apply mt-2 text-sm leading-relaxed text-[#121212]/80;
   }
 
   .a11y-statement a {
@@ -1271,7 +1248,7 @@
   }
 
   .a11y-updated {
-    @apply text-xs text-bone/50;
+    @apply text-xs text-[#121212]/60;
   }
 
   html.a11y-high-contrast {

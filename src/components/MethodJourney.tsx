@@ -9,6 +9,7 @@ import {
 } from "framer-motion";
 import { SITE } from "../data/site";
 import SectionHeader, { AccentWord } from "./SectionHeader";
+import { useMediaQuery } from "../lib/motion";
 
 /**
  * "איך אנחנו מלמדים" כמסע גלילה.
@@ -67,7 +68,16 @@ const Step = ({ step, index, progress }: StepProps) => {
 };
 
 const MethodJourney = () => {
-  const reduced = Boolean(useReducedMotion());
+  /*
+   * במסך מגע נופלים לרשימה הסטטית, בדיוק כמו בתנועה מופחתת.
+   *
+   * הגרסה המונפשת היא מסע גלילה של כמעט 500vh שמריץ filter: blur על
+   * שבעה שלבים בתוך מרחב preserve-3d, בכל פריים של גלילה. זה יקר בטלפון,
+   * ובנוסף הבמה בגובה קבוע חותכת טקסט עברי ארוך. הרשימה קריאה יותר וגם
+   * לא כולאת את המשתמש בגלילה ארוכה.
+   */
+  const coarse = useMediaQuery("(pointer: coarse)");
+  const reduced = Boolean(useReducedMotion()) || coarse;
   const sectionRef = useRef<HTMLElement>(null);
 
   const { scrollYProgress } = useScroll({
@@ -75,6 +85,14 @@ const MethodJourney = () => {
     offset: ["start start", "end end"],
   });
   const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 30, mass: 0.4 });
+  /*
+   * חייב לשבת מעל ה-return המוקדם.
+   *
+   * קודם ה-useTransform הזה נקרא בתוך ה-JSX של הענף המונפש, כלומר אחרי
+   * ה-return. כשהתנאי מתהפך בין רינדורים React מקבל מספר הוקים שונה
+   * וזורק "Rendered fewer hooks than expected", והעמוד כולו קורס.
+   */
+  const glowScale = useTransform(progress, [0, 0.5, 1], [0.75, 1.15, 0.75]);
 
   if (reduced) {
     return (
@@ -126,7 +144,7 @@ const MethodJourney = () => {
           className="pointer-events-none absolute h-[560px] w-[560px] rounded-full blur-3xl"
           style={{
             background: "radial-gradient(circle, rgba(255,95,158,0.13) 0%, rgba(255,95,158,0) 70%)",
-            scale: useTransform(progress, [0, 0.5, 1], [0.75, 1.15, 0.75]),
+            scale: glowScale,
           }}
           aria-hidden
         />

@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { LEAD_TRACKS } from "../data/courses";
 import { SITE } from "../data/site";
 import { collectUtm, submitLead } from "../lib/leads";
@@ -21,7 +21,7 @@ export type RegisterFormProps = {
   onSuccess?: () => void;
 };
 
-type Errors = Partial<Record<"fullName" | "phone" | "email" | "courseInterest" | "consent", string>>;
+type Errors = Partial<Record<"fullName" | "phone" | "email" | "courseInterest", string>>;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const isValidPhone = (raw: string) => {
@@ -91,7 +91,7 @@ const PinnedSelect = ({
       <button
         type="button"
         id={id}
-        className="flex min-h-11 w-full items-center justify-between gap-2 rounded-xl border border-white/[0.12] bg-white/[0.05] px-3.5 py-2.5 text-right text-sm text-bone outline-none transition-[border-color,box-shadow] focus-visible:border-brand/50 focus-visible:ring-2 focus-visible:ring-brand/25"
+        className="flex min-h-12 w-full items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-right text-base text-bone outline-none transition-[border-color,box-shadow] focus-visible:border-brand/50 focus-visible:ring-2 focus-visible:ring-brand/25"
         style={invalid ? { borderColor: "rgb(239 68 68)" } : undefined}
         aria-haspopup="listbox"
         aria-expanded={open}
@@ -99,8 +99,8 @@ const PinnedSelect = ({
         aria-invalid={invalid || undefined}
         onClick={() => setOpen((v) => !v)}
       >
-        <span className={value ? "text-bone" : "text-bone/40"}>{label}</span>
-        <span className="text-muted" aria-hidden>
+        <span className={value ? "text-bone" : "text-bone/35"}>{label}</span>
+        <span className="text-bone/45" aria-hidden>
           {open ? "▴" : "▾"}
         </span>
       </button>
@@ -110,7 +110,7 @@ const PinnedSelect = ({
           id={listId}
           role="listbox"
           aria-labelledby={id}
-          className="absolute left-0 right-0 top-full z-[100] mt-1.5 max-h-64 w-full overflow-y-auto rounded-xl border border-white/[0.12] bg-[#1a1920] py-1 shadow-float"
+          className="absolute left-0 right-0 top-full z-[100] mt-1.5 max-h-64 w-full overflow-y-auto rounded-xl border border-white/10 bg-surface-2 py-1 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.85)]"
         >
           {options.map((opt) => {
             const selected = value === opt.value;
@@ -122,8 +122,8 @@ const PinnedSelect = ({
                   aria-selected={selected}
                   className={`flex min-h-11 w-full items-center px-3.5 py-2.5 text-right text-sm font-medium transition-colors ${
                     selected
-                      ? "bg-[#FF2D85]/10 text-[#FF2D85]"
-                      : "text-bone/80 hover:bg-white/[0.08] hover:text-bone focus-visible:bg-white/10 focus-visible:text-bone"
+                      ? "bg-brand/15 text-brand"
+                      : "text-bone/80 hover:bg-white/[0.06] hover:text-bone focus-visible:bg-white/[0.08] focus-visible:text-bone"
                   }`}
                   onClick={() => {
                     onChange(opt.value);
@@ -166,8 +166,6 @@ const RegisterForm = ({
     experienceLevel: "",
   });
   const [errors, setErrors] = useState<Errors>({});
-  /* הסכמה מפורשת לפני שליחה: תיעוד של רגע ההסכמה, ולא הנחה שבשתיקה */
-  const [consent, setConsent] = useState(false);
   const [status, setStatus] = useState<"idle" | "sending" | "error" | "success">("idle");
 
   useEffect(() => {
@@ -195,7 +193,6 @@ const RegisterForm = ({
     if (!isValidPhone(values.phone)) errs.phone = "מספר טלפון ישראלי תקין, למשל 050-1234567";
     if (!EMAIL_RE.test(values.email.trim())) errs.email = "כתובת אימייל תקינה, למשל name@example.com";
     if (!values.courseInterest) errs.courseInterest = "בחרו מסלול, או סמנו שאתם עדיין מתלבטים";
-    if (!consent) errs.consent = "צריך לאשר כדי שנוכל לחזור אליכם";
     return errs;
   };
 
@@ -236,7 +233,7 @@ const RegisterForm = ({
 
   if (status === "success") {
     return (
-      <div className={`text-center text-bone${headless ? " py-6" : " lead-form"}`}>
+      <div className={`text-center text-ink${headless ? " py-6" : " lead-form"}`}>
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-brand/10 text-2xl text-brand">
           ✓
         </div>
@@ -248,13 +245,13 @@ const RegisterForm = ({
 
   return (
     <form
-      className={`text-bone${headless ? "" : " lead-form"}${compact ? " !border-0 !bg-transparent !p-0 !shadow-none" : ""}`}
+      className={`text-ink${headless ? "" : " lead-form"}${compact ? " !border-0 !bg-transparent !p-0 !shadow-none" : ""}`}
       onSubmit={onSubmit}
       noValidate
     >
       {!headless && (
         <>
-          <h3 className="text-bone">{title ?? "השאירו פרטים ונחזור אליכם"}</h3>
+          <h3 className="text-ink">{title ?? "השאירו פרטים ונחזור אליכם"}</h3>
           <p className="form-sub">
             {sub ?? "בלי התחייבות ובלי ספאם. נחזור אליכם עם כל הפרטים ונענה על כל שאלה."}
           </p>
@@ -373,31 +370,6 @@ const RegisterForm = ({
           </>
         )}
 
-        <div className="consent-check">
-          <label htmlFor={field("consent")}>
-            <input
-              id={field("consent")}
-              type="checkbox"
-              checked={consent}
-              onChange={(e) => setConsent(e.target.checked)}
-              aria-invalid={errors.consent ? true : undefined}
-              aria-describedby={errors.consent ? `${field("consent")}-err` : undefined}
-            />
-            <span>
-              אני מאשר/ת שתחזרו אליי לגבי הסדנאות ולקבל עדכונים על מועדים חדשים, בהתאם ל
-              <Link to="/privacy" target="_blank" rel="noopener noreferrer">
-                מדיניות הפרטיות
-              </Link>
-              . אפשר להסיר את ההסכמה בכל רגע.
-            </span>
-          </label>
-          {errors.consent && (
-            <span className="err" id={`${field("consent")}-err`} role="alert">
-              {errors.consent}
-            </span>
-          )}
-        </div>
-
         <Pressable
           type="submit"
           className={`btn-submit${status === "sending" ? " is-sending" : ""}`}
@@ -406,6 +378,9 @@ const RegisterForm = ({
         >
           {status === "sending" ? "שולח..." : "השאירו לי פרטים"}
         </Pressable>
+        <p className="form-note">
+          בשליחת הטופס אתם מאשרים שניצור איתכם קשר לגבי המסלול. הפרטים שלכם לא יועברו לאף גורם אחר.
+        </p>
       </div>
     </form>
   );
