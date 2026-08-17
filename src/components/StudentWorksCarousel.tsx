@@ -108,13 +108,27 @@ const StudentWorksCarousel = ({ works }: Props) => {
   const goTo = useCallback(
     (index: number) => {
       if (!count) return;
+
+      /*
+       * יעד שנופל מחוץ למסילה מקופל מיד לעותק האמצעי.
+       *
+       * המסילה מרנדרת count * COPIES כרטיסים בלבד, ו-goTo נקרא גם עם
+       * activeIndex + 1 - מהחצים ומסיום סרטון. בכרטיס האחרון זה מכוון
+       * לאינדקס שלא קיים: centerCard לא מוצא ref ויוצא בשקט, וכלום לא
+       * זז עד שה-normalize מגיע כמעט שנייה אחר כך. הקיפול נותן את אותו
+       * תוכן בדיוק, רק במיקום שקיים על המסילה.
+       */
+      const total = count * COPIES;
+      const target =
+        index < 0 || index >= total ? (((index % count) + count) % count) + origin : index;
+
       programmaticUntil.current = performance.now() + (reduced ? 100 : 700);
-      setActiveIndex(index);
+      setActiveIndex(target);
       setPausedByUser(false);
-      centerCard(index, !reduced);
-      scheduleNormalize(index, reduced ? 120 : 680);
+      centerCard(target, !reduced);
+      scheduleNormalize(target, reduced ? 120 : 680);
     },
-    [count, centerCard, reduced, scheduleNormalize],
+    [count, centerCard, reduced, scheduleNormalize, origin],
   );
 
   /*
