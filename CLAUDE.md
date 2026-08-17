@@ -91,7 +91,7 @@ Meta Pixel (`src/pixel.ts`) נטען **רק אחרי הסכמת עוגיות** �
 
 - `legacy/` — קוד המקור מה-repo הקודם. מקור התייחסות בלבד, לא נבנה.
 - `brand/` — נכסי המותג. הלוגו הרשמי הוא `logo-cutout.png`, ו-`logo-white.png` לרקעים כהים.
-- `.agents/skills/` — סקילים שנשמרו בריפו (`apple-design`, `ui-ux-pro-max`, `design-lead`). Claude Code **לא** טוען אותם אוטומטית מהנתיב הזה; קרא אותם ידנית אם צריך.
+- `.agents/skills/` — סקילים שנשמרו בריפו (`apple-design`, `design-lead`). Claude Code **לא** טוען אותם אוטומטית מהנתיב הזה; קרא אותם ידנית אם צריך. `ui-ux-pro-max` הוסר מכאן ועבר להתקנה גלובלית ב-`~/.claude/skills/`, כי העותק שבריפו נשאר מאחור והתיישן מול הגרסה הרשמית.
 - `api/` — פונקציות Vercel. `vercel.json` מחזיק rewrites של SPA שמחריגים את `/api/` ו-`/assets/`.
 
 ## הערה על HANDOFF.md
