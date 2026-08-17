@@ -40,6 +40,16 @@ const StudentWorksCarousel = ({ works }: Props) => {
   const [playing, setPlaying] = useState(false);
   const [blocked, setBlocked] = useState(false);
   const [stageWidth, setStageWidth] = useState(0);
+  /*
+   * האם הקרוסלה על המסך.
+   *
+   * זה לא אופטימיזציה אלא תנאי הכרחי: הדפדפן עוצר מיוזמתו וידאו מושתק
+   * שמנגן מחוץ לחלון הצפייה. בדקתי את זה - האזנתי לאירועים וראיתי
+   * play ואז pause תשע מילישניות אחריו, בזמן ש-pause() לא נקרא מהקוד
+   * ולו פעם אחת. הקוד פירש את העצירה הזו כחסימת ניגון והציג כפתור
+   * פליי, על סרטון שאיש עוד לא גלל אליו.
+   */
+  const [inView, setInView] = useState(false);
 
   const stageRef = useRef<HTMLDivElement>(null);
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
@@ -82,13 +92,23 @@ const StudentWorksCarousel = ({ works }: Props) => {
    * ומתורגם למצב blocked במקום להיבלע.
    */
   useEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting), {
+      threshold: 0.35,
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
     setPlaying(false);
     setBlocked(false);
 
     videoRefs.current.forEach((video, i) => {
-      if (i !== index) {
+      if (i !== index || !inView) {
         video.pause();
-        video.currentTime = 0;
+        if (i !== index) video.currentTime = 0;
         return;
       }
       /* חייב להיות מושתק לפני play, אחרת iOS דוחה את הבקשה */
@@ -97,7 +117,7 @@ const StudentWorksCarousel = ({ works }: Props) => {
       video.playsInline = true;
       video.play().catch(() => setBlocked(true));
     });
-  }, [index]);
+  }, [index, inView]);
 
   /*
    * שחרור אחרי המחווה הראשונה של המשתמש.
@@ -254,7 +274,14 @@ const StudentWorksCarousel = ({ works }: Props) => {
                         style={{ opacity: isActive && playing ? 1 : 0 }}
                         muted
                         playsInline
-                        autoPlay={isActive}
+                        /*
+                          * בלי autoPlay: האפקט הוא המנהל היחיד של הניגון.
+                          *
+                          * האטריביוט גורם לדפדפן לנסות לנגן כבר בטעינה, גם
+                          * כשהקרוסלה הרחק מתחת לקיפול, ואז הוא עוצר מיד -
+                          * play ואז pause תשע מילישניות אחריו. הרעש הזה הוא
+                          * שגרם לכפתור הפליי להופיע בלי סיבה.
+                          */
                         preload={isActive ? "auto" : "metadata"}
                         onPlaying={() => isActive && (setPlaying(true), setBlocked(false))}
                         onPause={() => isActive && setPlaying(false)}
@@ -263,7 +290,7 @@ const StudentWorksCarousel = ({ works }: Props) => {
                     )}
 
                     {/* רק כשמערכת ההפעלה חסמה ניגון ואי אפשר לעקוף */}
-                    {isActive && blocked && (
+                    {isActive && blocked && inView && (
                       <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
                         <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white shadow-lg">
                           <Play className="h-6 w-6 fill-white" aria-hidden />
