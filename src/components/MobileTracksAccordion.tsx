@@ -89,7 +89,7 @@ const MobileTracksAccordion = ({ onNavigate }: Props) => {
               id={businessPanelId}
               role="region"
               aria-label={`מסלולי משנה: ${track.label}`}
-              className="mt-0.5 space-y-0.5 border-r-2 border-[#FF2D85]/35 pr-2 mr-3"
+              className="mt-0.5 space-y-0.5 border-r-2 border-brand/35 pr-2 mr-3"
               initial={reduced ? false : { height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={reduced ? undefined : { height: 0, opacity: 0 }}
@@ -134,7 +134,7 @@ const MobileTracksAccordion = ({ onNavigate }: Props) => {
             <ul className="mt-1 space-y-0.5 rounded-2xl bg-white/[0.04] p-1.5">{NAV_TRACKS.map(renderTrack)}</ul>
             <NavLink
               to="/courses"
-              className="mt-1 flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-semibold text-[#FF2D85] hover:bg-[#FF2D85]/10"
+              className="mt-1 flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-semibold text-brand hover:bg-brand/10"
               onClick={onNavigate}
             >
               כל המסלולים

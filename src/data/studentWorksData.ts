@@ -23,6 +23,7 @@ export const STUDENT_WORKS: StudentWork[] = [
     track: "video",
     courseSlugs: ["ai-video-content"],
     video: "/videos/Movie_1.mp4",
+    poster: "/images/works/movie-1.jpg",
   },
   {
     id: "movie-2",
@@ -31,6 +32,7 @@ export const STUDENT_WORKS: StudentWork[] = [
     track: "video",
     courseSlugs: ["ai-video-content"],
     video: "/videos/Movie_2.mp4",
+    poster: "/images/works/movie-2.jpg",
   },
   {
     id: "movie-3",
@@ -39,6 +41,7 @@ export const STUDENT_WORKS: StudentWork[] = [
     track: "video",
     courseSlugs: ["ai-video-content"],
     video: "/videos/Movie_3.mp4",
+    poster: "/images/works/movie-3.jpg",
   },
   {
     id: "movie-4",
@@ -47,6 +50,7 @@ export const STUDENT_WORKS: StudentWork[] = [
     track: "video",
     courseSlugs: ["ai-video-content"],
     video: "/videos/Movie_4.mp4",
+    poster: "/images/works/movie-4.jpg",
   },
   {
     id: "movie-5",
@@ -55,6 +59,7 @@ export const STUDENT_WORKS: StudentWork[] = [
     track: "video",
     courseSlugs: ["ai-video-content"],
     video: "/videos/Movie_5.mp4",
+    poster: "/images/works/movie-5.jpg",
   },
   {
     id: "movie-6",
@@ -63,6 +68,7 @@ export const STUDENT_WORKS: StudentWork[] = [
     track: "video",
     courseSlugs: ["ai-video-content"],
     video: "/videos/Movie_6.mp4",
+    poster: "/images/works/movie-6.jpg",
   },
   {
     id: "movie-7",
@@ -71,6 +77,7 @@ export const STUDENT_WORKS: StudentWork[] = [
     track: "video",
     courseSlugs: ["ai-video-content"],
     video: "/videos/Movie_7.mp4",
+    poster: "/images/works/movie-7.jpg",
   },
   {
     id: "movie-8",
@@ -79,6 +86,7 @@ export const STUDENT_WORKS: StudentWork[] = [
     track: "video",
     courseSlugs: ["ai-video-content"],
     video: "/videos/Movie_8.mp4",
+    poster: "/images/works/movie-8.jpg",
   },
   {
     id: "movie-9",
@@ -87,6 +95,7 @@ export const STUDENT_WORKS: StudentWork[] = [
     track: "video",
     courseSlugs: ["ai-video-content"],
     video: "/videos/Movie_9.mp4",
+    poster: "/images/works/movie-9.jpg",
   },
 ];
 
