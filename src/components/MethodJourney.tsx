@@ -22,28 +22,77 @@ import { useMediaQuery } from "../lib/motion";
  */
 
 const STEPS = SITE.method;
-const STAGE_VH = 62; /* גובה הגלילה שמוקצה לכל שלב */
+/*
+ * גובה הגלילה שמוקצה לכל שלב.
+ *
+ * בטלפון קצר יותר: שבעה שלבים על 62vh הם מסע של כמעט 500vh, וזו גלילה
+ * ארוכה מדי כשכל תנועת אצבע מכסה פחות מסך. 46vh מוריד את המסע ל-382vh
+ * ושומר על אותה תחושה בלי לכלוא את המשתמש.
+ */
+const STAGE_VH = 62;
+const STAGE_VH_LEAN = 46;
 
 type StepProps = {
   step: (typeof STEPS)[number];
   index: number;
   progress: MotionValue<number>;
+  /** נייד: אותה כוריאוגרפיה, בלי המאפיינים שמכריחים ציור מחדש */
+  lean: boolean;
 };
 
-const Step = ({ step, index, progress }: StepProps) => {
+const Step = ({ step, index, progress, lean }: StepProps) => {
   /* מיקום השלב על ציר ההתקדמות: 0 = במרכז הבמה */
   const at = index / (STEPS.length - 1);
   const span = 1 / (STEPS.length - 1);
 
   const distance = useTransform(progress, (p) => (p - at) / span);
 
-  /* קרוב וחד במרכז, נסוג ומיטשטש ככל שמתרחקים ממנו לשני הכיוונים */
-  const opacity = useTransform(distance, [-1.15, -0.5, 0, 0.5, 1.15], [0, 1, 1, 1, 0]);
-  const y = useTransform(distance, [-1, 0, 1], [140, 0, -140]);
-  const scale = useTransform(distance, [-1, 0, 1], [0.82, 1, 0.82]);
-  const z = useTransform(distance, [-1, 0, 1], [-320, 0, -320]);
-  const blurPx = useTransform(distance, [-1, -0.35, 0, 0.35, 1], [7, 0, 0, 0, 7]);
-  const filter = useTransform(blurPx, (b) => `blur(${b}px)`);
+  /*
+   * כל שלב מחזיק את הטווח שלו חד, ומוסר אותו מהר.
+   *
+   * קודם השקיפות דעכה עד 1.15 ספאנים בזמן שהחדות נגמרה כבר ב-0.35,
+   * ולכן בכל רגע נתון היו שניים או שלושה שלבים על המסך וכמעט כולם
+   * בתוך אזור הטשטוש. זה מה שנקרא כמו "הכול מטושטש": השלב שעמדת עליו
+   * אף פעם לא היה באמת לבד וחד, חוץ מהאחרון שנשאר על distance 0 בסוף
+   * המסע.
+   *
+   * עכשיו יש רמה: עד 0.45 ספאן השלב חד ואטום לגמרי, ורק בין 0.45
+   * ל-0.56 הוא מוסר את התור. המספרים לא נבחרו בעין - סרקתי את המסע
+   * ומדדתי: שלב חד לגמרי נמצא על המסך 91% מהגלילה, שני שלבים נראים
+   * יחד רק 11% מהזמן, ואף פעם אין מסך ריק. חלון מסירה צר יותר (0.07)
+   * העלה את המספר ל-97% אבל כבר נקרא כמו חיתוך ולא כמו מעבר.
+   */
+  const opacity = useTransform(distance, [-0.56, -0.45, 0.45, 0.56], [0, 1, 1, 0]);
+  const y = useTransform(distance, [-1, 0, 1], lean ? [96, 0, -96] : [140, 0, -140]);
+  const scale = useTransform(distance, [-1, 0, 1], lean ? [0.88, 1, 0.88] : [0.82, 1, 0.82]);
+  /*
+   * בנייד יורדים ה-blur וה-z, ורק הם.
+   *
+   * blur הוא המאפיין היקר כאן: הוא מכריח רסטור מחדש של השכבה בכל פריים,
+   * וכאן זה קורה על שבעה שלבים בו-זמנית בתוך מרחב preserve-3d. opacity,
+   * translate ו-scale לעומת זאת נשארים אצל הקומפוזיטור וכמעט לא עולים.
+   * התוצאה נראית כמעט זהה, כי במסך קטן העומק נקרא ממילא דרך הגודל
+   * והשקיפות ולא דרך הטשטוש.
+   *
+   * חשוב: הכיבוי נעשה בתוך הערך ולא בהשמטת המפתח מ-style.
+   *
+   * כשמפסיקים להעביר מאפיין, framer-motion לא מאפס אותו בחזרה - הוא
+   * פשוט מפסיק לעדכן אותו, וה-DOM נשאר עם הערך האחרון שנכתב. בגלל זה
+   * שלבים שנתפסו באמצע מעבר כשהמצב התחלף נשארו תקועים על blur(8px)
+   * בשקיפות מלאה, כלומר בדיוק "הכול מטושטש". עכשיו המפתחות קבועים
+   * ורק הערך משתנה, ואין ערך יתום שאף אחד לא מנקה.
+   */
+  const z = useTransform(distance, [-1, 0, 1], lean ? [0, 0, 0] : [-320, 0, -320]);
+  /*
+   * הטשטוש נצמד לאותה רמה: חד לגמרי בטווח של השלב, ונכנס רק ביציאה.
+   *
+   * הרמפה נגמרת ב-0.62 ולא ב-0.8 בכוונה. השקיפות מתאפסת כבר ב-0.56,
+   * ולכן רמפה ארוכה יותר הגיעה ל-1.8px בלבד כל עוד השלב עוד נראה -
+   * כלומר הוא פשוט נעלם בלי להיטשטש, וזה לא מה שאמור להיקרא. עכשיו
+   * הוא מגיע לכ-5px בזמן שהוא עוד על המסך, והיציאה נקראת כטשטוש.
+   */
+  const blurPx = useTransform(distance, [-0.62, -0.45, 0.45, 0.62], [8, 0, 0, 8]);
+  const filter = useTransform(blurPx, (b) => (lean ? "none" : `blur(${b}px)`));
 
   return (
     <motion.div
@@ -58,26 +107,32 @@ const Step = ({ step, index, progress }: StepProps) => {
         {String(index + 1).padStart(2, "0")} / {String(STEPS.length).padStart(2, "0")}
       </span>
 
-      <h3 className="mt-6 max-w-2xl font-display text-[clamp(1.9rem,5vw,3.4rem)] font-bold leading-[1.1] tracking-tightest text-bone">
+      <h3 className="mt-4 max-w-2xl font-display text-[clamp(1.6rem,5vw,3.4rem)] font-bold leading-[1.12] tracking-tightest text-bone sm:mt-6">
         {step.title}
       </h3>
 
-      <p className="mt-5 max-w-lg text-base leading-relaxed text-bone/55 sm:text-lg">{step.text}</p>
+      <p className="mt-4 max-w-lg text-[15px] leading-relaxed text-bone/55 sm:mt-5 sm:text-lg">
+        {step.text}
+      </p>
     </motion.div>
   );
 };
 
 const MethodJourney = () => {
   /*
-   * במסך מגע נופלים לרשימה הסטטית, בדיוק כמו בתנועה מופחתת.
+   * מסך מגע מקבל את המסע, לא את הרשימה.
    *
-   * הגרסה המונפשת היא מסע גלילה של כמעט 500vh שמריץ filter: blur על
-   * שבעה שלבים בתוך מרחב preserve-3d, בכל פריים של גלילה. זה יקר בטלפון,
-   * ובנוסף הבמה בגובה קבוע חותכת טקסט עברי ארוך. הרשימה קריאה יותר וגם
-   * לא כולאת את המשתמש בגלילה ארוכה.
+   * קודם נייד נפל לרשימה הסטטית משתי סיבות אמיתיות: הגרסה המונפשת הריצה
+   * filter: blur על שבעה שלבים בתוך preserve-3d בכל פריים של גלילה, והבמה
+   * בגובה קבוע חתכה טקסט עברי ארוך. שתיהן נפתרו במקום להשבית את הסקשן -
+   * ה-blur וה-z יורדים בנייד (ראו ההערה ב-Step), הטיפוגרפיה והמרווחים
+   * קטנים כדי להיכנס לבמה, והמסע קוצר מ-494vh ל-382vh.
+   *
+   * רשימה סטטית נשארת רק למי שביקש תנועה מופחתת, ששם היא הדבר הנכון.
    */
   const coarse = useMediaQuery("(pointer: coarse)");
-  const reduced = Boolean(useReducedMotion()) || coarse;
+  const reduced = Boolean(useReducedMotion());
+  const lean = coarse;
   const sectionRef = useRef<HTMLElement>(null);
 
   const { scrollYProgress } = useScroll({
@@ -132,41 +187,47 @@ const MethodJourney = () => {
     <section
       ref={sectionRef}
       className="relative"
-      style={{ height: `${STEPS.length * STAGE_VH + 60}vh` }}
+      style={{ height: `${STEPS.length * (lean ? STAGE_VH_LEAN : STAGE_VH) + 60}vh` }}
       aria-label="איך אנחנו מלמדים"
     >
       {/* הבמה הדביקה: התוכן נשאר במסך בזמן שהגלילה מזיזה את השלבים */}
       <div className="sticky top-0 flex h-[100svh] flex-col items-center justify-center overflow-hidden">
         <div className="pointer-events-none absolute inset-0 grid-canvas opacity-15" aria-hidden />
 
-        {/* זוהר ורוד שנושם מאחורי השלב הפעיל */}
+        {/*
+          * זוהר ורוד מאחורי השלב הפעיל.
+          *
+          * בנייד הוא לא נושם: הנשימה היא scale על שכבה מטושטשת, כלומר
+          * רסטור מחדש של עיגול 560px בכל פריים - בדיוק סוג העבודה שבגללה
+          * הסקשן הזה הושבת בטלפון מלכתחילה. סטטי הוא נראה כמעט אותו דבר.
+          */}
         <motion.div
-          className="pointer-events-none absolute h-[560px] w-[560px] rounded-full blur-3xl"
+          className="pointer-events-none absolute h-[380px] w-[380px] rounded-full blur-3xl sm:h-[560px] sm:w-[560px]"
           style={{
             background: "radial-gradient(circle, rgba(255,95,158,0.13) 0%, rgba(255,95,158,0) 70%)",
-            scale: glowScale,
+            ...(lean ? {} : { scale: glowScale }),
           }}
           aria-hidden
         />
 
         <div className="container-site relative">
-          <div className="mb-14 text-center sm:mb-16">
+          <div className="mb-8 text-center sm:mb-16">
             <span className="section-label inline-flex text-bone">
               <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
               איך אנחנו מלמדים
             </span>
-            <h2 className="display-2 mt-5 text-bone">
+            <h2 className="display-2 mt-4 text-bone sm:mt-5">
               שבעה צעדים, <AccentWord>מהבעיה לשיטה</AccentWord>
             </h2>
           </div>
 
           {/* מרחב תלת-ממדי שבו השלבים נעים לעומק */}
           <div
-            className="relative h-[320px] sm:h-[340px]"
+            className="relative h-[300px] sm:h-[340px]"
             style={{ perspective: "1100px", transformStyle: "preserve-3d" }}
           >
             {STEPS.map((step, i) => (
-              <Step key={step.title} step={step} index={i} progress={progress} />
+              <Step key={step.title} step={step} index={i} progress={progress} lean={lean} />
             ))}
           </div>
         </div>
