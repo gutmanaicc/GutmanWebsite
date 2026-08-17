@@ -49,7 +49,7 @@ const rise = (delay: number) => ({
 const NightHero = () => {
   const reduced = useReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const [loopReady, setLoopReady] = useState(false);
   const { openRegisterModal } = useRegisterModal();
   /* מסך מגע = טלפון. שם מוותרים על הפרלקסה, ראו הערה למטה */
@@ -125,7 +125,20 @@ const NightHero = () => {
           decoding="async"
         />
         <video
-          ref={videoRef}
+          /*
+           * muted נכפה גם כאטריביוט, לא רק כ-prop.
+           *
+           * React מגדיר את muted כמאפיין של האלמנט ולא כותב אותו ל-HTML,
+           * וספארי ב-iOS בודק דווקא את האטריביוט לפני שהוא מרשה ניגון
+           * אוטומטי. בלי זה הלופ לא מתחיל בטלפון והמבקר נשאר מול פריים
+           * קפוא. אותו תיקון בדיוק יושב בקרוסלת התוצרים.
+           */
+          ref={(el) => {
+            videoRef.current = el;
+            if (!el) return;
+            el.muted = true;
+            el.setAttribute("muted", "");
+          }}
           className="hero-loop absolute inset-0 h-full w-full object-cover object-bottom transition-opacity duration-[1200ms] ease-out"
           style={{ opacity: loopReady ? 1 : 0 }}
           onCanPlay={() => setLoopReady(true)}

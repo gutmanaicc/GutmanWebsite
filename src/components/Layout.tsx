@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import Lenis from "lenis";
@@ -103,7 +103,20 @@ const PageTransition = () => {
   const { pathname } = useLocation();
   const reduced = useReducedMotion();
 
-  if (reduced) return <Outlet />;
+  /*
+   * גבול ה-Suspense של הראוטים העצלים יושב כאן ולא סביב Routes.
+   *
+   * מבחוץ הוא השהה גם את המעטפת, וכל ניווט ראשון לעמוד עצל מחק מהמסך
+   * את ההדר, הפוטר ושכבות הרקע עד שהצ'אנק ירד. fallback ריק בכוונה:
+   * הכרום כבר על המסך, וספינר שמהבהב לרגע גרוע מהמתנה שקטה.
+   */
+  if (reduced) {
+    return (
+      <Suspense fallback={null}>
+        <Outlet />
+      </Suspense>
+    );
+  }
 
   return (
     <motion.div
@@ -112,7 +125,9 @@ const PageTransition = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
     >
-      <Outlet />
+      <Suspense fallback={null}>
+        <Outlet />
+      </Suspense>
     </motion.div>
   );
 };

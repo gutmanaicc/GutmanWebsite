@@ -38,25 +38,47 @@ export function markScrollReset() {
   lastResetAt = Date.now();
 }
 
+/*
+ * מונה נעילות, ולא שמירה ושחזור לכל פופאפ בנפרד.
+ *
+ * כששני פופאפים פתוחים בו-זמנית, כל אחד שומר לעצמו את הערך שמצא: השני
+ * מוצא "hidden" שהראשון כתב, ומחזיר אותו בסגירתו - כלומר עמוד שנשאר
+ * נעול לצמיתות בלי שום סימן חיצוני. בסדר ההפוך הראשון משחרר את הגלילה
+ * ומעיר את Lenis מתחת לפופאפ שעוד פתוח. עם מונה, רק הנעילה הראשונה
+ * שומרת את המצב ורק השחרור האחרון מחזיר אותו.
+ */
+let locks = 0;
+let savedOverflow = "";
+let savedScrollY = 0;
+let savedLockedAt = 0;
+
 export function useScrollLock(active: boolean) {
   useEffect(() => {
     if (!active) return;
 
-    const lenis = window.__lenis;
     const { body } = document;
-    const previousOverflow = body.style.overflow;
-    const scrollY = window.scrollY;
-    const lockedAt = Date.now();
 
-    lenis?.stop();
-    body.style.overflow = "hidden";
+    if (locks === 0) {
+      savedOverflow = body.style.overflow;
+      savedScrollY = window.scrollY;
+      savedLockedAt = Date.now();
+      window.__lenis?.stop();
+      body.style.overflow = "hidden";
+    }
+    locks += 1;
 
     return () => {
-      body.style.overflow = previousOverflow;
+      locks -= 1;
+      if (locks > 0) return;
+      locks = 0;
+
+      body.style.overflow = savedOverflow;
+      /* נקרא עכשיו ולא בזמן הנעילה: המופע עשוי להיווצר בין השניים */
+      const lenis = window.__lenis;
       lenis?.start();
 
       /* העמוד התחלף בזמן שהפופאפ היה פתוח: המיקום הישן כבר לא רלוונטי */
-      if (lastResetAt > lockedAt) return;
+      if (lastResetAt > savedLockedAt) return;
 
       /*
        * השחזור עובר דרך Lenis ולא דרך window.scrollTo.
@@ -65,8 +87,8 @@ export function useScrollLock(active: boolean) {
        * window.scrollTo נמחק מיד והעמוד קפץ לראש בסגירת כל פופאפ. force
        * כדי שהפקודה תתפוס גם ברגע שבו המנוע עוד לא התעורר לגמרי.
        */
-      if (lenis) lenis.scrollTo(scrollY, { immediate: true, force: true });
-      else window.scrollTo({ top: scrollY, behavior: "auto" });
+      if (lenis) lenis.scrollTo(savedScrollY, { immediate: true, force: true });
+      else window.scrollTo({ top: savedScrollY, behavior: "auto" });
     };
   }, [active]);
 }

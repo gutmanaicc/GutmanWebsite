@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy } from "react";
 import { Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
 import { RegisterModalProvider } from "./context/RegisterModalContext";
@@ -24,11 +24,17 @@ const Register = lazy(() => import("./pages/Register"));
 const ThankYou = lazy(() => import("./pages/ThankYou"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
+/*
+ * גבול ה-Suspense לא יושב כאן אלא בתוך Layout, סביב ה-Outlet.
+ *
+ * כשהוא עטף את Routes כולו, כל ניווט ראשון לעמוד עצל השהה גם את
+ * ה-Layout עצמו: ההדר, הפוטר ושכבות הרקע נעלמו יחד עם גוף העמוד,
+ * והמסך נשאר קנבס ריק עד שהצ'אנק הגיע. בחיבור איטי זה נקרא כמו ניווט
+ * שבור. כשהגבול בפנים, הכרום נשאר על המסך והתוכן לבדו ממתין.
+ */
 const App = () => (
   <RegisterModalProvider>
     <WaitlistModalProvider>
-      {/* גבול Suspense לראוטים שנטענים בעצלתיים */}
-      <Suspense fallback={null}>
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
@@ -44,7 +50,6 @@ const App = () => (
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
-      </Suspense>
     </WaitlistModalProvider>
   </RegisterModalProvider>
 );
