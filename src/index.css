@@ -759,6 +759,46 @@
     @apply mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700;
   }
 
+  .consent-check {
+    @apply mt-1;
+  }
+
+  .consent-check label {
+    @apply flex min-h-11 cursor-pointer items-start gap-3 py-1 text-right;
+  }
+
+  .consent-check input[type="checkbox"] {
+    @apply mt-px h-6 w-6 shrink-0 cursor-pointer appearance-none rounded-md border border-white/25 bg-white/[0.05] transition-colors;
+  }
+
+  .consent-check input[type="checkbox"]:checked {
+    @apply border-brand bg-brand;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E");
+    background-size: 74%;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  .consent-check input[type="checkbox"]:focus-visible {
+    @apply outline-none ring-2 ring-brand/45 ring-offset-2 ring-offset-transparent;
+  }
+
+  .consent-check input[type="checkbox"][aria-invalid="true"] {
+    @apply border-red-400;
+  }
+
+  .consent-check span {
+    @apply text-[13px] leading-relaxed text-bone/55;
+  }
+
+  .consent-check a {
+    @apply inline-block py-1 text-bone/80 underline underline-offset-2 transition-colors hover:text-brand;
+  }
+
+  .consent-check .err {
+    @apply mt-1.5 block pr-8 text-xs text-red-300;
+  }
+
   .form-note {
     @apply mt-3.5 text-center text-xs leading-relaxed text-bone/40;
   }
