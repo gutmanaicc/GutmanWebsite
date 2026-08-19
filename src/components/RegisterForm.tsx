@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { LEAD_TRACKS } from "../data/courses";
 import { SITE } from "../data/site";
-import { collectUtm, submitLead } from "../lib/leads";
+import { EXPERIENCE_OPTIONS, collectUtm, submitLead } from "../lib/leads";
 import Pressable from "./Pressable";
 
 export type RegisterFormProps = {
@@ -35,13 +35,6 @@ const TRACK_OPTIONS = [
   ...LEAD_TRACKS.map((t) => ({ value: t.slug, label: t.label })),
   UNSURE_OPTION,
 ];
-
-const EXPERIENCE_OPTIONS = [
-  { value: "none", label: "עוד לא התנסיתי" },
-  { value: "basic", label: "משתמש/ת מדי פעם" },
-  { value: "regular", label: "משתמש/ת באופן קבוע" },
-  { value: "advanced", label: "מתקדם/ת, בונה תהליכים בעצמי" },
-] as const;
 
 type SelectOption = { value: string; label: string };
 
@@ -212,6 +205,8 @@ const RegisterForm = ({
       courseInterest: values.courseInterest,
       goal: values.goal.trim(),
       experienceLevel: values.experienceLevel,
+      consent,
+      formType: "הרשמה",
       leadSource,
       pageUrl: window.location.href,
       referrer: document.referrer,
