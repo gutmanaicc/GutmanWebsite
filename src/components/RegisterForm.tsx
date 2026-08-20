@@ -1,8 +1,8 @@
 import { useEffect, useId, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { LEAD_TRACKS } from "../data/courses";
 import { SITE } from "../data/site";
-import { collectUtm, submitLead } from "../lib/leads";
+import { EXPERIENCE_OPTIONS, collectUtm, submitLead } from "../lib/leads";
 import Pressable from "./Pressable";
 
 export type RegisterFormProps = {
@@ -21,7 +21,7 @@ export type RegisterFormProps = {
   onSuccess?: () => void;
 };
 
-type Errors = Partial<Record<"fullName" | "phone" | "email" | "courseInterest", string>>;
+type Errors = Partial<Record<"fullName" | "phone" | "email" | "courseInterest" | "consent", string>>;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const isValidPhone = (raw: string) => {
@@ -35,13 +35,6 @@ const TRACK_OPTIONS = [
   ...LEAD_TRACKS.map((t) => ({ value: t.slug, label: t.label })),
   UNSURE_OPTION,
 ];
-
-const EXPERIENCE_OPTIONS = [
-  { value: "none", label: "עוד לא התנסיתי" },
-  { value: "basic", label: "משתמש/ת מדי פעם" },
-  { value: "regular", label: "משתמש/ת באופן קבוע" },
-  { value: "advanced", label: "מתקדם/ת, בונה תהליכים בעצמי" },
-] as const;
 
 type SelectOption = { value: string; label: string };
 
@@ -166,6 +159,8 @@ const RegisterForm = ({
     experienceLevel: "",
   });
   const [errors, setErrors] = useState<Errors>({});
+  /* הסכמה מפורשת לפני שליחה: תיעוד של רגע ההסכמה, ולא הנחה שבשתיקה */
+  const [consent, setConsent] = useState(false);
   const [status, setStatus] = useState<"idle" | "sending" | "error" | "success">("idle");
 
   useEffect(() => {
@@ -193,6 +188,7 @@ const RegisterForm = ({
     if (!isValidPhone(values.phone)) errs.phone = "מספר טלפון ישראלי תקין, למשל 050-1234567";
     if (!EMAIL_RE.test(values.email.trim())) errs.email = "כתובת אימייל תקינה, למשל name@example.com";
     if (!values.courseInterest) errs.courseInterest = "בחרו מסלול, או סמנו שאתם עדיין מתלבטים";
+    if (!consent) errs.consent = "צריך לאשר כדי שנוכל לחזור אליכם";
     return errs;
   };
 
@@ -212,6 +208,8 @@ const RegisterForm = ({
       courseInterest: values.courseInterest,
       goal: values.goal.trim(),
       experienceLevel: values.experienceLevel,
+      consent,
+      formType: "הרשמה",
       leadSource,
       pageUrl: window.location.href,
       referrer: document.referrer,
@@ -370,6 +368,38 @@ const RegisterForm = ({
           </>
         )}
 
+        {/*
+          תיבת הסכמה מעל כפתור השליחה, במקום משפט משפטי קטן מתחתיו.
+          הסימון הוא הפעולה שמתעדת את ההסכמה, והוא גם נשלח ל-CRM.
+        */}
+        <div className="consent-check">
+          <label htmlFor={field("consent")}>
+            <input
+              id={field("consent")}
+              type="checkbox"
+              checked={consent}
+              onChange={(e) => {
+                setConsent(e.target.checked);
+                if (e.target.checked) setErrors((prev) => ({ ...prev, consent: undefined }));
+              }}
+              aria-invalid={errors.consent ? true : undefined}
+              aria-describedby={errors.consent ? `${field("consent")}-err` : undefined}
+            />
+            <span>
+              אני מאשר/ת שתחזרו אליי לגבי הסדנאות ולקבל עדכונים על מועדים חדשים, בהתאם ל
+              <Link to="/privacy" target="_blank" rel="noopener noreferrer">
+                מדיניות הפרטיות
+              </Link>
+              . אפשר להסיר את ההסכמה בכל רגע.
+            </span>
+          </label>
+          {errors.consent && (
+            <span className="err" id={`${field("consent")}-err`} role="alert">
+              {errors.consent}
+            </span>
+          )}
+        </div>
+
         <Pressable
           type="submit"
           className={`btn-submit${status === "sending" ? " is-sending" : ""}`}
@@ -378,9 +408,6 @@ const RegisterForm = ({
         >
           {status === "sending" ? "שולח..." : "השאירו לי פרטים"}
         </Pressable>
-        <p className="form-note">
-          בשליחת הטופס אתם מאשרים שניצור איתכם קשר לגבי המסלול. הפרטים שלכם לא יועברו לאף גורם אחר.
-        </p>
       </div>
     </form>
   );
