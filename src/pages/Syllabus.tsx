@@ -12,7 +12,7 @@ import NotFound from "./NotFound";
 /**
  * מסמך הסילבוס המלא של סדנה. בנוי כמסמך ולא כעמוד שיווקי: לוגו בפינה
  * הימנית העליונה, כותרת, פרטי הסדנה, שלבי הלמידה, הכלים והתוצר.
- * מותאם להדפסה ולשמירה כ-PDF דרך כפתור ההדפסה.
+ * הדף נשאר ידידותי להדפסה של הדפדפן, אבל בלי כפתור הדפסה משלו.
  */
 const Syllabus = () => {
   const { slug = "" } = useParams();
@@ -132,33 +132,29 @@ const Syllabus = () => {
               </p>
             </div>
 
-            <footer className="mt-10 flex flex-col gap-4 border-t border-white/10 pt-7 sm:flex-row sm:items-center sm:justify-between">
-              <div className="text-xs leading-relaxed text-bone/45">
-                <p>
-                  {SITE.name} · {SITE.tagline}
-                </p>
-                <p dir="ltr" className="mt-0.5">
-                  {SITE.contact.email} · {SITE.contact.phone}
-                </p>
-              </div>
-
-              <div className="flex flex-wrap gap-3 print:hidden">
+            {/*
+              * סגירה אחת: בקשת ההרשמה, וזהו.
+              *
+              * ירדו מכאן כפתור ההדפסה/שמירה כ-PDF ושורת פרטי הקשר. שניהם
+              * היו מסלולי עקיפה של טופס הלידים - טלפון ומייל ישירים מצד
+              * אחד, ומסמך שנשמר ומסתובב בלי שאיש יודע מי קרא אותו מצד
+              * שני. הפנייה עוברת דרך הטופס, כדי שכל ליד ייספר.
+              */}
+            <footer className="mt-10 border-t border-white/10 pt-7 print:hidden">
+              <div className="flex flex-col items-center gap-3 text-center">
                 <Pressable
                   type="button"
-                  className="btn-submit !w-auto"
+                  className="btn btn-brand w-full max-w-xs sm:w-auto sm:max-w-none sm:px-10"
+                  rippleTone="pink"
                   onClick={() =>
                     openRegisterModal({ courseId: course.slug, leadSource: `syllabus-${course.slug}` })
                   }
                 >
                   שמרו לי מקום
                 </Pressable>
-                <button
-                  type="button"
-                  className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/25 px-6 text-sm font-medium text-bone transition-colors duration-300 hover:border-bone hover:bg-bone hover:text-ink"
-                  onClick={() => window.print()}
-                >
-                  הדפסה או שמירה כ-PDF
-                </button>
+                <p className="text-xs text-bone/45">
+                  נחזור אליכם עם התאריכים וכל הפרטים. בלי התחייבות.
+                </p>
               </div>
             </footer>
           </div>
