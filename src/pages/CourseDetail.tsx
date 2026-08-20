@@ -396,22 +396,43 @@ const CourseDetail = () => {
             />
           </MotionItem>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {course.targetAudience.map((profile) => {
+          {/*
+            * פריסה עורכית ולא טבלה.
+            *
+            * קודם זו הייתה רשת אחידה של כרטיסים זהים, וכל הפרופילים
+            * נראו כמו שורות באותו טופס. פרופילי קהל הם אנשים שונים,
+            * ולכן הם מקבלים קצב: בדסקטופ העמודה השנייה יורדת חצי
+            * כרטיס, והעין נעה באלכסון במקום לסרוק שורה אחר שורה.
+            *
+            * אין כאן מספור, בכוונה. זו רשימה ולא רצף, ומספרים היו
+            * רומזים על סדר שלא קיים.
+            */}
+          <div className="grid grid-cols-1 gap-x-12 gap-y-6 md:grid-cols-2 lg:gap-y-8">
+            {course.targetAudience.map((profile, i) => {
               const Icon = AUDIENCE_ICONS[profile.icon];
               return (
-                <MotionItem key={`${courseKey}-${profile.title}`}>
-                  <article className="group relative flex gap-3.5 overflow-hidden rounded-2xl border border-white/10 bg-surface-1 p-5 shadow-card backdrop-blur-md transition-all duration-300 hover:border-brand/40 motion-reduce:hover:translate-y-0">
-                    <span
-                      className="pointer-events-none absolute inset-y-0 right-0 w-1 origin-right scale-y-0 rounded-l bg-[#FF2D85] transition-transform duration-300 group-hover:scale-y-100"
-                      aria-hidden
-                    />
-                    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FF2D85]/10 text-[#FF2D85] transition-transform duration-300 group-hover:scale-110 motion-reduce:group-hover:scale-100">
-                      <Icon size={18} />
+                <MotionItem
+                  key={`${courseKey}-${profile.title}`}
+                  className={i % 2 === 1 ? "md:mt-10 lg:mt-14" : undefined}
+                >
+                  <article className="group relative pt-5">
+                    {/* קו שיער שנצבע בוורוד במעבר עכבר, במקום מסגרת סגורה */}
+                    <span className="absolute inset-x-0 top-0 h-px bg-white/12" aria-hidden>
+                      <span className="block h-px w-full origin-right scale-x-0 bg-brand transition-transform duration-500 ease-out group-hover:scale-x-100 motion-reduce:transition-none" />
                     </span>
-                    <div className="min-w-0 flex-1 text-right">
-                      <h3 className="mb-1 text-lg font-bold text-bone">{profile.title}</h3>
-                      <p className="text-sm leading-relaxed text-bone/60">{profile.description}</p>
+
+                    <div className="flex items-start gap-4">
+                      <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brand/10 text-brand transition-colors duration-300 group-hover:bg-brand/20">
+                        <Icon size={19} />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-display text-xl font-bold leading-snug tracking-tight text-bone lg:text-[1.4rem]">
+                          {profile.title}
+                        </h3>
+                        <p className="mt-2 max-w-[46ch] text-[15px] leading-relaxed text-bone/60">
+                          {profile.description}
+                        </p>
+                      </div>
                     </div>
                   </article>
                 </MotionItem>

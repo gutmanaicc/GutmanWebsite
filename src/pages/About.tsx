@@ -1,14 +1,12 @@
 import { useRef } from "react";
-import { Link } from "react-router-dom";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import BackButton from "../components/BackButton";
 import ClosingCta from "../components/ClosingCta";
-import SectionHeader, { AccentWord } from "../components/SectionHeader";
+import { AccentWord } from "../components/SectionHeader";
 import { ScrollReveal3D } from "../components/motion";
 import MethodJourney from "../components/MethodJourney";
-import { ArrowIcon } from "../components/icons";
+import StoryJourney from "../components/StoryJourney";
 import { SITE } from "../data/site";
-import { ACTIVE_COURSES } from "../data/courses";
 import { orgSchema, useSeo } from "../lib/seo";
 import { useReveal } from "../lib/useReveal";
 
@@ -138,33 +136,10 @@ const About = () => {
         </div>
       </section>
 
-      {/* הסיפור: פרקים ממוספרים שנחשפים בגלילה */}
+      {/* הסיפור כמסע: חוט שדרה שמתמלא, מספרי רפאים והיררכיה בין הפסקאות */}
       <section className="py-14 sm:py-20">
-        <div className="container-site max-w-3xl">
-          {STORY.map((chapter, i) => (
-            <ScrollReveal3D key={chapter.title} from="up" intensity="quiet" fromRotateX={6} fromY={28}>
-              <article className="border-t border-white/10 py-10 first:border-t-0 first:pt-0 sm:py-12">
-                <div className="flex items-baseline justify-center gap-4">
-                  <span className="text-[11px] font-medium tracking-[0.22em] text-brand" dir="ltr" aria-hidden>
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <span className="section-label text-bone">{chapter.kicker}</span>
-                </div>
-
-                <h2 className="mt-5 text-center font-display text-2xl font-bold leading-snug tracking-tight text-bone sm:text-[2rem]">
-                  {chapter.title}
-                </h2>
-
-                <div className="mt-5 space-y-4">
-                  {chapter.body.map((paragraph) => (
-                    <p key={paragraph} className="text-base leading-relaxed text-bone/65 sm:text-[1.0625rem]">
-                      {paragraph}
-                    </p>
-                  ))}
-                </div>
-              </article>
-            </ScrollReveal3D>
-          ))}
+        <div className="container-site">
+          <StoryJourney chapters={STORY} />
         </div>
       </section>
 
@@ -185,53 +160,6 @@ const About = () => {
               </p>
             </div>
           </ScrollReveal3D>
-        </div>
-      </section>
-
-      {/* סיום: לאן ממשיכים מכאן */}
-      <section className="border-t border-white/10 py-14 sm:py-20">
-        <div className="container-site">
-          <SectionHeader
-            as="h2"
-            kicker="הסדנאות"
-            title={
-              <>
-                כל סדנה נבנית סביב <AccentWord>מקצוע אמיתי</AccentWord>
-              </>
-            }
-            center
-          />
-
-          <div className="mx-auto mt-10 flex max-w-3xl flex-wrap justify-center gap-2.5">
-            {ACTIVE_COURSES.map((course) => (
-              <Link
-                key={course.slug}
-                to={`/courses/${course.slug}`}
-                className="group inline-flex min-h-11 items-center gap-2 rounded-full border border-white/15 px-5 text-sm font-medium text-bone/70 transition-colors duration-300 hover:border-brand hover:text-bone"
-              >
-                {course.shortTitle}
-                <span
-                  className="-translate-x-1 text-brand opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100"
-                  aria-hidden
-                >
-                  <ArrowIcon size={13} />
-                </span>
-              </Link>
-            ))}
-          </div>
-
-          <div className="mt-12 flex justify-center">
-            <Link
-              to="/courses"
-              className="group relative inline-flex min-h-12 items-center justify-center overflow-hidden rounded-full border border-bone/35 px-8 text-sm font-medium text-bone transition-colors duration-500 hover:border-bone/70 hover:text-ink sm:text-[15px]"
-            >
-              <span
-                className="absolute inset-0 origin-bottom scale-y-0 bg-bone transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-y-100"
-                aria-hidden
-              />
-              <span className="relative">לכל הסדנאות</span>
-            </Link>
-          </div>
         </div>
       </section>
 

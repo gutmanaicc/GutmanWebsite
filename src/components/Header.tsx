@@ -82,6 +82,25 @@ const Header = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  /*
+   * הלוגו הוא כפתור "חזרה הביתה", גם כשכבר בבית.
+   *
+   * Link לבדו לא הספיק: כשהנתיב לא משתנה React Router לא מנווט,
+   * ScrollManager לא מופעל, והמשתמש נשאר תקוע במקום שאליו גלל. לכן
+   * כשכבר בעמוד הבית מאפסים ידנית, ובשאר העמודים ScrollManager עושה
+   * את זה ממילא במעבר.
+   *
+   * האיפוס עובר דרך Lenis כשהוא קיים, אחרת window - בדיוק כמו
+   * ב-ScrollManager, כי Lenis מחזיק מיקום משלו ודוחף אותו בחזרה.
+   */
+  const goHome = () => {
+    setOpen(false);
+    if (location.pathname !== "/") return;
+    const lenis = window.__lenis;
+    if (lenis) lenis.scrollTo(0, { immediate: true, force: true });
+    else window.scrollTo({ top: 0, behavior: "auto" });
+  };
+
   useEffect(() => setOpen(false), [location.pathname]);
 
   useScrollLock(open);
@@ -132,6 +151,7 @@ const Header = () => {
           <div className="flex min-w-0 flex-1 items-center justify-start">
             <Link
               to="/"
+              onClick={goHome}
               className="inline-flex min-h-11 shrink items-center transition-opacity hover:opacity-90 active:scale-[0.98]"
               aria-label="Gutman Academy, לעמוד הראשי"
             >
