@@ -73,7 +73,8 @@ const FIELD_ALIASES: Record<string, string[]> = {
   utm_campaign: ["utm campaign"],
   utm_term: ["utm term"],
   utm_content: ["utm content"],
-  submittedAt: ["תאריך פנייה", "תאריך פניה", "נשלח ב", "תאריך שליחה"],
+  /* submittedAt לא נמצא כאן בכוונה: createdon של פיירברי כבר מתעד
+     את זמן היצירה, ושדה נוסף היה רק משכפל אותו */
 };
 
 /** השוואת שמות סלחנית: בלי רווחים, מקפים, ניקוד או אותיות רישיות */
@@ -239,7 +240,6 @@ function leadValues(lead: LeadBody): Record<string, string> {
     consent: lead.consent === undefined ? "" : lead.consent ? "כן" : "לא",
     pageUrl: lead.pageUrl ?? "",
     referrer: lead.referrer ?? "",
-    submittedAt: lead.submittedAt ?? "",
     utm_source: utm.utm_source ?? "",
     utm_medium: utm.utm_medium ?? "",
     utm_campaign: utm.utm_campaign ?? "",
@@ -309,6 +309,24 @@ export default async function handler(req: any, res: any) {
           label: f.label,
           risky: isRisky(f) || undefined,
         })),
+        /*
+         * הערכים של כל שדה משויך שהוא רשימת בחירה. בלי זה אי אפשר לדעת
+         * אם הטקסט שהאתר שולח יתאים לאחת האפשרויות, ושדה שלא מתאים
+         * פשוט נשמט בשקט.
+         */
+        values: Object.fromEntries(
+          await Promise.all(
+            Object.entries(map).map(async ([key, fieldName]) => [
+              `${key} → ${fieldName}`,
+              readOptions(
+                await fbGet(
+                  `/metadata/records/${objectType}/fields/${encodeURIComponent(fieldName)}/values`,
+                  token,
+                ),
+              ).map((o) => o.label),
+            ]),
+          ),
+        ),
       });
     }
   }
