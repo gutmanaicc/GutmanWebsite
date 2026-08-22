@@ -32,8 +32,12 @@ const Syllabus = () => {
   const meta = [
     course.logistics.format,
     course.logistics.sessions,
+    course.logistics.location,
+    course.logistics.groupSize,
     course.experienceLevel,
   ].filter(Boolean);
+
+  const schedule = course.logistics.schedule ?? [];
 
   return (
     <div className="syllabus-doc py-10 sm:py-14">
@@ -122,6 +126,31 @@ const Syllabus = () => {
               </>
             )}
 
+            {/* מועדים מוצגים רק כשנסגרו. מסמך סילבוס עם תאריך ריק גרוע מאחד בלעדיו. */}
+            {schedule.length > 0 && (
+              <>
+                <h2 className="mt-10 flex items-center gap-2.5 font-display text-xs font-bold tracking-[0.2em] text-brand">
+                  <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
+                  מועדי המפגשים
+                </h2>
+                <ol className="mt-4">
+                  {schedule.map((session, i) => (
+                    <li key={session.date} className="course-session-row">
+                      <span className="course-session-index" dir="ltr" aria-hidden>
+                        {i + 1}
+                      </span>
+                      <span className="course-session-date" dir="ltr">
+                        {session.date}
+                      </span>
+                      <span className="course-session-time" dir="ltr">
+                        {session.time}
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              </>
+            )}
+
             <div className="mt-10 rounded-[1.25rem] border border-brand/30 bg-brand/[0.06] p-6 sm:p-7">
               <h2 className="flex items-center gap-2.5 font-display text-xs font-bold tracking-[0.2em] text-brand">
                 <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
@@ -153,7 +182,9 @@ const Syllabus = () => {
                   שמרו לי מקום
                 </Pressable>
                 <p className="text-xs text-bone/45">
-                  נחזור אליכם עם התאריכים וכל הפרטים. בלי התחייבות.
+                  {schedule.length > 0
+                    ? "נחזור אליכם עם כל פרטי ההרשמה. בלי התחייבות."
+                    : "נחזור אליכם עם התאריכים וכל הפרטים. בלי התחייבות."}
                 </p>
               </div>
             </footer>
