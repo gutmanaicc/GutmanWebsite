@@ -442,6 +442,41 @@
   }
 
   /*
+   * שורת עובדות ההשתתפות בהירו.
+   *
+   * גלולות ולא תיבה אחת: מספר הפרטים משתנה בין מסלול למסלול, ותיבה
+   * בחלוקה קבועה הייתה נשברת ברגע שמסלול אחד מציג שלושה פרטים והשני
+   * ארבעה. הן ממשיכות את שפת תיבת המטא שמעליהן, בלי להתחרות בה.
+   */
+  .course-hero-facts {
+    @apply flex flex-wrap items-center justify-center gap-2;
+  }
+
+  .course-hero-fact {
+    @apply inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-surface-1 px-3 py-1.5 shadow-card;
+  }
+
+  .course-hero-fact > svg {
+    @apply shrink-0 text-[#FF2D85];
+  }
+
+  .course-hero-fact-label {
+    @apply shrink-0 text-[10px] font-semibold uppercase tracking-wider text-bone/45;
+  }
+
+  .course-hero-fact-value {
+    @apply text-xs font-semibold leading-snug text-bone sm:text-sm;
+  }
+
+  .course-hero-fact-dates {
+    @apply flex flex-wrap items-center gap-1;
+  }
+
+  .course-hero-date {
+    @apply rounded-lg bg-brand/10 px-2 py-0.5 text-xs font-bold text-brand sm:text-[13px];
+  }
+
+  /*
    * כרטיסי הפרטים בעמוד המסלול: מועדים מצד אחד, מיקום ופרטי השתתפות
    * מהצד השני. אותו משטח של שאר הכרטיסים בעמוד, בלי ההבלטה של כרטיסי
    * התוצרים. הבלוק הזה נסרק בעין, הוא לא נקרא.
