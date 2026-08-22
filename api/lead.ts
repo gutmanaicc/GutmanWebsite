@@ -66,7 +66,18 @@ type LeadBody = {
  * לכל שדה בטופס - השמות שהוא מוכן להיקשר אליהם בפיירברי.
  * הראשון ברשימה הוא השם המומלץ ליצירת השדה.
  */
+/**
+ * הערוץ שדרכו הגיע הליד, כערך אחד קבוע.
+ *
+ * נפרד בכוונה מ-leadSource. leadSource הוא הפירוט (איזה כפתור, איזה
+ * עמוד), ומשתנה מליד לליד. השדה הזה עונה על שאלה אחרת לגמרי: מאיפה
+ * האדם הזה הגיע אלינו בכלל. בדוח שמשווה אתר מול טלפון מול המלצה,
+ * רק ערך אחיד אחד עובד.
+ */
+const WEBSITE_CHANNEL = "אתר";
+
 const FIELD_ALIASES: Record<string, string[]> = {
+  channel: ["מקור הגעה", "ערוץ הגעה", "channel"],
   courseInterest: ["מסלול מבוקש", "סדנה מבוקשת", "מסלול מעניין"],
   occupation: ["תחום עיסוק", "תחום עיסוק או לימודים"],
   goal: ["מה רוצים להשיג", "מה הייתם רוצים להשיג"],
@@ -239,6 +250,7 @@ async function coerceValue(
 function leadValues(lead: LeadBody): Record<string, string> {
   const utm = lead.utm ?? {};
   const values: Record<string, string> = {
+    channel: WEBSITE_CHANNEL,
     courseInterest: lead.courseInterestLabel || lead.courseInterest || "",
     occupation: lead.occupation ?? "",
     goal: lead.goal ?? "",
@@ -270,6 +282,7 @@ function buildNote(lead: LeadBody): string {
       `רמת ניסיון: ${lead.experienceLevelLabel || lead.experienceLevel}`,
     lead.consent !== undefined && `אישור דיוור: ${lead.consent ? "כן" : "לא"}`,
     lead.formType && `סוג טופס: ${lead.formType}`,
+    `מקור הגעה: ${WEBSITE_CHANNEL}`,
     lead.leadSource && `מקור: ${lead.leadSource}`,
     lead.pageUrl && `עמוד: ${lead.pageUrl}`,
     lead.referrer && `הפניה: ${lead.referrer}`,
@@ -336,6 +349,21 @@ export default async function handler(req: any, res: any) {
           label: f.label,
           risky: isRisky(f) || undefined,
         })),
+        /*
+         * ערכים של שדה שביקשו לבדוק במפורש דרך &field=, גם אם הוא
+         * עדיין לא משויך. בלי זה אי אפשר לדעת מראש אם ערך מסוים
+         * קיים ברשימה, ושדה שלא מתאים נשמט בשקט.
+         */
+        requested: req.query.field
+          ? {
+              [String(req.query.field)]: readOptions(
+                await fbGet(
+                  `/metadata/records/${objectType}/fields/${encodeURIComponent(String(req.query.field))}/values`,
+                  token,
+                ),
+              ).map((o) => o.label),
+            }
+          : undefined,
         /*
          * הערכים של כל שדה משויך שהוא רשימת בחירה. בלי זה אי אפשר לדעת
          * אם הטקסט שהאתר שולח יתאים לאחת האפשרויות, ושדה שלא מתאים
