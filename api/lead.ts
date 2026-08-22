@@ -34,6 +34,14 @@
 
 const FIREBERRY_BASE = "https://api.fireberry.com";
 
+/** השדות שהרשומה לא שווה בלעדיהם, ולכן לעולם לא מוסרים אותם */
+const CORE_FIELDS = {
+  accountname: true,
+  telephone1: true,
+  emailaddress1: true,
+  description: true,
+} as const;
+
 type LeadBody = {
   fullName?: string;
   phone?: string;
@@ -271,6 +279,25 @@ function buildNote(lead: LeadBody): string {
   return lines.join("\n");
 }
 
+/**
+ * שולף מהודעת השגיאה של פיירברי את שם השדה שנפסל.
+ * ההודעה נראית כך: אופנה is not a valid value for 'pcfworkshoptype'
+ */
+function findRejectedField(text: string, body: Record<string, unknown>): string | null {
+  for (const match of text.matchAll(/['"`]([A-Za-z0-9_]+)['"`]/g)) {
+    const name = match[1];
+    if (name in body && !(name in CORE_FIELDS)) return name;
+  }
+  /* בלי ציטוט מפורש: אם מוזכר שם של שדה מותאם בגוף הטקסט, די בזה */
+  for (const name of Object.keys(body)) {
+    if (!(name in CORE_FIELDS) && text.includes(name)) return name;
+  }
+  return null;
+}
+
+/* שדות שנפסלו בעבר. נמנע מלנסות אותם שוב באותה מכונה */
+const rejectedFields = new Set<string>();
+
 async function createRecord(token: string, objectType: string, body: Record<string, unknown>) {
   const response = await fetch(`${FIREBERRY_BASE}/api/record/${objectType}`, {
     method: "POST",
@@ -389,7 +416,7 @@ export default async function handler(req: any, res: any) {
     const map = await resolveFieldMap(token, objectType);
     for (const [key, value] of Object.entries(leadValues(lead))) {
       const fieldName = map[key];
-      if (!fieldName || fieldName in body) continue;
+      if (!fieldName || fieldName in body || rejectedFields.has(fieldName)) continue;
       const coerced = await coerceValue(token, objectType, fieldName, value);
       if (coerced === undefined) continue;
       body[fieldName] = coerced;
@@ -403,12 +430,33 @@ export default async function handler(req: any, res: any) {
     let result = await createRecord(token, objectType, body);
 
     /*
-     * שדה מותאם אחד שנפסל לא יפיל פנייה אמיתית: מנסים שוב עם השדות
-     * הבסיסיים בלבד, שם המידע המלא ממילא נשמר בהערה.
+     * שדה שנפסל לא מפיל את כל השאר.
+     *
+     * פיירברי מציינת בהודעת השגיאה את שם השדה הבעייתי, ולכן מסירים
+     * אותו בלבד ומנסים שוב. קודם הייתה כאן נפילה ישר לשדות הבסיס, וזה
+     * עלה ביוקר בפועל: שדה קישור אחד שקיבל טקסט הפיל גם את "צרכים"
+     * וגם את "אישור פרסומי" שהיו תקינים לגמרי, והרשומה נפתחה ריקה.
+     *
+     * השדה נזכר גם ב-rejectedFields, כדי שהליד הבא כבר לא ינסה אותו
+     * ולא ישלם על אותה דחייה שוב.
      */
-    if (!result.ok && extras > 0) {
-      /* מקוצץ: התשובה של פיירברי עלולה להחזיר את הרשומה כולה */
+    let attempts = 0;
+    while (!result.ok && extras > 0 && attempts < 3) {
+      attempts += 1;
       console.error("Fireberry rejected the mapped record", result.status, result.text.slice(0, 500));
+
+      const culprit = findRejectedField(result.text, body);
+      if (!culprit) break;
+
+      rejectedFields.add(culprit);
+      delete body[culprit];
+      extras -= 1;
+      console.warn(`Dropping "${culprit}" and retrying without it`);
+      result = await createRecord(token, objectType, body);
+    }
+
+    /* לא הצלחנו לזהות את האשם: שדות הבסיס לבדם, העיקר שהליד נכנס */
+    if (!result.ok && extras > 0) {
       schemaCache = null;
       optionCache.clear();
       result = await createRecord(token, objectType, core);
