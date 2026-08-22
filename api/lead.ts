@@ -59,18 +59,18 @@ type LeadBody = {
  * הראשון ברשימה הוא השם המומלץ ליצירת השדה.
  */
 const FIELD_ALIASES: Record<string, string[]> = {
-  courseInterest: ["מסלול מבוקש", "מסלול", "סדנה", "סדנה מבוקשת", "קורס", "מסלול מעניין"],
-  occupation: ["תחום עיסוק", "עיסוק", "תחום עיסוק או לימודים", "מקצוע", "occupation"],
-  goal: ["מה רוצים להשיג", "מטרה", "יעד", "מה הייתם רוצים להשיג", "goal"],
-  experienceLevel: ["רמת ניסיון", "רמת ניסיון ב-AI", "ניסיון", "experience"],
-  leadSource: ["מקור הליד", "מקור", "מקור פנייה", "מקור פניה", "lead source", "source"],
-  formType: ["סוג טופס", "טופס", "form type"],
-  consent: ["אישור דיוור", "הסכמה", "אישור יצירת קשר", "consent"],
-  pageUrl: ["עמוד מקור", "כתובת עמוד", "עמוד", "page url"],
+  courseInterest: ["מסלול מבוקש", "סדנה מבוקשת", "מסלול מעניין"],
+  occupation: ["תחום עיסוק", "תחום עיסוק או לימודים"],
+  goal: ["מה רוצים להשיג", "מה הייתם רוצים להשיג"],
+  experienceLevel: ["רמת ניסיון", "רמת ניסיון ב-AI"],
+  leadSource: ["מקור הליד", "מקור פנייה", "מקור פניה", "lead source"],
+  formType: ["סוג טופס", "form type"],
+  consent: ["אישור דיוור", "אישור יצירת קשר"],
+  pageUrl: ["עמוד מקור", "כתובת עמוד", "page url"],
   referrer: ["הפניה", "מאיפה הגיע", "referrer"],
   utm_source: ["utm source", "מקור קמפיין"],
   utm_medium: ["utm medium", "מדיום קמפיין"],
-  utm_campaign: ["utm campaign", "קמפיין"],
+  utm_campaign: ["utm campaign"],
   utm_term: ["utm term"],
   utm_content: ["utm content"],
   submittedAt: ["תאריך פנייה", "תאריך פניה", "נשלח ב", "תאריך שליחה"],
@@ -145,9 +145,26 @@ function parseOverrides(): Record<string, string> {
 }
 
 /**
+ * שדות שאסור לגעת בהם בשיוך אוטומטי.
+ *
+ * שדה ששמו נגמר ב-id הוא כמעט תמיד קישור לרשומה אחרת ולא טקסט חופשי,
+ * ושדה שכבר משרת תהליך עסקי קיים (מחזור סדנה, סטטוס, בעלים) הוא לא
+ * מקום לזרוק אליו מטא-דאטה של ליד. שיוך כזה לא מייצר שגיאה רועשת,
+ * הוא פשוט מזהם נתונים אמיתיים בשקט, וזה הרבה יותר גרוע.
+ *
+ * מי שבכל זאת רוצה לכוון שדה קיים עושה זאת במפורש דרך
+ * FIREBERRY_FIELD_MAP, ואז ההחלטה מודעת ומתועדת.
+ */
+const RISKY_NAME = /(^|[^a-z])id$|id$|cycle|status|owner|stage|campaign(id)?$/i;
+const isRisky = (f: FbField) => RISKY_NAME.test(f.name);
+
+/**
  * בונה שיוך בין שדות הטופס לשדות האמיתיים בפיירברי.
- * קודם התאמה מדויקת של השם, ורק אחר כך התאמה חלקית, כדי ש"מקור הליד"
- * לא ייחטף בטעות על ידי שדה אחר שהמילה "מקור" מופיעה בתוכו.
+ *
+ * התאמה מדויקת של השם בלבד. היה כאן גם מעבר שני של התאמה חלקית, והוא
+ * הוסר אחרי שגרם נזק אמיתי: הוא קשר את מקור הליד לשדה "מחזור סדנה"
+ * ואת ה-UTM לשדה הקישור לקמפיין, רק כי הופיעה בהם מילה משותפת. עדיף
+ * שדה שלא נמצא, ושנשאר בהערה, על פני שדה עסקי שנדרס.
  */
 async function resolveFieldMap(token: string, objectType: string): Promise<Record<string, string>> {
   const now = Date.now();
@@ -164,16 +181,9 @@ async function resolveFieldMap(token: string, objectType: string): Promise<Recor
     for (const [key, aliases] of Object.entries(FIELD_ALIASES)) {
       if (map[key]) continue;
       const wanted = aliases.map(norm);
-      const hit = free().find((f) => wanted.includes(norm(f.label)) || wanted.includes(norm(f.name)));
-      if (hit) {
-        map[key] = hit.name;
-        taken.add(norm(hit.name));
-      }
-    }
-    for (const [key, aliases] of Object.entries(FIELD_ALIASES)) {
-      if (map[key]) continue;
-      const wanted = aliases.map(norm).filter((a) => a.length >= 4);
-      const hit = free().find((f) => wanted.some((a) => norm(f.label).includes(a)));
+      const hit = free().find(
+        (f) => !isRisky(f) && (wanted.includes(norm(f.label)) || wanted.includes(norm(f.name))),
+      );
       if (hit) {
         map[key] = hit.name;
         taken.add(norm(hit.name));
@@ -293,6 +303,12 @@ export default async function handler(req: any, res: any) {
         missing: Object.keys(FIELD_ALIASES).filter((k) => !map[k]),
         /* השם המומלץ ליצירת כל שדה שעדיין חסר */
         createAs: Object.fromEntries(Object.entries(FIELD_ALIASES).map(([k, a]) => [k, a[0]])),
+        /* כל השדות בפועל, כדי שאפשר יהיה למפות לפי מה שקיים ולא לפי ניחוש */
+        fields: readFields(await fbGet(`/metadata/records/${objectType}/fields`, token)).map((f) => ({
+          name: f.name,
+          label: f.label,
+          risky: isRisky(f) || undefined,
+        })),
       });
     }
   }
