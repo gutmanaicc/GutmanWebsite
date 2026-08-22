@@ -74,7 +74,18 @@ type LeadBody = {
  * האדם הזה הגיע אלינו בכלל. בדוח שמשווה אתר מול טלפון מול המלצה,
  * רק ערך אחיד אחד עובד.
  */
-const WEBSITE_CHANNEL = "אתר";
+const WEBSITE_CHANNEL = "אתר החברה";
+
+/*
+ * שמות חלופיים לאותו ערך ברשימה.
+ *
+ * ההתאמה לרשימת בחירה היא לפי טקסט מדויק, ולכן שינוי שם של ערך
+ * בפיירברי היה מנתק את השדה בלי להשמיע קול. הרשימה הזו מנסה כמה
+ * ניסוחים סבירים לפני שמוותרת.
+ */
+const VALUE_ALTERNATES: Record<string, string[]> = {
+  channel: [WEBSITE_CHANNEL, "אתר", "אתר אינטרנט", "אתר הבית", "website"],
+};
 
 const FIELD_ALIASES: Record<string, string[]> = {
   channel: ["מקור הגעה", "ערוץ הגעה", "channel"],
@@ -445,7 +456,12 @@ export default async function handler(req: any, res: any) {
     for (const [key, value] of Object.entries(leadValues(lead))) {
       const fieldName = map[key];
       if (!fieldName || fieldName in body || rejectedFields.has(fieldName)) continue;
-      const coerced = await coerceValue(token, objectType, fieldName, value);
+      /* ערך שיש לו חלופות: מנסים אותן בזו אחר זו עד שאחת נמצאת ברשימה */
+      let coerced: unknown | undefined;
+      for (const candidate of VALUE_ALTERNATES[key] ?? [value]) {
+        coerced = await coerceValue(token, objectType, fieldName, candidate);
+        if (coerced !== undefined) break;
+      }
       if (coerced === undefined) continue;
       body[fieldName] = coerced;
       extras += 1;
