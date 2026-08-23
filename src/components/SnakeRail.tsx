@@ -183,7 +183,19 @@ const SnakeRail = ({ steps, id }: Props) => {
   const headOpacity = useTransform(progress, [0, 0.02, 0.97, 1], [0, 1, 1, 0]);
 
   return (
-    <div ref={wrapRef} className="relative mx-auto w-full max-w-[46rem]" data-snake={id}>
+    <div
+      ref={wrapRef}
+      /*
+       * הרוחב נגזר מהכותרת, לא מנוחות קריאה בלבד.
+       *
+       * ב-46rem הרצועה נחתה מחוץ לטווח הכותרת של הסקשן (49px מעבר לקצה
+       * הימני שלה במסך 1440), ולכן הנחש נראה מנותק ומרחף בשוליים למרות
+       * שהבלוק עצמו היה ממורכז בדיוק. ב-40rem הרצועה נופלת בתוך הכותרת,
+       * והכותרת והמסלול נקראים כעמודה אחת.
+       */
+      className="relative mx-auto w-full max-w-[40rem]"
+      data-snake={id}
+    >
       {d && (
         <svg
           className="pointer-events-none absolute inset-0 h-full w-full"
