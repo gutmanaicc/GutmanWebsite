@@ -22,6 +22,19 @@ function readA11yReduceMotion(): boolean {
 }
 
 /**
+ * בדיקה חד פעמית של "בלי תנועה", לשימוש בתוך מטפלי אירועים.
+ *
+ * useMotionCapability שוקל גם סוג מצביע וחיסכון בנתונים, ולכן הוא מחזיר
+ * "css3d" בטלפון - ופעולה שמותנית בו הייתה מתבטלת בטלפון בלי סיבה.
+ * כאן נשאלת רק השאלה הרלוונטית לאנימציה יזומה: האם המשתמש ביקש לעצור
+ * תנועה, במערכת ההפעלה או בתפריט הנגישות.
+ */
+export function prefersStillMotion(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches || readA11yReduceMotion();
+}
+
+/**
  * Site-wide motion capability gate.
  * - full: WebGL hero + fine pointer effects
  * - css3d: CSS perspective / gradient fallbacks (no Three chunk)

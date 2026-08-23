@@ -17,7 +17,16 @@ declare global {
     __lenis?: {
       stop: () => void;
       start: () => void;
-      scrollTo: (target: number, options?: { immediate?: boolean; force?: boolean }) => void;
+      scrollTo: (
+        target: number,
+        options?: {
+          immediate?: boolean;
+          force?: boolean;
+          /** משך האנימציה בשניות. בלעדיו Lenis משתמש ב-lerp שהוגדר במופע. */
+          duration?: number;
+          easing?: (t: number) => number;
+        },
+      ) => void;
       resize: () => void;
     };
   }
