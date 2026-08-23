@@ -11,7 +11,7 @@ export {
 } from "./motionPresets";
 export { useFinePointer } from "./useFinePointer";
 export { useMediaQuery } from "./useMediaQuery";
-export { useMotionCapability, type MotionLevel } from "./useMotionCapability";
+export { prefersStillMotion, useMotionCapability, type MotionLevel } from "./useMotionCapability";
 export {
   acquirePointerStore,
   getPointerSnapshot,
