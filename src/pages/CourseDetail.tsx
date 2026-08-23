@@ -15,12 +15,14 @@ import {
   ArrowIcon,
   BoltIcon,
   BriefcaseIcon,
+  CalendarIcon,
   CheckIcon,
   ChevronIcon,
   ClockIcon,
   FlagIcon,
   GraduationIcon,
   LayersIcon,
+  PinIcon,
   SparkIcon,
   TargetIcon,
   UsersIcon,
@@ -258,6 +260,33 @@ const CourseDetail = () => {
   const valueLines = course.valueProposition.split("\n").filter(Boolean);
   const courseKey = course.slug;
   const marketingSyllabus = getMarketingSyllabus(course.slug);
+  const schedule = course.logistics.schedule ?? [];
+  /*
+   * שעות המפגשים בשורה אחת להירו.
+   *
+   * כשכל המפגשים באותן שעות זו פשוט השעה. כשמפגש הסיום חורג, אומרים את
+   * זה במשפט. בכל מקרה אחר מחזירים מחרוזת ריקה ומשאירים את השעות לטבלת
+   * המועדים, כי ניסוח מקוצר של לוח זמנים מעורב יוצא לא מדויק.
+   */
+  const heroHours = (() => {
+    if (schedule.length === 0) return "";
+    const times = [...new Set(schedule.map((session) => session.time))];
+    if (times.length === 1) return times[0];
+    const last = schedule[schedule.length - 1];
+    const rest = [...new Set(schedule.slice(0, -1).map((session) => session.time))];
+    if (rest.length === 1 && rest[0] !== last.time) {
+      return `${rest[0]}, מפגש הסיום ${last.time}`;
+    }
+    return "";
+  })();
+  // רק שדות שמולאו. פרט שטרם נקבע לא מקבל שורה ריקה בעמוד.
+  const logisticsRows = [
+    { label: "מיקום", value: course.logistics.location },
+    { label: "גודל הקבוצה", value: course.logistics.groupSize },
+    { label: "מה להביא", value: course.logistics.equipment },
+    { label: "ליווי", value: course.logistics.support },
+    { label: "חומרים", value: course.logistics.materials },
+  ].filter((row) => Boolean(row.value));
 
   useEffect(() => {
     trackStandard("ViewContent", {
@@ -349,6 +378,57 @@ const CourseDetail = () => {
                 </div>
               </div>
 
+              {/*
+                * עובדות ההשתתפות בהירו: מועדים, שעות, מיקום וגודל קבוצה.
+                *
+                * הן ישבו רק בבלוק שמתחת, וצריך היה לגלול כדי להגיע אליהן.
+                * זה בדיוק המידע שמחליט אם נרשמים, ולכן הוא עולה לכאן,
+                * מעל כפתור ההרשמה. מוצג רק מה שכבר נקבע.
+                */}
+              {(schedule.length > 0 || course.logistics.location || course.logistics.groupSize) && (
+                <div className="course-hero-facts mt-3 w-full max-w-2xl">
+                  {schedule.length > 0 && (
+                    <div className="course-hero-fact">
+                      <CalendarIcon size={13} />
+                      <span className="course-hero-fact-label">מועדים</span>
+                      {/*
+                        * כל תאריך הוא צ'יפ נפרד ולא מחרוזת אחת מופרדת בפסיקים.
+                        * מחרוזת כזאת נדבקת לריצה אחת של LTR, והמפגש הראשון
+                        * היה נוחת בקצה השמאלי במקום בימני.
+                        */}
+                      <span className="course-hero-fact-dates">
+                        {schedule.map((session) => (
+                          <span key={session.date} className="course-hero-date" dir="ltr">
+                            {session.date}
+                          </span>
+                        ))}
+                      </span>
+                    </div>
+                  )}
+                  {heroHours && (
+                    <div className="course-hero-fact">
+                      <ClockIcon size={13} />
+                      <span className="course-hero-fact-label">שעות</span>
+                      <span className="course-hero-fact-value">{heroHours}</span>
+                    </div>
+                  )}
+                  {course.logistics.location && (
+                    <div className="course-hero-fact">
+                      <PinIcon size={13} />
+                      <span className="course-hero-fact-label">מיקום</span>
+                      <span className="course-hero-fact-value">{course.logistics.location}</span>
+                    </div>
+                  )}
+                  {course.logistics.groupSize && (
+                    <div className="course-hero-fact">
+                      <UsersIcon size={13} />
+                      <span className="course-hero-fact-label">קבוצה</span>
+                      <span className="course-hero-fact-value">{course.logistics.groupSize}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="mt-4 flex flex-wrap items-center justify-center gap-2.5">
                 <Pressable
                   type="button"
@@ -379,6 +459,81 @@ const CourseDetail = () => {
       {subTracks.length > 0 && (
         <SubTracksGrid parent={course} tracks={subTracks} courseKey={courseKey} />
       )}
+
+      {/*
+        * מועדים, מיקום ופרטי השתתפות.
+        *
+        * הפרטים האלה ישבו ב-logistics מהיום הראשון בלי שאף מסך הציג אותם,
+        * ולכן עדכון של תאריך או כתובת פשוט לא הגיע לגולש. הבלוק מציג רק
+        * שדות שמולאו, וכשהמועדים עוד לא נסגרו הוא אומר את זה במפורש
+        * במקום להשאיר שורה ריקה.
+        */}
+      <MotionSection resetKey={`${courseKey}-logistics`} className="py-10 sm:py-12">
+        <div className="container-site">
+          <MotionItem>
+            <SectionHeader
+              compact
+              kicker="פרטים"
+              title={
+                <>
+                  מועדים <AccentWord>ומיקום</AccentWord>
+                </>
+              }
+            />
+          </MotionItem>
+
+          <div className="mt-7 grid gap-4 lg:grid-cols-2 lg:gap-5">
+            <MotionItem>
+              <div className="course-logistics-card h-full">
+                <h3 className="course-logistics-title">
+                  <CalendarIcon size={14} />
+                  מועדי המפגשים
+                </h3>
+                {schedule.length > 0 ? (
+                  <ol className="mt-4">
+                    {schedule.map((session, i) => (
+                      <li key={session.date} className="course-session-row">
+                        <span className="course-session-index" dir="ltr" aria-hidden>
+                          {i + 1}
+                        </span>
+                        {/* התאריכים והשעות נכתבים משמאל לימין. בלי dir מפורש
+                            הדפדפן הופך את סדר טווח השעות בתוך פסקה בעברית. */}
+                        <span className="course-session-date" dir="ltr">
+                          {session.date}
+                        </span>
+                        <span className="course-session-time" dir="ltr">
+                          {session.time}
+                        </span>
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <p className="mt-4 text-[15px] leading-relaxed text-bone/60">
+                    המועדים ייסגרו בקרוב. השאירו פרטים ותהיו הראשונים לדעת.
+                  </p>
+                )}
+              </div>
+            </MotionItem>
+
+            <MotionItem>
+              <div className="course-logistics-card h-full">
+                <h3 className="course-logistics-title">
+                  <PinIcon size={14} />
+                  איפה ואיך
+                </h3>
+                <dl className="mt-4">
+                  {logisticsRows.map((row) => (
+                    <div key={row.label} className="course-logistics-row">
+                      <dt className="course-logistics-label">{row.label}</dt>
+                      <dd className="course-logistics-value">{row.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            </MotionItem>
+          </div>
+        </div>
+      </MotionSection>
 
       {/* Target audience - lightweight rows */}
       <MotionSection resetKey={`${courseKey}-audience`} className="py-10 sm:py-12">
@@ -595,7 +750,9 @@ const CourseDetail = () => {
                     מוכנים להתחיל ?
                   </h2>
                   <p className="mt-2 max-w-md text-sm leading-relaxed text-white/80">
-                    השאירו פרטים ונחזור אליכם עם מועדים ופרטי המסלול - בלי התחייבות.
+                    {schedule.length > 0
+                      ? "המועדים כבר סגורים. השאירו פרטים ונחזור אליכם עם פרטי ההרשמה, בלי התחייבות."
+                      : "השאירו פרטים ונחזור אליכם עם מועדים ופרטי המסלול - בלי התחייבות."}
                   </p>
                   <ul className="mt-3 space-y-1.5 text-sm text-white/85">
                     <li className="flex gap-2">

@@ -34,6 +34,14 @@
 
 const FIREBERRY_BASE = "https://api.fireberry.com";
 
+/** השדות שהרשומה לא שווה בלעדיהם, ולכן לעולם לא מוסרים אותם */
+const CORE_FIELDS = {
+  accountname: true,
+  telephone1: true,
+  emailaddress1: true,
+  description: true,
+} as const;
+
 type LeadBody = {
   fullName?: string;
   phone?: string;
@@ -58,22 +66,45 @@ type LeadBody = {
  * לכל שדה בטופס - השמות שהוא מוכן להיקשר אליהם בפיירברי.
  * הראשון ברשימה הוא השם המומלץ ליצירת השדה.
  */
+/**
+ * הערוץ שדרכו הגיע הליד, כערך אחד קבוע.
+ *
+ * נפרד בכוונה מ-leadSource. leadSource הוא הפירוט (איזה כפתור, איזה
+ * עמוד), ומשתנה מליד לליד. השדה הזה עונה על שאלה אחרת לגמרי: מאיפה
+ * האדם הזה הגיע אלינו בכלל. בדוח שמשווה אתר מול טלפון מול המלצה,
+ * רק ערך אחיד אחד עובד.
+ */
+const WEBSITE_CHANNEL = "אתר החברה";
+
+/*
+ * שמות חלופיים לאותו ערך ברשימה.
+ *
+ * ההתאמה לרשימת בחירה היא לפי טקסט מדויק, ולכן שינוי שם של ערך
+ * בפיירברי היה מנתק את השדה בלי להשמיע קול. הרשימה הזו מנסה כמה
+ * ניסוחים סבירים לפני שמוותרת.
+ */
+const VALUE_ALTERNATES: Record<string, string[]> = {
+  channel: [WEBSITE_CHANNEL, "אתר", "אתר אינטרנט", "אתר הבית", "website"],
+};
+
 const FIELD_ALIASES: Record<string, string[]> = {
-  courseInterest: ["מסלול מבוקש", "מסלול", "סדנה", "סדנה מבוקשת", "קורס", "מסלול מעניין"],
-  occupation: ["תחום עיסוק", "עיסוק", "תחום עיסוק או לימודים", "מקצוע", "occupation"],
-  goal: ["מה רוצים להשיג", "מטרה", "יעד", "מה הייתם רוצים להשיג", "goal"],
-  experienceLevel: ["רמת ניסיון", "רמת ניסיון ב-AI", "ניסיון", "experience"],
-  leadSource: ["מקור הליד", "מקור", "מקור פנייה", "מקור פניה", "lead source", "source"],
-  formType: ["סוג טופס", "טופס", "form type"],
-  consent: ["אישור דיוור", "הסכמה", "אישור יצירת קשר", "consent"],
-  pageUrl: ["עמוד מקור", "כתובת עמוד", "עמוד", "page url"],
+  channel: ["מקור הגעה", "ערוץ הגעה", "channel"],
+  courseInterest: ["מסלול מבוקש", "סדנה מבוקשת", "מסלול מעניין"],
+  occupation: ["תחום עיסוק", "תחום עיסוק או לימודים"],
+  goal: ["מה רוצים להשיג", "מה הייתם רוצים להשיג"],
+  experienceLevel: ["רמת ניסיון", "רמת ניסיון ב-AI"],
+  leadSource: ["מקור הליד", "מקור פנייה", "מקור פניה", "lead source"],
+  formType: ["סוג טופס", "form type"],
+  consent: ["אישור דיוור", "אישור יצירת קשר"],
+  pageUrl: ["עמוד מקור", "כתובת עמוד", "page url"],
   referrer: ["הפניה", "מאיפה הגיע", "referrer"],
   utm_source: ["utm source", "מקור קמפיין"],
   utm_medium: ["utm medium", "מדיום קמפיין"],
-  utm_campaign: ["utm campaign", "קמפיין"],
+  utm_campaign: ["utm campaign"],
   utm_term: ["utm term"],
   utm_content: ["utm content"],
-  submittedAt: ["תאריך פנייה", "תאריך פניה", "נשלח ב", "תאריך שליחה"],
+  /* submittedAt לא נמצא כאן בכוונה: createdon של פיירברי כבר מתעד
+     את זמן היצירה, ושדה נוסף היה רק משכפל אותו */
 };
 
 /** השוואת שמות סלחנית: בלי רווחים, מקפים, ניקוד או אותיות רישיות */
@@ -145,9 +176,26 @@ function parseOverrides(): Record<string, string> {
 }
 
 /**
+ * שדות שאסור לגעת בהם בשיוך אוטומטי.
+ *
+ * שדה ששמו נגמר ב-id הוא כמעט תמיד קישור לרשומה אחרת ולא טקסט חופשי,
+ * ושדה שכבר משרת תהליך עסקי קיים (מחזור סדנה, סטטוס, בעלים) הוא לא
+ * מקום לזרוק אליו מטא-דאטה של ליד. שיוך כזה לא מייצר שגיאה רועשת,
+ * הוא פשוט מזהם נתונים אמיתיים בשקט, וזה הרבה יותר גרוע.
+ *
+ * מי שבכל זאת רוצה לכוון שדה קיים עושה זאת במפורש דרך
+ * FIREBERRY_FIELD_MAP, ואז ההחלטה מודעת ומתועדת.
+ */
+const RISKY_NAME = /(^|[^a-z])id$|id$|cycle|status|owner|stage|campaign(id)?$/i;
+const isRisky = (f: FbField) => RISKY_NAME.test(f.name);
+
+/**
  * בונה שיוך בין שדות הטופס לשדות האמיתיים בפיירברי.
- * קודם התאמה מדויקת של השם, ורק אחר כך התאמה חלקית, כדי ש"מקור הליד"
- * לא ייחטף בטעות על ידי שדה אחר שהמילה "מקור" מופיעה בתוכו.
+ *
+ * התאמה מדויקת של השם בלבד. היה כאן גם מעבר שני של התאמה חלקית, והוא
+ * הוסר אחרי שגרם נזק אמיתי: הוא קשר את מקור הליד לשדה "מחזור סדנה"
+ * ואת ה-UTM לשדה הקישור לקמפיין, רק כי הופיעה בהם מילה משותפת. עדיף
+ * שדה שלא נמצא, ושנשאר בהערה, על פני שדה עסקי שנדרס.
  */
 async function resolveFieldMap(token: string, objectType: string): Promise<Record<string, string>> {
   const now = Date.now();
@@ -164,16 +212,9 @@ async function resolveFieldMap(token: string, objectType: string): Promise<Recor
     for (const [key, aliases] of Object.entries(FIELD_ALIASES)) {
       if (map[key]) continue;
       const wanted = aliases.map(norm);
-      const hit = free().find((f) => wanted.includes(norm(f.label)) || wanted.includes(norm(f.name)));
-      if (hit) {
-        map[key] = hit.name;
-        taken.add(norm(hit.name));
-      }
-    }
-    for (const [key, aliases] of Object.entries(FIELD_ALIASES)) {
-      if (map[key]) continue;
-      const wanted = aliases.map(norm).filter((a) => a.length >= 4);
-      const hit = free().find((f) => wanted.some((a) => norm(f.label).includes(a)));
+      const hit = free().find(
+        (f) => !isRisky(f) && (wanted.includes(norm(f.label)) || wanted.includes(norm(f.name))),
+      );
       if (hit) {
         map[key] = hit.name;
         taken.add(norm(hit.name));
@@ -220,6 +261,7 @@ async function coerceValue(
 function leadValues(lead: LeadBody): Record<string, string> {
   const utm = lead.utm ?? {};
   const values: Record<string, string> = {
+    channel: WEBSITE_CHANNEL,
     courseInterest: lead.courseInterestLabel || lead.courseInterest || "",
     occupation: lead.occupation ?? "",
     goal: lead.goal ?? "",
@@ -229,7 +271,6 @@ function leadValues(lead: LeadBody): Record<string, string> {
     consent: lead.consent === undefined ? "" : lead.consent ? "כן" : "לא",
     pageUrl: lead.pageUrl ?? "",
     referrer: lead.referrer ?? "",
-    submittedAt: lead.submittedAt ?? "",
     utm_source: utm.utm_source ?? "",
     utm_medium: utm.utm_medium ?? "",
     utm_campaign: utm.utm_campaign ?? "",
@@ -252,6 +293,7 @@ function buildNote(lead: LeadBody): string {
       `רמת ניסיון: ${lead.experienceLevelLabel || lead.experienceLevel}`,
     lead.consent !== undefined && `אישור דיוור: ${lead.consent ? "כן" : "לא"}`,
     lead.formType && `סוג טופס: ${lead.formType}`,
+    `מקור הגעה: ${WEBSITE_CHANNEL}`,
     lead.leadSource && `מקור: ${lead.leadSource}`,
     lead.pageUrl && `עמוד: ${lead.pageUrl}`,
     lead.referrer && `הפניה: ${lead.referrer}`,
@@ -260,6 +302,25 @@ function buildNote(lead: LeadBody): string {
   ].filter(Boolean);
   return lines.join("\n");
 }
+
+/**
+ * שולף מהודעת השגיאה של פיירברי את שם השדה שנפסל.
+ * ההודעה נראית כך: אופנה is not a valid value for 'pcfworkshoptype'
+ */
+function findRejectedField(text: string, body: Record<string, unknown>): string | null {
+  for (const match of text.matchAll(/['"`]([A-Za-z0-9_]+)['"`]/g)) {
+    const name = match[1];
+    if (name in body && !(name in CORE_FIELDS)) return name;
+  }
+  /* בלי ציטוט מפורש: אם מוזכר שם של שדה מותאם בגוף הטקסט, די בזה */
+  for (const name of Object.keys(body)) {
+    if (!(name in CORE_FIELDS) && text.includes(name)) return name;
+  }
+  return null;
+}
+
+/* שדות שנפסלו בעבר. נמנע מלנסות אותם שוב באותה מכונה */
+const rejectedFields = new Set<string>();
 
 async function createRecord(token: string, objectType: string, body: Record<string, unknown>) {
   const response = await fetch(`${FIREBERRY_BASE}/api/record/${objectType}`, {
@@ -293,6 +354,45 @@ export default async function handler(req: any, res: any) {
         missing: Object.keys(FIELD_ALIASES).filter((k) => !map[k]),
         /* השם המומלץ ליצירת כל שדה שעדיין חסר */
         createAs: Object.fromEntries(Object.entries(FIELD_ALIASES).map(([k, a]) => [k, a[0]])),
+        /* כל השדות בפועל, כדי שאפשר יהיה למפות לפי מה שקיים ולא לפי ניחוש */
+        fields: readFields(await fbGet(`/metadata/records/${objectType}/fields`, token)).map((f) => ({
+          name: f.name,
+          label: f.label,
+          risky: isRisky(f) || undefined,
+        })),
+        /*
+         * ערכים של שדה שביקשו לבדוק במפורש דרך &field=, גם אם הוא
+         * עדיין לא משויך. בלי זה אי אפשר לדעת מראש אם ערך מסוים
+         * קיים ברשימה, ושדה שלא מתאים נשמט בשקט.
+         */
+        requested: req.query.field
+          ? {
+              [String(req.query.field)]: readOptions(
+                await fbGet(
+                  `/metadata/records/${objectType}/fields/${encodeURIComponent(String(req.query.field))}/values`,
+                  token,
+                ),
+              ).map((o) => o.label),
+            }
+          : undefined,
+        /*
+         * הערכים של כל שדה משויך שהוא רשימת בחירה. בלי זה אי אפשר לדעת
+         * אם הטקסט שהאתר שולח יתאים לאחת האפשרויות, ושדה שלא מתאים
+         * פשוט נשמט בשקט.
+         */
+        values: Object.fromEntries(
+          await Promise.all(
+            Object.entries(map).map(async ([key, fieldName]) => [
+              `${key} → ${fieldName}`,
+              readOptions(
+                await fbGet(
+                  `/metadata/records/${objectType}/fields/${encodeURIComponent(fieldName)}/values`,
+                  token,
+                ),
+              ).map((o) => o.label),
+            ]),
+          ),
+        ),
       });
     }
   }
@@ -355,8 +455,13 @@ export default async function handler(req: any, res: any) {
     const map = await resolveFieldMap(token, objectType);
     for (const [key, value] of Object.entries(leadValues(lead))) {
       const fieldName = map[key];
-      if (!fieldName || fieldName in body) continue;
-      const coerced = await coerceValue(token, objectType, fieldName, value);
+      if (!fieldName || fieldName in body || rejectedFields.has(fieldName)) continue;
+      /* ערך שיש לו חלופות: מנסים אותן בזו אחר זו עד שאחת נמצאת ברשימה */
+      let coerced: unknown | undefined;
+      for (const candidate of VALUE_ALTERNATES[key] ?? [value]) {
+        coerced = await coerceValue(token, objectType, fieldName, candidate);
+        if (coerced !== undefined) break;
+      }
       if (coerced === undefined) continue;
       body[fieldName] = coerced;
       extras += 1;
@@ -369,12 +474,33 @@ export default async function handler(req: any, res: any) {
     let result = await createRecord(token, objectType, body);
 
     /*
-     * שדה מותאם אחד שנפסל לא יפיל פנייה אמיתית: מנסים שוב עם השדות
-     * הבסיסיים בלבד, שם המידע המלא ממילא נשמר בהערה.
+     * שדה שנפסל לא מפיל את כל השאר.
+     *
+     * פיירברי מציינת בהודעת השגיאה את שם השדה הבעייתי, ולכן מסירים
+     * אותו בלבד ומנסים שוב. קודם הייתה כאן נפילה ישר לשדות הבסיס, וזה
+     * עלה ביוקר בפועל: שדה קישור אחד שקיבל טקסט הפיל גם את "צרכים"
+     * וגם את "אישור פרסומי" שהיו תקינים לגמרי, והרשומה נפתחה ריקה.
+     *
+     * השדה נזכר גם ב-rejectedFields, כדי שהליד הבא כבר לא ינסה אותו
+     * ולא ישלם על אותה דחייה שוב.
      */
-    if (!result.ok && extras > 0) {
-      /* מקוצץ: התשובה של פיירברי עלולה להחזיר את הרשומה כולה */
+    let attempts = 0;
+    while (!result.ok && extras > 0 && attempts < 3) {
+      attempts += 1;
       console.error("Fireberry rejected the mapped record", result.status, result.text.slice(0, 500));
+
+      const culprit = findRejectedField(result.text, body);
+      if (!culprit) break;
+
+      rejectedFields.add(culprit);
+      delete body[culprit];
+      extras -= 1;
+      console.warn(`Dropping "${culprit}" and retrying without it`);
+      result = await createRecord(token, objectType, body);
+    }
+
+    /* לא הצלחנו לזהות את האשם: שדות הבסיס לבדם, העיקר שהליד נכנס */
+    if (!result.ok && extras > 0) {
       schemaCache = null;
       optionCache.clear();
       result = await createRecord(token, objectType, core);

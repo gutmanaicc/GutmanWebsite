@@ -2,6 +2,7 @@ import { Suspense, useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import Lenis from "lenis";
+import ChunkReloadBoundary from "./ChunkReloadBoundary";
 import Header from "./Header";
 import Footer from "./Footer";
 import Preloader from "./Preloader";
@@ -109,12 +110,17 @@ const PageTransition = () => {
    * מבחוץ הוא השהה גם את המעטפת, וכל ניווט ראשון לעמוד עצל מחק מהמסך
    * את ההדר, הפוטר ושכבות הרקע עד שהצ'אנק ירד. fallback ריק בכוונה:
    * הכרום כבר על המסך, וספינר שמהבהב לרגע גרוע מהמתנה שקטה.
+   *
+   * ChunkReloadBoundary עוטף אותו כי Suspense לבדו לא מטפל בכישלון:
+   * צ'אנק שנעלם אחרי דיפלוי מפיל את העץ ומשאיר מסך ריק.
    */
   if (reduced) {
     return (
-      <Suspense fallback={null}>
-        <Outlet />
-      </Suspense>
+      <ChunkReloadBoundary>
+        <Suspense fallback={null}>
+          <Outlet />
+        </Suspense>
+      </ChunkReloadBoundary>
     );
   }
 
@@ -125,9 +131,11 @@ const PageTransition = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
     >
-      <Suspense fallback={null}>
-        <Outlet />
-      </Suspense>
+      <ChunkReloadBoundary>
+        <Suspense fallback={null}>
+          <Outlet />
+        </Suspense>
+      </ChunkReloadBoundary>
     </motion.div>
   );
 };
