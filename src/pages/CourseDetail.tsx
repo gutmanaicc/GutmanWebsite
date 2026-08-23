@@ -397,6 +397,11 @@ const CourseDetail = () => {
                         * היה נוחת בקצה השמאלי במקום בימני.
                         */}
                       <span className="course-hero-fact-dates">
+                        {course.logistics.scheduleDay && (
+                          <span className="course-hero-fact-value">
+                            {course.logistics.scheduleDay}
+                          </span>
+                        )}
                         {schedule.map((session) => (
                           <span key={session.date} className="course-hero-date" dir="ltr">
                             {session.date}
@@ -489,6 +494,11 @@ const CourseDetail = () => {
                   <CalendarIcon size={14} />
                   מועדי המפגשים
                 </h3>
+                {schedule.length > 0 && course.logistics.scheduleDay && (
+                  <p className="mt-2 text-[13px] font-medium text-bone/50">
+                    {`${schedule.length} מפגשים שבועיים, ${course.logistics.scheduleDay}`}
+                  </p>
+                )}
                 {schedule.length > 0 ? (
                   <ol className="mt-4">
                     {schedule.map((session, i) => (
