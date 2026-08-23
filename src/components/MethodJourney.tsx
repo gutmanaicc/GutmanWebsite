@@ -1,5 +1,5 @@
 import SectionHeader, { AccentWord } from "./SectionHeader";
-import SnakePath from "./SnakePath";
+import SnakeRail from "./SnakeRail";
 import { SITE } from "../data/site";
 
 /**
@@ -10,7 +10,7 @@ import { SITE } from "../data/site";
  * הבית: אותה כוריאוגרפיה, בלי לכלוא את המשתמש בגלילה ארוכה ובלי
  * filter: blur על שבע שכבות בכל פריים.
  *
- * הכותרת בקונטיינר של האתר, המסלול מחוצה לו - ראו ההסבר ב-ProcessSection.
+ * הכותרת והמסלול שניהם בקונטיינר של האתר - ראו ההסבר ב-ProcessSection.
  */
 const MethodJourney = () => (
   <section className="py-14 sm:py-20" aria-label="איך אנחנו מלמדים">
@@ -27,8 +27,8 @@ const MethodJourney = () => (
       />
     </div>
 
-    <div className="mx-auto mt-10 w-full max-w-[88rem] px-4 sm:px-6 lg:px-8">
-      <SnakePath id="method" steps={[...SITE.method]} />
+    <div className="container-site mt-10">
+      <SnakeRail id="method" steps={[...SITE.method]} />
     </div>
   </section>
 );
