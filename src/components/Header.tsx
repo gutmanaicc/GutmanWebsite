@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type MouseEvent, type ReactNode } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import Logo from "./Logo";
@@ -6,8 +6,9 @@ import { useRegisterModal } from "../context/RegisterModalContext";
 import CoursesNavDropdown from "./CoursesNavDropdown";
 import MobileTracksAccordion from "./MobileTracksAccordion";
 import Pressable from "./Pressable";
+import { prefersStillMotion } from "../lib/motion";
 import { getRegistrationSection } from "../lib/registration";
-import { useScrollLock } from "../lib/scrollLock";
+import { markScrollReset, useScrollLock } from "../lib/scrollLock";
 
 type NavItem = {
   to?: string;
@@ -51,6 +52,56 @@ const NavLabel = ({ label, count }: { label: string; count?: string }) => (
   </span>
 );
 
+/*
+ * גבולות משך הגלילה לראש העמוד, בשניות, והמרחק ששווה שנייה אחת.
+ *
+ * המשך נגזר מהמרחק ולא קבוע: משך אחיד הופך קפיצה של 400px לאיטית
+ * ומייגעת, ואת אותה גלילה מתחתית עמוד הבית לריצה מטושטשת. התקרה קיימת
+ * כי "חזרה הביתה" היא פעולה שהמשתמש רוצה שתסתיים, לא הצגה.
+ */
+const TOP_SCROLL_MIN_SEC = 0.5;
+const TOP_SCROLL_MAX_SEC = 1.1;
+const TOP_SCROLL_PX_PER_SEC = 2600;
+
+/** מהיר בהתחלה, מתיישב ברכות בסוף */
+const easeOutExpo = (t: number) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t));
+
+/**
+ * גלילה מונפשת לראש העמוד.
+ *
+ * Lenis מחזיק מיקום גלילה משלו ודוחף אותו בחזרה בפריים הבא, ולכן כשהוא
+ * רץ הוא חייב להיות זה שמנפיש. בטלפון (pointer: coarse) ובחסך תנועה הוא
+ * לא נטען בכלל, ושם נופלים חזרה לגלילה החלקה של הדפדפן.
+ */
+const scrollToTop = () => {
+  const lenis = window.__lenis;
+
+  /*
+   * מדווחים שהמיקום נקבע כאן, לפני שמזיזים.
+   *
+   * תפריט הנייד נעול בגלילה, ו-useScrollLock משחזר בסגירתו את המיקום
+   * שממנו נפתח. בלי הדיווח הזה השחזור מגיע בקומיט מאוחר יותר, דורס את
+   * הגלילה החלקה באמצע, והמשתמש חוזר בדיוק למקום שממנו ביקש לצאת.
+   */
+  markScrollReset();
+
+  /* חסך תנועה: קופצים, בדיוק כמו קודם */
+  if (prefersStillMotion()) {
+    if (lenis) lenis.scrollTo(0, { immediate: true, force: true });
+    else window.scrollTo({ top: 0, behavior: "auto" });
+    return;
+  }
+
+  const duration = Math.min(
+    TOP_SCROLL_MAX_SEC,
+    Math.max(TOP_SCROLL_MIN_SEC, window.scrollY / TOP_SCROLL_PX_PER_SEC),
+  );
+
+  /* force כדי שהגלילה תתפוס גם כש-Lenis עוד עצור בגלל התפריט שנסגר ברגע זה */
+  if (lenis) lenis.scrollTo(0, { duration, easing: easeOutExpo, force: true });
+  else window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
 const Header = () => {
   const reduced = useReducedMotion();
   const [scrolled, setScrolled] = useState(false);
@@ -87,18 +138,22 @@ const Header = () => {
    *
    * Link לבדו לא הספיק: כשהנתיב לא משתנה React Router לא מנווט,
    * ScrollManager לא מופעל, והמשתמש נשאר תקוע במקום שאליו גלל. לכן
-   * כשכבר בעמוד הבית מאפסים ידנית, ובשאר העמודים ScrollManager עושה
-   * את זה ממילא במעבר.
+   * כשכבר בעמוד הבית גוללים ידנית, ובשאר העמודים ScrollManager מאפס
+   * ממילא במעבר.
    *
-   * האיפוס עובר דרך Lenis כשהוא קיים, אחרת window - בדיוק כמו
-   * ב-ScrollManager, כי Lenis מחזיק מיקום משלו ודוחף אותו בחזרה.
+   * כשכבר בבית הניווט מבוטל (preventDefault) ולא רק מיותר: בלעדיו
+   * React Router דוחף רשומת היסטוריה כפולה לאותו נתיב, וכשיש hash בכתובת
+   * הוא גם מנקה אותו - מה שמעיר את ScrollManager באמצע הגלילה החלקה
+   * ומקפיץ לראש העמוד מיידית. ה-hash נשאר בכתובת בכוונה, כי כל דרך לנקות
+   * אותו עוברת דרך שינוי מיקום שיפעיל שוב את ScrollManager.
    */
-  const goHome = () => {
+  const goHome = (event: MouseEvent<HTMLAnchorElement>) => {
     setOpen(false);
     if (location.pathname !== "/") return;
-    const lenis = window.__lenis;
-    if (lenis) lenis.scrollTo(0, { immediate: true, force: true });
-    else window.scrollTo({ top: 0, behavior: "auto" });
+    /* מאפשרים למשתמש לפתוח את הבית בלשונית חדשה כרגיל */
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
+    event.preventDefault();
+    scrollToTop();
   };
 
   useEffect(() => setOpen(false), [location.pathname]);
