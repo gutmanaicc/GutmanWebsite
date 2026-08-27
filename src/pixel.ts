@@ -1,26 +1,11 @@
+import { hasDeclined } from "./consent";
+
 const PIXEL_ID = "1392343815914070";
-export const CONSENT_KEY = "cookie-consent-v1";
 
 declare global {
   interface Window {
     fbq?: (...args: unknown[]) => void;
     _fbq?: unknown;
-  }
-}
-
-/**
- * המדידה פועלת בברירת מחדל, ונכבית למי שמבקש.
- *
- * קודם הפיקסל נטען רק אחרי לחיצה על "אישור", כך שכל מי שהתעלם
- * מהבאנר - והם הרוב - לא נספר בכלל, והנתונים בקמפיינים היו חלקיים.
- * עכשיו הפיקסל עולה מיד, הבאנר הוא הודעת יידוע, ומי שלוחץ "לא תודה"
- * מכבה את המדידה מאותו רגע ובכל הביקורים הבאים.
- */
-export function hasDeclined(): boolean {
-  try {
-    return localStorage.getItem(CONSENT_KEY) === "declined";
-  } catch {
-    return false;
   }
 }
 
