@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { CONSENT_KEY, grantTracking, loadPixel, revokeTracking } from "../pixel";
+import { grantClarity, loadClarity, revokeClarity } from "../clarity";
+import { CONSENT_KEY } from "../consent";
+import { grantGa, loadGa, revokeGa } from "../ga";
+import { grantTracking, loadPixel, revokeTracking } from "../pixel";
 
 /**
  * רצועת יידוע על מדידה: קו שיער בתחתית המסך, טקסט אחד, ושתי מילות
@@ -20,6 +23,8 @@ export const Consent = () => {
     if (v === "declined") return;
 
     loadPixel();
+    loadClarity();
+    loadGa();
 
     if (v !== "accepted") {
       // לא קופץ על המבקר בשנייה הראשונה
@@ -31,8 +36,15 @@ export const Consent = () => {
   const choose = (v: "accepted" | "declined") => {
     localStorage.setItem(CONSENT_KEY, v);
     setVisible(false);
-    if (v === "declined") revokeTracking();
-    else grantTracking();
+    if (v === "declined") {
+      revokeTracking();
+      revokeClarity();
+      revokeGa();
+    } else {
+      grantTracking();
+      grantClarity();
+      grantGa();
+    }
   };
 
   return (

@@ -32,6 +32,7 @@ const Syllabus = () => {
   const meta = [
     course.logistics.format,
     course.logistics.sessions,
+    course.logistics.scheduleDay,
     course.logistics.location,
     course.logistics.groupSize,
     course.experienceLevel,
