@@ -12,7 +12,6 @@ export type LeadPayload = {
   goal: string;
   experienceLevel?: string;
   experienceLevelLabel?: string;
-  audienceType?: string;
   /** האם סומנה תיבת ההסכמה בטופס */
   consent?: boolean;
   /** איזה טופס נשלח: הרשמה או רשימת המתנה */
@@ -35,16 +34,29 @@ export const EXPERIENCE_OPTIONS = [
   { value: "advanced", label: "מתקדם/ת, בונה תהליכים בעצמי" },
 ] as const;
 
-const UNSURE_LABEL = "עדיין מתלבט/ת";
+/**
+ * התווית של "עדיין מתלבט/ת".
+ *
+ * מיוצאת כדי שגם הטופס וגם השליחה ל-CRM ישתמשו באותו מחרוזת אחת.
+ * הערך הזה חייב להיות זהה לתו לערך שברשימת "מסלול" בפיירברי, אחרת
+ * ההתאמה נכשלת והשדה נשמט בשקט.
+ */
+export const UNSURE_LABEL = "עדיין מתלבט/ת, אשמח להכוונה";
 
 /**
  * הופך סלאג של מסלול לשם קריא.
  * בפיירברי רוצים לראות "אופנה", לא "ai-fashion".
+ *
+ * הסלאג הוא מקור האמת ולא התווית שהקומפוננטה העבירה. WaitlistModal
+ * שלח את כותרת הסדנה המלאה ("בינה מלאכותית באופנה. מהשראה לקמפיין
+ * מוגמר"), ולערך כזה אין מקבילה ברשימת "מסלול" בפיירברי, ולכן כל ליד
+ * מרשימת המתנה היה נשמט בשקט. תווית מפורשת נשארת רק כגיבוי לסלאג
+ * שלא מופיע ברשימת המסלולים.
  */
-export function courseLabel(slug: string): string {
-  if (!slug) return "";
+export function courseLabel(slug: string, provided?: string): string {
+  if (!slug) return provided ?? "";
   if (slug === "unsure") return UNSURE_LABEL;
-  return LEAD_TRACKS.find((t) => t.slug === slug)?.label ?? slug;
+  return LEAD_TRACKS.find((t) => t.slug === slug)?.label ?? provided ?? slug;
 }
 
 export function experienceLabel(value: string): string {
@@ -104,7 +116,7 @@ export async function submitLead(lead: LeadPayload): Promise<boolean> {
    */
   const payload: LeadPayload = {
     ...lead,
-    courseInterestLabel: lead.courseInterestLabel || courseLabel(lead.courseInterest),
+    courseInterestLabel: courseLabel(lead.courseInterest, lead.courseInterestLabel),
     experienceLevelLabel:
       lead.experienceLevelLabel || experienceLabel(lead.experienceLevel ?? ""),
   };
