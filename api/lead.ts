@@ -30,6 +30,21 @@
  *
  * שדה שלא נמצא לו מקום לא הולך לאיבוד - הוא נשאר בהערה שנכנסת
  * ל-description, בדיוק כמו קודם.
+ *
+ * ── מצב החשבון בפועל ──────────────────────────────────────────────
+ * החשבון של Gutman מותאם לבית ספר ואין בו אובייקט "ליד". הלידים
+ * נכנסים לאובייקט 1, שנקרא שם "תלמידים" ולא "לקוחות". נבדקו גם
+ * "הרשמה לקורס" (33) ו"איש קשר" (2) ושניהם נפסלו: הראשון הוא רשומת
+ * קישור שמניחה שהתלמיד והקורס כבר קיימים, והשני כפוף ללקוח אב.
+ *
+ * ארבעה שדות כבר קיימים שם ומולאו ידנית עד היום, ולכן משויכים אליהם
+ * ולא נוצרים מחדש: מסלול (pcfsystemfield212), מקור הגעה
+ * (originatingleadcode), צרכים (needs) ואישור פרסומי (pcfmarketingok).
+ *
+ * שדות תהליך עסקי - סטטוס, חום ליד, מצב לקוח, מחזור סדנה - לא נכתבים
+ * מכאן בכוונה. יש עליהם אוטומציות שהאתר לא מכיר, וליד נכנס הוא לא
+ * הגורם שאמור להכריע אותן. מי שכן רוצה זאת מגדיר את השיוך במפורש
+ * דרך FIREBERRY_FIELD_MAP, ואז ההחלטה מודעת.
  */
 
 const FIREBERRY_BASE = "https://api.fireberry.com";
@@ -52,7 +67,6 @@ type LeadBody = {
   goal?: string;
   experienceLevel?: string;
   experienceLevelLabel?: string;
-  audienceType?: string;
   consent?: boolean;
   formType?: string;
   leadSource?: string;
@@ -87,15 +101,44 @@ const VALUE_ALTERNATES: Record<string, string[]> = {
   channel: [WEBSITE_CHANNEL, "אתר", "אתר אינטרנט", "אתר הבית", "website"],
 };
 
+/*
+ * איותים חלופיים של ערך מסוים, כפי שהוא עשוי להופיע ברשימה בפיירברי.
+ *
+ * המפתח הוא מה שהאתר שולח, והרשימה היא מה שעוד כדאי לנסות לפניו.
+ * זה קיים כדי שהקופי באתר לא ייקבע על ידי איות שנבחר פעם אחת ב-CRM:
+ * ברשימת "מסלול" יושב "עורכי וידיאו" וב-LEAD_TRACKS כתוב "וידאו",
+ * שתי צורות תקינות, ואין סיבה שאחת מהן תיכנע לשנייה. בלי זה המסלול
+ * הזה היה נשמט בשקט מכל ליד.
+ */
+const VALUE_SYNONYMS: Record<string, string[]> = {
+  "עורכי וידאו ויוצרי תוכן": ["עורכי וידיאו ויוצרי תוכן"],
+  /* ממשק הרשימות בפיירברי מפרש פסיק כמפריד בין ערכים, ולכן אי אפשר
+     להזין שם את התווית המלאה מהטופס. ערך ברשימת CRM אמור להיות תווית
+     קצרה ממילא, ולכן התשובה הארוכה של הגולש נכנסת תחת "מתקדם/ת" */
+  "מתקדם/ת, בונה תהליכים בעצמי": ["מתקדם/ת"],
+  /* אותה בעיה בדיוק ברשימת "מסלול". התווית בטופס הורחבה ל"עדיין
+     מתלבט/ת, אשמח להכוונה" כדי שתקרא טוב לגולש, ואז היא הפסיקה
+     להתאים לערך "עדיין מתלבט/ת" שברשימה: norm מוחק את הפסיק אבל לא
+     את שתי המילים שנוספו. בלי השורה הזאת כל מי שבוחר "עדיין מתלבט/ת"
+     מאבד את שדה המסלול, והפרטים נשארים רק בהערה. */
+  "עדיין מתלבט/ת, אשמח להכוונה": ["עדיין מתלבט/ת"],
+};
+
+/*
+ * הכינוי הראשון ברשימה הוא השם שמומלץ ליצור בו את השדה, ולכן בשדות
+ * שכבר קיימים בחשבון הוא השם הקיים ולא שם אידיאלי כלשהו. "מסלול",
+ * "צרכים" ו"אישור פרסומי" נמצאו באובייקט התלמידים ומולאו ידנית עד
+ * היום; החיבור אליהם חוסך יצירת שדות כפולים שאיש לא היה מסתכל בהם.
+ */
 const FIELD_ALIASES: Record<string, string[]> = {
   channel: ["מקור הגעה", "ערוץ הגעה", "channel"],
-  courseInterest: ["מסלול מבוקש", "סדנה מבוקשת", "מסלול מעניין"],
+  courseInterest: ["מסלול", "מסלול מבוקש", "סדנה מבוקשת", "מסלול מעניין"],
   occupation: ["תחום עיסוק", "תחום עיסוק או לימודים"],
-  goal: ["מה רוצים להשיג", "מה הייתם רוצים להשיג"],
-  experienceLevel: ["רמת ניסיון", "רמת ניסיון ב-AI"],
+  goal: ["צרכים", "מה רוצים להשיג", "מה הייתם רוצים להשיג"],
+  experienceLevel: ["רמת ניסיון ב-AI", "רמת ניסיון"],
   leadSource: ["מקור הליד", "מקור פנייה", "מקור פניה", "lead source"],
   formType: ["סוג טופס", "form type"],
-  consent: ["אישור דיוור", "אישור יצירת קשר"],
+  consent: ["אישור פרסומי", "אישור דיוור", "אישור יצירת קשר"],
   pageUrl: ["עמוד מקור", "כתובת עמוד", "page url"],
   referrer: ["הפניה", "מאיפה הגיע", "referrer"],
   utm_source: ["utm source", "מקור קמפיין"],
@@ -281,6 +324,22 @@ function leadValues(lead: LeadBody): Record<string, string> {
   return values;
 }
 
+/**
+ * מפצל את השם המלא לשם פרטי ולשם משפחה.
+ *
+ * הטופס מבקש שם אחד, אבל ברשומה יש שלושה שדות: שם מלא, שם פרטי ושם
+ * משפחה. בלי השניים האחרונים אין פנייה אישית בדיוור ואין מיון לפי שם
+ * משפחה. שם מילה אחת נשאר בשם המלא בלבד, כי ניחוש שם משפחה גרוע
+ * מהשארת השדה ריק.
+ *
+ * השם המלא נכתב בכל מקרה, ולכן פיצול שגוי לא מאבד שום מידע.
+ */
+function splitName(full: string): Record<string, string> {
+  const parts = full.trim().split(/\s+/).filter(Boolean);
+  if (parts.length < 2) return {};
+  return { firstname: parts[0], lastname: parts.slice(1).join(" ") };
+}
+
 /** מרכז את כל מה שלא נכנס לשדה ייעודי לתוך הערה אחת קריאה */
 function buildNote(lead: LeadBody): string {
   const utm = lead.utm ?? {};
@@ -451,6 +510,22 @@ export default async function handler(req: any, res: any) {
   const body: Record<string, unknown> = { ...core };
   let extras = 0;
 
+  /*
+   * שם פרטי ומשפחה נשלחים כתוספת ולא כליבה. אם פיירברי תפסול אותם
+   * מסיבה כלשהי, לולאת ההסרה למטה תוריד אותם והליד עדיין ייכנס.
+   *
+   * הבדיקה מול rejectedFields זהה לזו שבלולאת המיפוי למטה. בלעדיה
+   * ההזרקה הזאת הייתה השדה היחיד שעוקף את הזיכרון: הרשומה בנויה
+   * משדות של לקוח (accountname, telephone1), ו-firstname ו-lastname
+   * הם שדות של איש קשר. אם הם לא קיימים באובייקט, כל ליד היה משלם
+   * שוב על אותה דחייה ועל הריטריי שאחריה.
+   */
+  for (const [field, value] of Object.entries(splitName(lead.fullName))) {
+    if (rejectedFields.has(field)) continue;
+    body[field] = value;
+    extras += 1;
+  }
+
   try {
     const map = await resolveFieldMap(token, objectType);
     for (const [key, value] of Object.entries(leadValues(lead))) {
@@ -458,7 +533,8 @@ export default async function handler(req: any, res: any) {
       if (!fieldName || fieldName in body || rejectedFields.has(fieldName)) continue;
       /* ערך שיש לו חלופות: מנסים אותן בזו אחר זו עד שאחת נמצאת ברשימה */
       let coerced: unknown | undefined;
-      for (const candidate of VALUE_ALTERNATES[key] ?? [value]) {
+      const candidates = VALUE_ALTERNATES[key] ?? [value, ...(VALUE_SYNONYMS[value] ?? [])];
+      for (const candidate of candidates) {
         coerced = await coerceValue(token, objectType, fieldName, candidate);
         if (coerced !== undefined) break;
       }

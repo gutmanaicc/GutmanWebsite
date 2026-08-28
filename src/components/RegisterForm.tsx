@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { LEAD_TRACKS } from "../data/courses";
 import { SITE } from "../data/site";
-import { EXPERIENCE_OPTIONS, collectUtm, submitLead } from "../lib/leads";
+import { EXPERIENCE_OPTIONS, UNSURE_LABEL, collectUtm, submitLead } from "../lib/leads";
 import Pressable from "./Pressable";
 
 export type RegisterFormProps = {
@@ -29,7 +29,8 @@ const isValidPhone = (raw: string) => {
   return /^0\d{8,9}$/.test(digits) || /^972\d{8,9}$/.test(digits);
 };
 
-const UNSURE_OPTION = { value: "unsure", label: "עדיין מתלבט/ת, אשמח להכוונה" } as const;
+/* התווית מגיעה מ-leads כדי שמה שהגולש רואה ומה שנשלח ל-CRM לא יסטו זה מזה */
+const UNSURE_OPTION = { value: "unsure", label: UNSURE_LABEL } as const;
 
 const TRACK_OPTIONS = [
   ...LEAD_TRACKS.map((t) => ({ value: t.slug, label: t.label })),
