@@ -26,6 +26,7 @@ export type {
   AudienceIcon,
   CourseDeliverable,
   CourseFaqItem,
+  CourseShiftRow,
   CurriculumModule,
   TargetAudienceProfile,
 } from "./coursePages";
@@ -33,6 +34,7 @@ export type {
 import type {
   CourseDeliverable,
   CourseFaqItem,
+  CourseShiftRow,
   CurriculumModule,
   TargetAudienceProfile,
 } from "./coursePages";
@@ -89,6 +91,8 @@ type CourseCore = {
 export type Course = CourseCore & {
   /** 2-line hero value proposition */
   valueProposition: string;
+  painPoints: string[];
+  shift: CourseShiftRow[];
   heroMeta: {
     duration: string;
     format: string;
@@ -116,7 +120,29 @@ function enrichCourse(core: CourseCore): Course {
   return {
     ...core,
     valueProposition: page.valueProposition,
-    heroMeta: page.heroMeta,
+    painPoints: page.painPoints,
+    shift: page.shift,
+    /*
+     * שורת הפורמט בהירו מורכבת משני חצאים: אופן ההעברה מגיע מתוכן
+     * העמוד, וגודל הקבוצה מהלוגיסטיקה. מסלול שגודל הקבוצה בו טרם
+     * נקבע נופל חזרה ל"קבוצה קטנה", שזו האמירה הכללית שנכונה לכל
+     * הסדנאות ממילא.
+     *
+     * החיבור נעשה כאן ולא בעמוד כדי שהמספר יישב במקום אחד בלבד:
+     * ברגע ש-groupSize מתמלא, ההירו, כרטיס הפרטים ורצועת ההרשמה
+     * מתעדכנים יחד ואי אפשר לעדכן אחד ולשכוח את השני.
+     */
+    heroMeta: {
+      /*
+       * מספר המפגשים חי ב-logistics בלבד. קודם הוא היה כתוב גם כאן,
+       * ובאופנה "5 מפגשים" הופיע פעמיים בשתי רשומות שאף אחת לא ידעה
+       * על השנייה. מסלול שהמפגשים בו טרם נקבעו אומר את זה במפורש
+       * במקום להציג שדה ריק.
+       */
+      duration: core.logistics.sessions || "מועדים ייסגרו בקרוב",
+      format: `${page.heroMeta.format} · ${core.logistics.groupSize || "קבוצה קטנה"}`,
+      outcome: page.heroMeta.outcome,
+    },
     targetAudience: page.targetAudience,
     curriculum: buildCurriculum(core.syllabus ?? []),
     deliverables: page.deliverables,
@@ -172,7 +198,7 @@ export const COURSES_CORE: CourseCore[] = [
       sessions: "",
       sessionLength: "",
       location: "מתחם SOK ראשון לציון",
-      groupSize: "",
+      groupSize: "עד 12 משתתפים",
       equipment: "מחשב נייד",
       support: "ליווי צמוד במהלך המפגשים",
       materials: "תבניות עבודה והוראות כתובות",
@@ -432,10 +458,10 @@ export const COURSES_CORE: CourseCore[] = [
     experienceLevel: "מתאים גם למתחילים וגם למי שכבר עובד עם כלי AI",
     logistics: {
       format: "מסלול פרונטלי מעשי בקבוצה קטנה",
-      sessions: "",
+      sessions: "4 מפגשים",
       sessionLength: "",
       location: "מתחם SOK ראשון לציון",
-      groupSize: "",
+      groupSize: "עד 12 משתתפים",
       equipment: "מחשב נייד",
       support: "ליווי צמוד במהלך המפגשים",
       materials: "תבניות עבודה, מסמכי חפיפה והוראות כתובות",
@@ -590,7 +616,7 @@ export const COURSES_CORE: CourseCore[] = [
       sessions: "",
       sessionLength: "",
       location: "מתחם SOK ראשון לציון",
-      groupSize: "",
+      groupSize: "עד 12 משתתפים",
       equipment: "מחשב נייד וחומרי הקורסים שלכם",
       support: "ליווי צמוד במהלך המפגשים",
       materials: "תבניות, תהליכים כתובים ושיטות עבודה מסודרות",
@@ -749,7 +775,7 @@ export const COURSES_CORE: CourseCore[] = [
       sessions: "",
       sessionLength: "",
       location: "מתחם SOK ראשון לציון",
-      groupSize: "",
+      groupSize: "עד 12 משתתפים",
       equipment: "מחשב נייד",
       support: "ליווי צמוד במהלך המפגשים",
       materials: "תהליכי עבודה כתובים, תבניות בריף וספריית טכניקות",
