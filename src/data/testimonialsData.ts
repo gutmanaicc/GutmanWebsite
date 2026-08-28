@@ -12,6 +12,16 @@ export type Testimonial = {
   /** מי כתב, כשהשם מופיע בצילום */
   author?: string;
   image: string;
+  /*
+   * המסלולים שההודעה רלוונטית להם, לפי מה שכתוב בה בפועל.
+   *
+   * העדויות נאספו מהודעות ולא מטופס, ולכן אין בהן שדה "מאיזו סדנה".
+   * השיוך כאן נגזר מתוכן ההודעה עצמה: מי שכותב על סוכנים שעובדים
+   * בשבילו שויך לסושיאל, ומי שכותב על שוט ויזואלי שויך לווידאו
+   * ולאופנה. הודעה שמדברת על רון או על האקדמיה בלי לרמוז על תחום
+   * נשארת בלי שיוך בכוונה, וכך היא משמשת גיבוי לכל מסלול.
+   */
+  courseSlugs?: string[];
 };
 
 export const TESTIMONIALS: Testimonial[] = [
@@ -32,6 +42,7 @@ export const TESTIMONIALS: Testimonial[] = [
     quote: "יש הרבה יותר ערך בתהליך מעמיק ואישי",
     text: "סדנה של שעתיים יכולה לתת טעימה וכלים בסיסיים, אבל כדי באמת ללמוד איך לייעל את העסק ולעבוד עם AI בצורה שמתאימה לצרכים האישיים שלך, בעיניי יש הרבה יותר ערך בתהליך קצת יותר מעמיק ואישי. רון נותן יחס אישי, מסביר הכל בצורה ברורה ועוזר ממש ליישם את הדברים בפועל.",
     image: "/images/testimonials/Rec_9.jpg",
+    courseSlugs: ["social-media-ai"],
   },
   {
     id: "rec-1",
@@ -39,6 +50,7 @@ export const TESTIMONIALS: Testimonial[] = [
     text: "רון יקר, תודה על היום. הנגשת לנו צעד צעד ואפילו מתקשה כמוני הצליחה ליצור שוט ויזואלי. תודה רבה אלוף!",
     author: "טליה",
     image: "/images/testimonials/Rec_1.jpg",
+    courseSlugs: ["ai-video-content", "ai-fashion"],
   },
   {
     id: "rec-2",
@@ -46,12 +58,14 @@ export const TESTIMONIALS: Testimonial[] = [
     text: "כל הכבוד לך, בכל זאת לעשות סדנה כזו של שלוש שעות לבעלי עסקים מאותגרי קשב זה לא פשוט. תודה רבה.",
     author: "Adiya Amedi",
     image: "/images/testimonials/Rec_2.jpg",
+    courseSlugs: ["social-media-ai"],
   },
   {
     id: "rec-3",
     quote: "היכולת ללמוד ממש בתכלס",
     text: "האווירה בכיתה היתה מעולה, והיכולת ללמוד ממש בתכלס איך לייצר סוכנים שעובדים בשבילך היא פשוט וואו. מעבר לכלים המטורפים, אתה פשוט מרצה מצוין.",
     image: "/images/testimonials/Rec_3.jpg",
+    courseSlugs: ["social-media-ai"],
   },
   {
     id: "rec-4",
@@ -64,6 +78,7 @@ export const TESTIMONIALS: Testimonial[] = [
     quote: "העברת את החומר בצורה סופר ברורה",
     text: "בקצב שמתאים לכולם, והיית כל כך סבלני. הכל הועבר בגובה העיניים, עם יחס אישי באמת יוצא דופן, ותמיד היית זמין בוואטסאפ לכל שאלה שצצה.",
     image: "/images/testimonials/Rec_5.jpg",
+    courseSlugs: ["ai-for-therapists", "ai-for-students"],
   },
   {
     id: "rec-6",
@@ -77,6 +92,7 @@ export const TESTIMONIALS: Testimonial[] = [
     quote: "אין איש מקצוע היום שלא חייב ללמוד AI",
     text: "כדי לעמוד בקצב שהעולם מתקדם אליו, ואצלך זה המקום לעשות את זה. היה מושלם ופראייר מי שלא בא ללמוד אצלך.",
     image: "/images/testimonials/Rec_8.jpg",
+    courseSlugs: ["ai-for-therapists"],
   },
   {
     id: "rec-10",
@@ -84,5 +100,21 @@ export const TESTIMONIALS: Testimonial[] = [
     text: "למדתי המון. תודה רבה!",
     author: "סוכנות שיווק Orela Media",
     image: "/images/testimonials/Rec_10.jpg",
+    courseSlugs: ["social-media-ai"],
   },
 ];
+
+/*
+ * העדויות שמוצגות בעמוד מסלול.
+ *
+ * מסלול שאין לו מספיק עדויות משויכות מקבל השלמה מהעדויות הכלליות
+ * במקום סקשן חצי ריק. הסדר בקובץ הוא סדר החוזק, ולכן ההשלמה פשוט
+ * לוקחת מלמעלה. שלוש הודעות הן המקסימום כאן; מי שרוצה עוד עובר
+ * ל-/reviews, וזה גם מה שהקישור בסקשן עושה.
+ */
+export function getTestimonialsForCourse(slug: string, limit = 3): Testimonial[] {
+  const matched = TESTIMONIALS.filter((item) => item.courseSlugs?.includes(slug));
+  if (matched.length >= limit) return matched.slice(0, limit);
+  const fillers = TESTIMONIALS.filter((item) => !item.courseSlugs && !matched.includes(item));
+  return [...matched, ...fillers].slice(0, limit);
+}

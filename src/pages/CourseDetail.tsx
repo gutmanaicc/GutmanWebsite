@@ -11,6 +11,14 @@ import Pressable from "../components/Pressable";
 import BackButton from "../components/BackButton";
 import StudentWorksCarousel from "../components/StudentWorksCarousel";
 import { ParallaxLayer, MagneticCard, MagneticDepth } from "../components/motion";
+import { MotionItem, MotionSection } from "../components/course/CourseMotion";
+import CoursePain from "../components/course/CoursePain";
+import CourseShift from "../components/course/CourseShift";
+import CourseNotFor from "../components/course/CourseNotFor";
+import CourseProof from "../components/course/CourseProof";
+import WhyFrontal from "../components/course/WhyFrontal";
+import CourseCtaStrip from "../components/course/CourseCtaStrip";
+import AfterSubmitSteps from "../components/course/AfterSubmitSteps";
 import {
   ArrowIcon,
   BoltIcon,
@@ -47,62 +55,6 @@ const AUDIENCE_ICONS: Record<AudienceIcon, (props: { size?: number }) => JSX.Ele
   graduation: GraduationIcon,
   video: VideoIcon,
   layers: LayersIcon,
-};
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 18 },
-  show: { opacity: 1, y: 0 },
-};
-
-const MotionSection = ({
-  children,
-  className,
-  id,
-  resetKey,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  id?: string;
-  /** Remount when the course changes so whileInView + stagger re-fire */
-  resetKey?: string;
-}) => {
-  const reduced = useReducedMotion();
-  return (
-    <motion.section
-      key={resetKey}
-      id={id}
-      className={className}
-      initial={reduced ? false : "hidden"}
-      animate={reduced ? "show" : undefined}
-      whileInView={reduced ? undefined : "show"}
-      viewport={{ once: true, amount: 0.12, margin: "0px 0px -8% 0px" }}
-      variants={{
-        hidden: {},
-        show: { transition: { staggerChildren: reduced ? 0 : 0.06 } },
-      }}
-    >
-      {children}
-    </motion.section>
-  );
-};
-
-const MotionItem = ({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) => {
-  const reduced = useReducedMotion();
-  return (
-    <motion.div
-      className={className}
-      variants={reduced ? undefined : fadeUp}
-      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-    >
-      {children}
-    </motion.div>
-  );
 };
 
 const CurriculumAccordion = ({
@@ -390,49 +342,9 @@ const CourseDetail = () => {
         <SubTracksGrid parent={course} tracks={subTracks} courseKey={courseKey} />
       )}
 
-      {/*
-        * מועדים, מיקום ופרטי השתתפות.
-        *
-        * הפרטים האלה ישבו ב-logistics מהיום הראשון בלי שאף מסך הציג אותם,
-        * ולכן עדכון של תאריך או כתובת פשוט לא הגיע לגולש. הבלוק מציג רק
-        * שדות שמולאו, וכשהמועדים עוד לא נסגרו הוא אומר את זה במפורש
-        * במקום להשאיר שורה ריקה.
-        */}
-      <MotionSection resetKey={`${courseKey}-logistics`} className="py-10 sm:py-12">
-        <div className="container-site">
-          <MotionItem>
-            <SectionHeader
-              compact
-              kicker="פרטים"
-              title={
-                <>
-                  מיקום <AccentWord>ופרטים</AccentWord>
-                </>
-              }
-            />
-          </MotionItem>
+      <CoursePain points={course.painPoints} courseKey={courseKey} />
 
-          {/* כרטיס אחד נשאר אחרי הסרת המועדים, ולכן אין יותר רשת שתי עמודות */}
-          <div className="mt-7">
-            <MotionItem>
-              <div className="course-logistics-card h-full">
-                <h3 className="course-logistics-title">
-                  <PinIcon size={14} />
-                  איפה ואיך
-                </h3>
-                <dl className="mt-4">
-                  {logisticsRows.map((row) => (
-                    <div key={row.label} className="course-logistics-row">
-                      <dt className="course-logistics-label">{row.label}</dt>
-                      <dd className="course-logistics-value">{row.value}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </div>
-            </MotionItem>
-          </div>
-        </div>
-      </MotionSection>
+      <CourseShift rows={course.shift} courseKey={courseKey} />
 
       {/* Target audience - lightweight rows */}
       <MotionSection resetKey={`${courseKey}-audience`} className="py-10 sm:py-12">
@@ -493,6 +405,8 @@ const CourseDetail = () => {
               );
             })}
           </div>
+
+          <CourseNotFor items={course.notSuitableFor} />
         </div>
       </MotionSection>
 
@@ -522,35 +436,12 @@ const CourseDetail = () => {
         </div>
       </MotionSection>
 
-      {courseInstructors.length > 0 && (
-        <MotionSection resetKey={`${courseKey}-instructors`} className="py-10 sm:py-12">
-          <div className="container-site">
-            <MotionItem>
-              <SectionHeader
-                compact
-                center
-                kicker="המנחה"
-                title={
-                  <>
-                    מי <AccentWord>מנחה</AccentWord> את הסדנה
-                  </>
-                }
-                sub="לחצו על המנחה כדי לקרוא עליו."
-              />
-            </MotionItem>
-            <div className="mt-10 flex flex-wrap items-start justify-center gap-x-16 gap-y-12">
-              {courseInstructors.map(({ instructor, bio }) => (
-                <MotionItem key={instructor.id}>
-                  <InstructorAvatar instructor={instructor} bio={bio} onOpen={setInstructorBio} />
-                </MotionItem>
-              ))}
-            </div>
-          </div>
-        </MotionSection>
-      )}
-
-      {/* הקרוסלה בנויה לקנבס הכהה; רקע בהיר כאן הפך את הכיתובים שלה ללבן על לבן */}
-      {studentWorks.length > 0 && <StudentWorksCarousel works={studentWorks} />}
+      <CourseCtaStrip
+        courseKey={courseKey}
+        headline={`רוצים לצאת מהסדנה עם ${course.heroMeta.outcome}?`}
+        note={course.logistics.groupSize}
+        onRegister={() => openRegisterModal({ courseId: course.slug, leadSource: `${course.leadSource}-mid` })}
+      />
 
       {/* Deliverables - featured bento */}
       <MotionSection resetKey={`${courseKey}-deliverables`} className="relative py-10 sm:py-12">
@@ -624,6 +515,40 @@ const CourseDetail = () => {
         </div>
       </MotionSection>
 
+      <CourseProof slug={course.slug} courseKey={courseKey} />
+
+      {/* הקרוסלה בנויה לקנבס הכהה; רקע בהיר כאן הפך את הכיתובים שלה ללבן על לבן */}
+      {studentWorks.length > 0 && <StudentWorksCarousel works={studentWorks} />}
+
+      {courseInstructors.length > 0 && (
+        <MotionSection resetKey={`${courseKey}-instructors`} className="py-10 sm:py-12">
+          <div className="container-site">
+            <MotionItem>
+              <SectionHeader
+                compact
+                center
+                kicker="המנחה"
+                title={
+                  <>
+                    מי <AccentWord>מנחה</AccentWord> את הסדנה
+                  </>
+                }
+                sub="לחצו על המנחה כדי לקרוא עליו."
+              />
+            </MotionItem>
+            <div className="mt-10 flex flex-wrap items-start justify-center gap-x-16 gap-y-12">
+              {courseInstructors.map(({ instructor, bio }) => (
+                <MotionItem key={instructor.id}>
+                  <InstructorAvatar instructor={instructor} bio={bio} onOpen={setInstructorBio} />
+                </MotionItem>
+              ))}
+            </div>
+          </div>
+        </MotionSection>
+      )}
+
+      <WhyFrontal courseKey={courseKey} />
+
       {/* Bottom registration CTA */}
       <MotionSection resetKey={`${courseKey}-register`} id="registration-form" className="scroll-mt-20 py-10 sm:py-12">
         <div className="container-site">
@@ -667,6 +592,8 @@ const CourseDetail = () => {
                       <span>{course.experienceLevel}</span>
                     </li>
                   </ul>
+
+                  <AfterSubmitSteps />
                 </div>
 
                 <div className="relative rounded-2xl border border-white/10 bg-surface-1 shadow-card backdrop-blur-xl">
@@ -682,6 +609,53 @@ const CourseDetail = () => {
               </div>
             </div>
           </MotionItem>
+        </div>
+      </MotionSection>
+
+      {/*
+        * מועדים, מיקום ופרטי השתתפות.
+        *
+        * הבלוק יושב אחרי הטופס ולא לפניו. פרטים כמו כתובת, מה להביא
+        * ואילו חומרים מחכים הם לא שכנוע אלא אישור, והם מעניינים את מי
+        * שכבר החליט. כשהם פתחו את העמוד הם עמדו בין גולש שהגיע
+        * מפרסום ממומן לבין הסיבה שבגללה כדאי לו להישאר.
+        *
+        * הבלוק מציג רק שדות שמולאו, כדי שפרט שטרם נקבע לא יקבל
+        * שורה ריקה בעמוד.
+        */}
+      <MotionSection resetKey={`${courseKey}-logistics`} className="py-10 sm:py-12">
+        <div className="container-site">
+          <MotionItem>
+            <SectionHeader
+              compact
+              kicker="פרטים"
+              title={
+                <>
+                  מיקום <AccentWord>ופרטים</AccentWord>
+                </>
+              }
+            />
+          </MotionItem>
+
+          {/* כרטיס אחד נשאר אחרי הסרת המועדים, ולכן אין יותר רשת שתי עמודות */}
+          <div className="mt-7">
+            <MotionItem>
+              <div className="course-logistics-card h-full">
+                <h3 className="course-logistics-title">
+                  <PinIcon size={14} />
+                  איפה ואיך
+                </h3>
+                <dl className="mt-4">
+                  {logisticsRows.map((row) => (
+                    <div key={row.label} className="course-logistics-row">
+                      <dt className="course-logistics-label">{row.label}</dt>
+                      <dd className="course-logistics-value">{row.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            </MotionItem>
+          </div>
         </div>
       </MotionSection>
 
