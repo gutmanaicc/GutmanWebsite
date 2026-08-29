@@ -16,6 +16,7 @@ import Home from "./pages/Home";
 const About = lazy(() => import("./pages/About"));
 const Courses = lazy(() => import("./pages/Courses"));
 const CourseDetail = lazy(() => import("./pages/CourseDetail"));
+const FashionLanding = lazy(() => import("./pages/FashionLanding"));
 const Reviews = lazy(() => import("./pages/Reviews"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Accessibility = lazy(() => import("./pages/Accessibility"));
@@ -41,6 +42,15 @@ const App = () => (
           <Route path="/about" element={<About />} />
           <Route path="/courses" element={<Courses />} />
           <Route path="/courses/:slug" element={<CourseDetail />} />
+          {/*
+            * דף נחיתה לקמפיין הממומן של סדנת האופנה.
+            *
+            * נתיב נפרד מ-/courses/ai-fashion בכוונה: הקמפיין כבר רץ לעמוד
+            * המסלול, וכאוס מעבירים אליו תנועה רק אחרי השוואת ביצועים.
+            * שינוי בעמוד המסלול היה מפיל את הקמפיין באמצע במקום להעמיד
+            * מולו חלופה.
+            */}
+          <Route path="/lp/ai-fashion" element={<FashionLanding />} />
           <Route path="/reviews" element={<Reviews />} />
           <Route path="/thank-you" element={<ThankYou />} />
           <Route path="/privacy" element={<Privacy />} />

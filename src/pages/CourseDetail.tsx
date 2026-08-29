@@ -214,6 +214,7 @@ const CourseDetail = () => {
   const schedule = course.logistics.schedule ?? [];
   // רק שדות שמולאו. פרט שטרם נקבע לא מקבל שורה ריקה בעמוד.
   const logisticsRows = [
+    { label: "מתכונת", value: course.logistics.scheduleNote },
     { label: "מיקום", value: course.logistics.location },
     { label: "גודל הקבוצה", value: course.logistics.groupSize },
     { label: "מה להביא", value: course.logistics.equipment },
@@ -286,6 +287,16 @@ const CourseDetail = () => {
                   <p key={line}>{line}</p>
                 ))}
               </div>
+
+              {/*
+                * שורת המתכונת יושבת בהירו ולא רק בכרטיס הפרטים שבתחתית.
+                * התפקיד שלה הוא לסנן: מי שגרה רחוק או עובדת באותן שעות
+                * צריכה לדעת את זה לפני שהיא ממלאת טופס, אחרת המכירות
+                * שורפות עליה שיחה. בתחתית העמוד זה כבר מאוחר מדי.
+                */}
+              {course.logistics.scheduleNote && (
+                <p className="mt-3 text-sm font-medium text-muted">{course.logistics.scheduleNote}</p>
+              )}
 
               <div className="course-hero-meta mt-4 w-full max-w-xl justify-center">
                 <div className="course-hero-meta-item text-start">
