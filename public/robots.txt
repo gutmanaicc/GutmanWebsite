@@ -1,5 +1,37 @@
+# מנועי חיפוש קלאסיים
 User-agent: *
 Allow: /
 Disallow: /thank-you
+
+# זחלני מודלי שפה, במפורש ולא בהיסק מ-*.
+# ChatGPT, Claude, Perplexity ו-Gemini מצטטים היום מקורות בתשובות,
+# וציטוט הוא תנועה. הרשימה מפורשת כי חלק מהזחלנים מכבדים רק כלל
+# שנושא את שמם, ומתעלמים מהכלל הכללי.
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
 
 Sitemap: https://gutmanai.com/sitemap.xml

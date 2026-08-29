@@ -37,6 +37,103 @@
     <meta name="application-name" content="GutmanAi" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <!--
+      JSON-LD סטטי, לא דרך useSeo.
+
+      useSeo מזריק סכמות בזמן ריצה וזה משרת דפדפן, אבל לא זחלן שלא מריץ
+      JS - וזו בדיוק האוכלוסייה שמייבאת את האתר לתשובות של מנועי שפה.
+      הבלוק כאן מתאר את הארגון ואת המסלולים הפעילים פעם אחת, סטטית, כך
+      שגם קריאה של ה-HTML הגולמי מחזירה מי אנחנו ומה אנחנו מלמדים.
+
+      זה מכפיל את סכמת הארגון עם זו שמוזרקת בזמן ריצה, וזה בסדר: כפילות
+      של אותו ישות עם אותו url ממוזגת על ידי המנועים, ואילו היעדר סכמה
+      בקריאה הראשונה לא ניתן לתיקון בדיעבד.
+    -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "EducationalOrganization",
+            "@id": "https://gutmanai.com/#org",
+            "name": "Gutman Academy",
+            "alternateName": "האקדמיה של גוטמן",
+            "description": "האקדמיה הפרונטלית הראשונה בישראל שמוקדשת כולה ללימודי בינה מלאכותית. סדנאות מעשיות בקבוצות קטנות, שבסופן כל משתתף יוצא עם תוצר אמיתי.",
+            "url": "https://gutmanai.com",
+            "logo": "https://gutmanai.com/icon-512.png",
+            "image": "https://gutmanai.com/og-cover.png",
+            "inLanguage": "he-IL",
+            "email": "gutmanaicc@gmail.com",
+            "telephone": "+972-50-8185107",
+            "founder": { "@type": "Person", "name": "רון גוטמן" },
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "ראשון לציון",
+              "addressCountry": "IL"
+            },
+            "sameAs": [
+              "https://instagram.com/gutmanai",
+              "https://youtube.com/@gutmanai"
+            ]
+          },
+          {
+            "@type": "Course",
+            "name": "בינה מלאכותית באופנה. מהשראה לקמפיין מוגמר",
+            "description": "מרעיון ראשוני לקמפיין אופנה שלם בעזרת AI. חמישה מפגשים שבועיים שבסופם קמפיין מוגמר, כולל תמונות ווידאו.",
+            "url": "https://gutmanai.com/courses/ai-fashion",
+            "inLanguage": "he-IL",
+            "provider": { "@id": "https://gutmanai.com/#org" },
+            "hasCourseInstance": {
+              "@type": "CourseInstance",
+              "courseMode": "onsite",
+              "courseWorkload": "PT20H",
+              "location": {
+                "@type": "Place",
+                "name": "מתחם SOK",
+                "address": {
+                  "@type": "PostalAddress",
+                  "addressLocality": "ראשון לציון",
+                  "addressCountry": "IL"
+                }
+              }
+            }
+          },
+          {
+            "@type": "Course",
+            "name": "AI למטפלים ופסיכולוגים",
+            "description": "AI ככלי עבודה תומך בקליניקה, לא תחליף למטפל.",
+            "url": "https://gutmanai.com/courses/ai-for-therapists",
+            "inLanguage": "he-IL",
+            "provider": { "@id": "https://gutmanai.com/#org" }
+          },
+          {
+            "@type": "Course",
+            "name": "AI למנהלי סושיאל",
+            "description": "בונים לכל לקוח עובד AI שמכיר את הטון, הקהל והמטרות שלו.",
+            "url": "https://gutmanai.com/courses/social-media-ai",
+            "inLanguage": "he-IL",
+            "provider": { "@id": "https://gutmanai.com/#org" }
+          },
+          {
+            "@type": "Course",
+            "name": "AI לווידאו ותוכן",
+            "description": "מסלול מעשי לעורכי וידאו ויוצרי תוכן שרוצים לעבוד עם כלי AI.",
+            "url": "https://gutmanai.com/courses/ai-video-content",
+            "inLanguage": "he-IL",
+            "provider": { "@id": "https://gutmanai.com/#org" }
+          },
+          {
+            "@type": "Course",
+            "name": "AI לסטודנטים",
+            "description": "מערכת עבודה אישית ללימודים - מחקר, סיכום, כתיבה וארגון חומר.",
+            "url": "https://gutmanai.com/courses/ai-for-students",
+            "inLanguage": "he-IL",
+            "provider": { "@id": "https://gutmanai.com/#org" }
+          }
+        ]
+      }
+    </script>
+
     <!-- גופנים מקומיים: Assistant (גרוטסק) + Frank Ruhl Libre (סריף תצוגה) -->
     <link rel="preload" href="/fonts/frank-ruhl-libre-500-hebrew.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/assistant-400-hebrew.woff2" as="font" type="font/woff2" crossorigin />
