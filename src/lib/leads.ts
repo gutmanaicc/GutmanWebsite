@@ -71,14 +71,55 @@ export function getLeadEndpoint(): string {
   return import.meta.env.VITE_LEAD_ENDPOINT?.trim() || "/api/lead";
 }
 
-export function collectUtm(): Record<string, string> {
+const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"] as const;
+const UTM_STORAGE_KEY = "gutman-utm";
+
+function utmFromUrl(): Record<string, string> {
   const params = new URLSearchParams(window.location.search);
   const utm: Record<string, string> = {};
-  for (const key of ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"]) {
+  for (const key of UTM_KEYS) {
     const v = params.get(key);
     if (v) utm[key] = v;
   }
   return utm;
+}
+
+/**
+ * תופס את ה-UTM בטעינה הראשונה ושומר אותו לאורך הביקור.
+ *
+ * בלי זה הייחוס נשבר: ה-SPA לא נושא את הפרמטרים בניווט פנימי, ו-
+ * collectUtm רץ רק ברגע שליחת הטופס. גולשת שנחתה מהמודעה, לחצה על
+ * לינק אחד באתר ואז נרשמה, הגיעה ל-CRM בלי שום UTM. מה שלא נתפס
+ * ברגע הנחיתה לא ניתן לשחזור בדיעבד.
+ *
+ * sessionStorage ולא localStorage בכוונה: הייחוס תקף לביקור הזה
+ * בלבד. ב-localStorage קליק על מודעה מלפני חודשיים היה נדבק להרשמה
+ * אורגנית לגמרי ומנפח את ביצועי הקמפיין.
+ *
+ * כתובת שנושאת UTM דורסת את מה שנשמר, כי היא קליק חדש על מודעה.
+ * כתובת בלי UTM לא מוחקת, כי היא בדרך כלל ניווט פנימי.
+ */
+export function captureUtm() {
+  try {
+    const fromUrl = utmFromUrl();
+    if (Object.keys(fromUrl).length > 0) {
+      sessionStorage.setItem(UTM_STORAGE_KEY, JSON.stringify(fromUrl));
+    }
+  } catch {
+    /* אחסון חסום או מלא. עדיף ייחוס חלקי מאשר להפיל את טעינת האתר */
+  }
+}
+
+export function collectUtm(): Record<string, string> {
+  const fromUrl = utmFromUrl();
+  if (Object.keys(fromUrl).length > 0) return fromUrl;
+
+  try {
+    const stored = sessionStorage.getItem(UTM_STORAGE_KEY);
+    return stored ? (JSON.parse(stored) as Record<string, string>) : {};
+  } catch {
+    return {};
+  }
 }
 
 function saveLocally(lead: LeadPayload) {
