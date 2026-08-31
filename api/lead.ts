@@ -57,7 +57,13 @@ import {
   readLogicalFailure,
   reportLeadFailure,
   stageForThrown,
-} from "./_monitoring";
+} from "./_monitoring.js";
+/*
+ * הסיומת .js חובה ואינה שגיאה: ב-package.json מוגדר "type": "module",
+ * Vercel מתמללת את api/ בלי bundling, ומנוע ה-ESM של Node דורש סיומת
+ * מפורשת בייבוא יחסי. בלעדיה הפונקציה קורסת כולה ב-FUNCTION_INVOCATION_FAILED
+ * עוד לפני שהיא רצה. TypeScript ו-esbuild ממפים .js אל קובץ ה-.ts.
+ */
 
 const FIREBERRY_BASE = "https://api.fireberry.com";
 
