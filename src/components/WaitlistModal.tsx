@@ -77,11 +77,10 @@ const WaitlistModal = () => {
     if (Object.keys(errs).length) return;
 
     setStatus("sending");
-    const ok = await submitLead({
+    const { ok } = await submitLead({
       fullName: values.fullName.trim(),
       phone: values.phone.trim(),
       email: values.email.trim(),
-      occupation: "",
       courseInterest: target.slug,
       courseInterestLabel: target.title,
       goal: `רשימת המתנה: ${target.title}`,

@@ -1,27 +1,39 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { LEAD_TRACKS } from "../data/courses";
 import { SITE } from "../data/site";
-import { EXPERIENCE_OPTIONS, UNSURE_LABEL, collectUtm, submitLead } from "../lib/leads";
+import { collectUtm, saveLeadTicket, submitLead } from "../lib/leads";
 import Pressable from "./Pressable";
+
+/**
+ * השלב הראשון בהרשמה: שם, טלפון, אימייל.
+ *
+ * הטופס ביקש קודם גם תחום עיסוק, מטרה, רמת ניסיון ובחירת מסלול. כל
+ * שדה נוסף הוא עוד סיבה לנטוש, והשדות האלה שירתו את השיחה שאחרי ולא
+ * את ההחלטה להשאיר פרטים. הם עברו לעמוד התודה, אחרי ההמרה, כשהמחיר
+ * של ויתור עליהם הוא כבר לא ליד שאבד.
+ *
+ * מה שידוע בלי לשאול נשלח בשקט: המסלול מגיע מהעמוד או מהכפתור שנלחץ,
+ * והמטרה מגיעה מהמנחה בצ'אט. אין טעם לבקש שוב מידע שכבר בידינו.
+ */
 
 export type RegisterFormProps = {
   /** Pre-select a course in the dropdown (slug) */
   preselectedCourse?: string;
-  /** When true with preselectedCourse, hide the course dropdown */
+  /** נשמר לתאימות עם קריאות קיימות. הבורר כבר לא מוצג כאן בכל מקרה */
   lockCourse?: boolean;
   leadSource?: string;
   title?: string;
   sub?: string;
   initialGoal?: string;
-  compact?: boolean;
   /** מוותר על הכרטיס, הכותרת ותת-הכותרת - המכל שמסביב כבר מספק אותם */
   headless?: boolean;
   autoFocus?: boolean;
   onSuccess?: () => void;
 };
 
-type Errors = Partial<Record<"fullName" | "phone" | "email" | "courseInterest" | "consent", string>>;
+type Errors = Partial<
+  Record<"fullName" | "phone" | "email" | "consent", string>
+>;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const isValidPhone = (raw: string) => {
@@ -29,120 +41,12 @@ const isValidPhone = (raw: string) => {
   return /^0\d{8,9}$/.test(digits) || /^972\d{8,9}$/.test(digits);
 };
 
-/* התווית מגיעה מ-leads כדי שמה שהגולש רואה ומה שנשלח ל-CRM לא יסטו זה מזה */
-const UNSURE_OPTION = { value: "unsure", label: UNSURE_LABEL } as const;
-
-const TRACK_OPTIONS = [
-  ...LEAD_TRACKS.map((t) => ({ value: t.slug, label: t.label })),
-  UNSURE_OPTION,
-];
-
-type SelectOption = { value: string; label: string };
-
-/**
- * Pinned listbox - relative wrapper + absolute top-full menu so modal scroll
- * cannot detach the options list on mobile (430×932).
- */
-const PinnedSelect = ({
-  id,
-  value,
-  onChange,
-  options,
-  placeholder,
-  invalid,
-}: {
-  id: string;
-  value: string;
-  onChange: (value: string) => void;
-  options: readonly SelectOption[];
-  placeholder: string;
-  invalid?: boolean;
-}) => {
-  const [open, setOpen] = useState(false);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const listId = `${id}-listbox`;
-  const selectedLabel = options.find((o) => o.value === value)?.label;
-  const label = selectedLabel || placeholder;
-
-  useEffect(() => {
-    if (!open) return;
-    const onDoc = (e: MouseEvent) => {
-      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("mousedown", onDoc);
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onDoc);
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
-
-  return (
-    <div ref={wrapRef} className="relative">
-      <button
-        type="button"
-        id={id}
-        className="flex min-h-12 w-full items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-right text-base text-bone outline-none transition-[border-color,box-shadow] focus-visible:border-brand/50 focus-visible:ring-2 focus-visible:ring-brand/25"
-        style={invalid ? { borderColor: "rgb(239 68 68)" } : undefined}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        aria-controls={listId}
-        aria-invalid={invalid || undefined}
-        onClick={() => setOpen((v) => !v)}
-      >
-        <span className={value ? "text-bone" : "text-bone/35"}>{label}</span>
-        <span className="text-bone/45" aria-hidden>
-          {open ? "▴" : "▾"}
-        </span>
-      </button>
-
-      {open && (
-        <ul
-          id={listId}
-          role="listbox"
-          aria-labelledby={id}
-          className="absolute left-0 right-0 top-full z-[100] mt-1.5 max-h-64 w-full overflow-y-auto rounded-xl border border-white/10 bg-surface-2 py-1 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.85)]"
-        >
-          {options.map((opt) => {
-            const selected = value === opt.value;
-            return (
-              <li key={opt.value} role="presentation">
-                <button
-                  type="button"
-                  role="option"
-                  aria-selected={selected}
-                  className={`flex min-h-11 w-full items-center px-3.5 py-2.5 text-right text-sm font-medium transition-colors ${
-                    selected
-                      ? "bg-brand/15 text-brand"
-                      : "text-bone/80 hover:bg-white/[0.06] hover:text-bone focus-visible:bg-white/[0.08] focus-visible:text-bone"
-                  }`}
-                  onClick={() => {
-                    onChange(opt.value);
-                    setOpen(false);
-                  }}
-                >
-                  {opt.label}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </div>
-  );
-};
-
 const RegisterForm = ({
   preselectedCourse,
-  lockCourse = false,
   leadSource = "register-form",
   title,
   sub,
   initialGoal,
-  compact,
   headless = false,
   autoFocus = false,
   onSuccess,
@@ -150,45 +54,34 @@ const RegisterForm = ({
   const navigate = useNavigate();
   const uid = useId();
   const nameRef = useRef<HTMLInputElement>(null);
-  const [values, setValues] = useState({
-    fullName: "",
-    phone: "",
-    email: "",
-    occupation: "",
-    courseInterest: preselectedCourse ?? "",
-    goal: initialGoal ?? "",
-    experienceLevel: "",
-  });
+  const [values, setValues] = useState({ fullName: "", phone: "", email: "" });
   const [errors, setErrors] = useState<Errors>({});
   /* הסכמה מפורשת לפני שליחה: תיעוד של רגע ההסכמה, ולא הנחה שבשתיקה */
   const [consent, setConsent] = useState(false);
-  const [status, setStatus] = useState<"idle" | "sending" | "error" | "success">("idle");
-
-  useEffect(() => {
-    if (preselectedCourse) {
-      setValues((v) => ({ ...v, courseInterest: preselectedCourse }));
-    }
-  }, [preselectedCourse]);
-
-  useEffect(() => {
-    if (initialGoal) setValues((v) => ({ ...v, goal: initialGoal }));
-  }, [initialGoal]);
+  const [status, setStatus] = useState<
+    "idle" | "sending" | "error" | "success"
+  >("idle");
 
   useEffect(() => {
     if (!autoFocus) return;
-    const t = window.setTimeout(() => nameRef.current?.focus({ preventScroll: true }), 80);
+    const t = window.setTimeout(
+      () => nameRef.current?.focus({ preventScroll: true }),
+      80,
+    );
     return () => window.clearTimeout(t);
   }, [autoFocus]);
 
-  const set = (k: keyof typeof values) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-    setValues((v) => ({ ...v, [k]: e.target.value }));
+  const set =
+    (k: keyof typeof values) => (e: React.ChangeEvent<HTMLInputElement>) =>
+      setValues((v) => ({ ...v, [k]: e.target.value }));
 
   const validate = (): Errors => {
     const errs: Errors = {};
     if (values.fullName.trim().length < 2) errs.fullName = "נשמח לשם מלא";
-    if (!isValidPhone(values.phone)) errs.phone = "מספר טלפון ישראלי תקין, למשל 050-1234567";
-    if (!EMAIL_RE.test(values.email.trim())) errs.email = "כתובת אימייל תקינה, למשל name@example.com";
-    if (!values.courseInterest) errs.courseInterest = "בחרו מסלול, או סמנו שאתם עדיין מתלבטים";
+    if (!isValidPhone(values.phone))
+      errs.phone = "מספר טלפון ישראלי תקין, למשל 050-1234567";
+    if (!EMAIL_RE.test(values.email.trim()))
+      errs.email = "כתובת אימייל תקינה, למשל name@example.com";
     if (!consent) errs.consent = "צריך לאשר כדי שנוכל לחזור אליכם";
     return errs;
   };
@@ -200,15 +93,18 @@ const RegisterForm = ({
     setErrors(errs);
     if (Object.keys(errs).length) return;
 
+    const fullName = values.fullName.trim();
+    const email = values.email.trim();
+    const courseInterest = preselectedCourse ?? "";
+    const goal = initialGoal?.trim() ?? "";
+
     setStatus("sending");
-    const ok = await submitLead({
-      fullName: values.fullName.trim(),
+    const result = await submitLead({
+      fullName,
       phone: values.phone.trim(),
-      email: values.email.trim(),
-      occupation: values.occupation.trim(),
-      courseInterest: values.courseInterest,
-      goal: values.goal.trim(),
-      experienceLevel: values.experienceLevel,
+      email,
+      courseInterest,
+      goal,
       consent,
       formType: "הרשמה",
       leadSource,
@@ -218,25 +114,43 @@ const RegisterForm = ({
       submittedAt: new Date().toISOString(),
     });
 
-    if (ok) {
+    if (result.ok) {
+      /*
+       * הכרטיס נשמר לפני הניווט, כי עמוד התודה צריך לדעת למי ולאיזו
+       * רשומה להצמיד את השלמת הפרטים. state של הראוטר לבדו נמחק ברענון.
+       */
+      saveLeadTicket({
+        leadId: result.leadId,
+        fullName,
+        email,
+        courseInterest,
+        goal,
+        leadSource,
+      });
       setStatus("success");
       onSuccess?.();
-      setTimeout(() => navigate("/thank-you", { state: { course: values.courseInterest } }), 400);
+      setTimeout(
+        () => navigate("/thank-you", { state: { course: courseInterest } }),
+        400,
+      );
     } else {
       setStatus("error");
     }
   };
 
-  const showCourseSelect = !(lockCourse && preselectedCourse);
   const field = (name: string) => `${leadSource}-${uid}-${name}`;
 
   if (status === "success") {
     return (
-      <div className={`text-center text-ink${headless ? " py-6" : " lead-form"}`}>
+      <div
+        className={`text-center text-ink${headless ? " py-6" : " lead-form"}`}
+      >
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-brand/10 text-2xl text-brand">
           ✓
         </div>
-        <h3 className="font-display text-2xl font-bold tracking-tight">קיבלנו. נחזור אליכם בקרוב.</h3>
+        <h3 className="font-display text-2xl font-bold tracking-tight">
+          קיבלנו. נחזור אליכם בקרוב.
+        </h3>
         <p className="mt-2 text-sm text-muted">מעבירים אתכם לדף אישור...</p>
       </div>
     );
@@ -244,7 +158,7 @@ const RegisterForm = ({
 
   return (
     <form
-      className={`text-ink${headless ? "" : " lead-form"}${compact ? " !border-0 !bg-transparent !p-0 !shadow-none" : ""}`}
+      className={`text-ink${headless ? "" : " lead-form"}`}
       onSubmit={onSubmit}
       noValidate
     >
@@ -252,19 +166,28 @@ const RegisterForm = ({
         <>
           <h3 className="text-ink">{title ?? "השאירו פרטים ונחזור אליכם"}</h3>
           <p className="form-sub">
-            {sub ?? "בלי התחייבות ובלי ספאם. נחזור אליכם עם כל הפרטים ונענה על כל שאלה."}
+            {sub ?? "שלושה שדות, ואנחנו חוזרים אליכם. בלי התחייבות ובלי ספאם."}
           </p>
         </>
       )}
 
       {status === "error" && (
         <div className="form-error-summary" role="alert">
-          לא הצלחנו לשלוח את הפרטים. נסו שוב, ואם זה חוזר על עצמו התקשרו אלינו ל-
-          <a href={`tel:${SITE.contact.phone.replace(/-/g, "")}`} dir="ltr" className="underline underline-offset-2">
+          לא הצלחנו לשלוח את הפרטים. נסו שוב, ואם זה חוזר על עצמו התקשרו אלינו
+          ל-
+          <a
+            href={`tel:${SITE.contact.phone.replace(/-/g, "")}`}
+            dir="ltr"
+            className="underline underline-offset-2"
+          >
             {SITE.contact.phone}
           </a>{" "}
           או כתבו ל-
-          <a href={`mailto:${SITE.contact.email}`} dir="ltr" className="underline underline-offset-2">
+          <a
+            href={`mailto:${SITE.contact.email}`}
+            dir="ltr"
+            className="underline underline-offset-2"
+          >
             {SITE.contact.email}
           </a>
           .
@@ -272,6 +195,8 @@ const RegisterForm = ({
       )}
 
       <div className={headless ? "space-y-5" : "mt-6 space-y-5"}>
+        {/* שם וטלפון בשורה אחת, אימייל ברוחב מלא מתחת. אימייל לבד בחצי
+            שורה היה משאיר חצי ריק בולט בדסקטופ אחרי שהשדות התקצרו */}
         <div className="form-row">
           <div className="field">
             <label htmlFor={field("name")}>שם מלא *</label>
@@ -303,71 +228,20 @@ const RegisterForm = ({
           </div>
         </div>
 
-        <div className="form-row">
-          <div className="field">
-            <label htmlFor={field("email")}>אימייל *</label>
-            <input
-              id={field("email")}
-              type="email"
-              autoComplete="email"
-              dir="ltr"
-              className="text-end"
-              value={values.email}
-              onChange={set("email")}
-              aria-invalid={!!errors.email}
-            />
-            {errors.email && <span className="err">{errors.email}</span>}
-          </div>
-          {!compact && (
-            <div className="field">
-              <label htmlFor={field("occupation")}>תחום עיסוק או לימודים</label>
-              <input id={field("occupation")} type="text" value={values.occupation} onChange={set("occupation")} />
-            </div>
-          )}
+        <div className="field">
+          <label htmlFor={field("email")}>אימייל *</label>
+          <input
+            id={field("email")}
+            type="email"
+            autoComplete="email"
+            dir="ltr"
+            className="text-end"
+            value={values.email}
+            onChange={set("email")}
+            aria-invalid={!!errors.email}
+          />
+          {errors.email && <span className="err">{errors.email}</span>}
         </div>
-
-        {showCourseSelect && (
-          <div className="field">
-            <label htmlFor={field("course")}>איזה מסלול מעניין אתכם? *</label>
-            <PinnedSelect
-              id={field("course")}
-              value={values.courseInterest}
-              options={TRACK_OPTIONS}
-              placeholder="בחרו מסלול..."
-              invalid={!!errors.courseInterest}
-              onChange={(slug) => {
-                setValues((v) => ({ ...v, courseInterest: slug }));
-                setErrors((e) => ({ ...e, courseInterest: undefined }));
-              }}
-            />
-            {errors.courseInterest && <span className="err">{errors.courseInterest}</span>}
-          </div>
-        )}
-
-        {!compact && (
-          <>
-            <div className="field">
-              <label htmlFor={field("goal")}>מה הייתם רוצים להשיג?</label>
-              <textarea
-                id={field("goal")}
-                value={values.goal}
-                onChange={set("goal")}
-                placeholder="כמה מילים על העסק, הלימודים או המטרה שלכם"
-              />
-            </div>
-
-            <div className="field">
-              <label htmlFor={field("exp")}>רמת ניסיון ב-AI</label>
-              <PinnedSelect
-                id={field("exp")}
-                value={values.experienceLevel}
-                options={EXPERIENCE_OPTIONS}
-                placeholder="בחרו רמה..."
-                onChange={(level) => setValues((v) => ({ ...v, experienceLevel: level }))}
-              />
-            </div>
-          </>
-        )}
 
         {/*
           תיבת הסכמה מעל כפתור השליחה, במקום משפט משפטי קטן מתחתיו.
@@ -381,13 +255,17 @@ const RegisterForm = ({
               checked={consent}
               onChange={(e) => {
                 setConsent(e.target.checked);
-                if (e.target.checked) setErrors((prev) => ({ ...prev, consent: undefined }));
+                if (e.target.checked)
+                  setErrors((prev) => ({ ...prev, consent: undefined }));
               }}
               aria-invalid={errors.consent ? true : undefined}
-              aria-describedby={errors.consent ? `${field("consent")}-err` : undefined}
+              aria-describedby={
+                errors.consent ? `${field("consent")}-err` : undefined
+              }
             />
             <span>
-              אני מאשר/ת שתחזרו אליי לגבי הסדנאות ולקבל עדכונים על מועדים חדשים, בהתאם ל
+              אני מאשר/ת שתחזרו אליי לגבי הסדנאות ולקבל עדכונים על מועדים חדשים,
+              בהתאם ל
               <Link to="/privacy" target="_blank" rel="noopener noreferrer">
                 מדיניות הפרטיות
               </Link>
@@ -407,7 +285,7 @@ const RegisterForm = ({
           disabled={status === "sending"}
           motionDisabled={status === "sending"}
         >
-          {status === "sending" ? "שולח..." : "השאירו לי פרטים"}
+          {status === "sending" ? "שולח..." : "השאירו פרטים"}
         </Pressable>
       </div>
     </form>

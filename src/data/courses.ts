@@ -90,7 +90,6 @@ type CourseCore = {
   };
   faq: CourseFaq[];
   visual: "social" | "students" | "video";
-  ctaText: string;
   leadSource: string;
   note?: string;
   /** When set, this course is a sub-track under a parent track (e.g. business owners). */
@@ -256,7 +255,6 @@ export const COURSES_CORE: CourseCore[] = [
       },
     ],
     visual: "students",
-    ctaText: "רוצה לשלב AI בקליניקה",
     leadSource: "course-ai-for-therapists",
   },
   {
@@ -353,7 +351,6 @@ export const COURSES_CORE: CourseCore[] = [
       },
     ],
     visual: "video",
-    ctaText: "רוצה לבנות קמפיין אופנה",
     leadSource: "course-ai-fashion",
   },
   {
@@ -508,7 +505,6 @@ export const COURSES_CORE: CourseCore[] = [
       },
     ],
     visual: "social",
-    ctaText: "רוצה עובד AI לכל לקוח",
     leadSource: "course-social-media-ai",
   },
   {
@@ -663,7 +659,6 @@ export const COURSES_CORE: CourseCore[] = [
       },
     ],
     visual: "students",
-    ctaText: "רוצה ללמוד חכם יותר",
     leadSource: "course-ai-for-students",
     note: "חשוב לנו לומר: AI לא מחליף את הלמידה. הוא עוזר לכם ללמוד טוב יותר.",
   },
@@ -822,7 +817,6 @@ export const COURSES_CORE: CourseCore[] = [
       },
     ],
     visual: "video",
-    ctaText: "רוצה להפיק תוכן עם AI",
     leadSource: "course-ai-video-content",
   },
 ];

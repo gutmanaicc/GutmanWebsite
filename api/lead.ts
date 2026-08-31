@@ -58,6 +58,10 @@ const CORE_FIELDS = {
 } as const;
 
 type LeadBody = {
+  /** "enrich" = השלמת פרטים לרשומה קיימת, ולא ליד חדש */
+  mode?: string;
+  /** מזהה הרשומה שנפתחה בשלב הראשון */
+  leadId?: string;
   fullName?: string;
   phone?: string;
   email?: string;
@@ -362,6 +366,20 @@ function buildNote(lead: LeadBody): string {
   return lines.join("\n");
 }
 
+/** ההערה שנוספת לרשומה כשמגיעים פרטים מהשלב השני */
+function buildEnrichNote(lead: LeadBody): string {
+  const lines = [
+    "השלמת פרטים מעמוד התודה:",
+    (lead.courseInterestLabel || lead.courseInterest) &&
+      `סדנה: ${lead.courseInterestLabel || lead.courseInterest}`,
+    lead.occupation && `עיסוק: ${lead.occupation}`,
+    lead.goal && `מטרה: ${lead.goal}`,
+    (lead.experienceLevelLabel || lead.experienceLevel) &&
+      `רמת ניסיון: ${lead.experienceLevelLabel || lead.experienceLevel}`,
+  ].filter(Boolean);
+  return lines.join("\n");
+}
+
 /**
  * שולף מהודעת השגיאה של פיירברי את שם השדה שנפסל.
  * ההודעה נראית כך: אופנה is not a valid value for 'pcfworkshoptype'
@@ -388,6 +406,161 @@ async function createRecord(token: string, objectType: string, body: Record<stri
     body: JSON.stringify(body),
   });
   return { ok: response.ok, status: response.status, text: await response.text() };
+}
+
+/** עדכון רשומה קיימת. אותו נתיב כמו היצירה, עם מזהה הרשומה ובמתודה PUT */
+async function updateRecord(
+  token: string,
+  objectType: string,
+  recordId: string,
+  body: Record<string, unknown>,
+) {
+  const response = await fetch(`${FIREBERRY_BASE}/api/record/${objectType}/${recordId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", Accept: "application/json", tokenid: token },
+    body: JSON.stringify(body),
+  });
+  return { ok: response.ok, status: response.status, text: await response.text() };
+}
+
+const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/* מזהים שהם של מישהו אחר: הבעלים, מי שיצר, סוג האובייקט. לא הרשומה */
+const FOREIGN_ID = /^(owner|created|modified|systemuser|objecttype|parent|transformed)/i;
+
+function collectGuids(node: any, out: Array<[string, string]>, depth = 0) {
+  if (!node || typeof node !== "object" || depth > 6) return;
+  for (const [key, value] of Object.entries(node)) {
+    if (typeof value === "string" && GUID.test(value)) out.push([key.toLowerCase(), value]);
+    else if (value && typeof value === "object") collectGuids(value, out, depth + 1);
+  }
+}
+
+/**
+ * שולף את מזהה הרשומה שנוצרה מתוך התשובה של פיירברי.
+ *
+ * שם השדה תלוי באובייקט (accountid, contactid וכן הלאה) ולא מובטח
+ * בתיעוד, ולכן מחפשים כל ערך בצורת GUID שיושב תחת מפתח שנגמר ב-id
+ * ואינו מזהה של רשומה אחרת. בלי המזהה הזה השלמת הפרטים בעמוד התודה
+ * לא יודעת לאיזו רשומה להיצמד, והיא נופלת לרישום ביומן.
+ */
+function findRecordId(text: string): string | undefined {
+  let payload: any;
+  try {
+    payload = JSON.parse(text);
+  } catch {
+    return undefined;
+  }
+  const ids: Array<[string, string]> = [];
+  collectGuids(payload, ids);
+  const usable = ids.filter(([key]) => !FOREIGN_ID.test(key));
+  for (const wanted of ["accountid", "contactid", "recordid", "id"]) {
+    const hit = usable.find(([key]) => key === wanted);
+    if (hit) return hit[1];
+  }
+  return usable.find(([key]) => key.endsWith("id"))?.[1];
+}
+
+/** השדות שהשלב השני רשאי לעדכן. כל השאר כבר נכתב בשלב הראשון */
+const ENRICH_KEYS = ["courseInterest", "occupation", "goal", "experienceLevel"] as const;
+
+/** מוצא ערך טקסט לפי שם שדה, בכל עומק, כי מבנה התשובה לא אחיד */
+function pickString(node: any, field: string, depth = 0): string | undefined {
+  if (!node || typeof node !== "object" || depth > 6) return undefined;
+  for (const [key, value] of Object.entries(node)) {
+    if (key.toLowerCase() === field && typeof value === "string") return value;
+    if (value && typeof value === "object") {
+      const found = pickString(value, field, depth + 1);
+      if (found) return found;
+    }
+  }
+  return undefined;
+}
+
+/**
+ * השלמת הפרטים שנאספו בעמוד התודה, על הרשומה שכבר קיימת.
+ *
+ * העדכון ולא יצירה: הטופס פוצל לשני שלבים כדי להוריד את מחיר הכניסה,
+ * ואם השלב השני היה פותח רשומה משלו כל נרשם היה מופיע פעמיים ב-CRM.
+ * לכן בלי מזהה רשומה לא כותבים כלום, אלא רושמים ליומן.
+ *
+ * ההערה הקיימת נקראת ונכתבת מחדש עם התוספת בסופה. PUT דורס שדה, ולכן
+ * כתיבת ההערה בלי לקרוא אותה קודם הייתה מוחקת את פרטי הליד המקוריים.
+ */
+async function handleEnrich(res: any, lead: LeadBody, objectType: string) {
+  const token = process.env.FIREBERRY_TOKEN;
+  const audit = (reason: string) => console.log(`LEAD_ENRICH ${reason} ${JSON.stringify(lead)}`);
+
+  /*
+   * בלי מזהה או בלי טוקן אין לאן לכתוב, אבל הפרטים לא הולכים לאיבוד:
+   * הם נרשמים ליומן של Vercel ואפשר לחבר אותם ידנית לפי האימייל.
+   *
+   * כאן מוחזרת הצלחה, בשונה משליחת ליד חדש. ההבדל מכוון: שם כישלון
+   * משמעו שאף אחד לא יראה את הפנייה לעולם, וכאן הליד עצמו כבר נכנס
+   * ל-CRM לפני רגע. להבהיל מישהו שכבר השאיר פרטים, בשביל תוספת
+   * שנשמרה אצלנו ממילא, זו העסקה הגרועה מבין השתיים.
+   */
+  if (!token || !lead.leadId) {
+    audit(token ? "no_record_id" : "no_token");
+    return res.status(200).json({ ok: true, updated: false, stored: "log" });
+  }
+
+  const values = leadValues(lead);
+  const body: Record<string, unknown> = {};
+  let mapped = 0;
+
+  try {
+    const map = await resolveFieldMap(token, objectType);
+    for (const key of ENRICH_KEYS) {
+      const value = values[key];
+      const fieldName = map[key];
+      if (!value || !fieldName || rejectedFields.has(fieldName)) continue;
+      let coerced: unknown | undefined;
+      for (const candidate of [value, ...(VALUE_SYNONYMS[value] ?? [])]) {
+        coerced = await coerceValue(token, objectType, fieldName, candidate);
+        if (coerced !== undefined) break;
+      }
+      if (coerced === undefined) continue;
+      body[fieldName] = coerced;
+      mapped += 1;
+    }
+  } catch (error) {
+    console.warn("Field mapping failed on enrichment", error);
+  }
+
+  /* ההערה נשמרת בכל מקרה, גם כשאף שדה ייעודי לא נמצא */
+  const existing = await fbGet(`/api/record/${objectType}/${lead.leadId}`, token);
+  const previous = existing ? pickString(existing, "description") : undefined;
+  const addition = buildEnrichNote(lead);
+  if (previous !== undefined) body.description = `${previous}\n\n${addition}`.trim();
+
+  if (Object.keys(body).length === 0) {
+    audit("nothing_to_write");
+    return res.status(200).json({ ok: true, updated: false, stored: "log" });
+  }
+
+  let result = await updateRecord(token, objectType, lead.leadId, body);
+
+  /* שדה שנפסל מוסר, כמו ביצירה, כדי שהוא לא יפיל את השאר */
+  let attempts = 0;
+  while (!result.ok && mapped > 0 && attempts < 3) {
+    attempts += 1;
+    const culprit = findRejectedField(result.text, body);
+    if (!culprit) break;
+    rejectedFields.add(culprit);
+    delete body[culprit];
+    mapped -= 1;
+    console.warn(`Dropping "${culprit}" from the enrichment and retrying without it`);
+    result = await updateRecord(token, objectType, lead.leadId, body);
+  }
+
+  if (!result.ok) {
+    console.error("Fireberry rejected the enrichment", result.status, result.text.slice(0, 500));
+    audit("fireberry_rejected");
+    return res.status(502).json({ ok: false, error: "fireberry_error", status: result.status });
+  }
+
+  return res.status(200).json({ ok: true, updated: true });
 }
 
 export default async function handler(req: any, res: any) {
@@ -462,6 +635,9 @@ export default async function handler(req: any, res: any) {
   }
 
   const lead: LeadBody = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body ?? {};
+
+  /* השלב השני של הטופס מעדכן רשומה קיימת ולא פותח חדשה */
+  if (lead.mode === "enrich") return handleEnrich(res, lead, objectType);
 
   if (!lead.fullName || !lead.phone || !lead.email) {
     return res.status(400).json({ ok: false, error: "missing_required_fields" });
@@ -583,7 +759,9 @@ export default async function handler(req: any, res: any) {
       result = await createRecord(token, objectType, core);
       if (result.ok) {
         audit("forwarded_core_only");
-        return res.status(200).json({ ok: true, forwarded: true, fields: "core" });
+        return res
+          .status(200)
+          .json({ ok: true, forwarded: true, fields: "core", leadId: findRecordId(result.text) });
       }
     }
 
@@ -593,7 +771,17 @@ export default async function handler(req: any, res: any) {
       return res.status(502).json({ ok: false, error: "fireberry_error", status: result.status });
     }
 
-    return res.status(200).json({ ok: true, forwarded: true, fields: extras ? "full" : "core" });
+    /*
+     * מזהה הרשומה חוזר לדפדפן כדי שהשלמת הפרטים בעמוד התודה תעדכן
+     * את הליד הזה ולא תפתח שני. הוא מזהה פנימי של רשומה ב-CRM ולא
+     * פרט של אדם, ולכן אין בעיה שהוא יעבור לדפדפן שפתח אותה.
+     */
+    return res.status(200).json({
+      ok: true,
+      forwarded: true,
+      fields: extras ? "full" : "core",
+      leadId: findRecordId(result.text),
+    });
   } catch (error) {
     console.error("Fireberry request failed", error);
     audit("fireberry_unreachable");

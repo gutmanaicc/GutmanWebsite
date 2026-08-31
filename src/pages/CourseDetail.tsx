@@ -40,7 +40,7 @@ import { getMarketingSyllabus, getSyllabusHref, hasSyllabus } from "../data/syll
 import { trackStandard } from "../pixel";
 import { getInstructorsForCourse } from "../data/instructorsData";
 import { getStudentWorksForCourse } from "../data/studentWorksData";
-import { SITE } from "../data/site";
+import { REGISTER_FORM_TITLE, SITE } from "../data/site";
 import { useRegisterModal } from "../context/RegisterModalContext";
 import { useReveal } from "../lib/useReveal";
 import { courseSchema, faqSchema, useSeo } from "../lib/seo";
@@ -613,7 +613,7 @@ const CourseDetail = () => {
                     preselectedCourse={course.slug}
                     lockCourse
                     leadSource={`${course.leadSource}-page`}
-                    title={course.ctaText}
+                    title={REGISTER_FORM_TITLE}
                     sub="המסלול כבר נבחר. נחזור אליכם עם הפרטים."
                   />
                 </div>

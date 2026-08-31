@@ -789,8 +789,10 @@
     @apply min-h-[96px] resize-y;
   }
 
+  /* red-600 על משטח כהה יוצא כ-3.3:1 ונכשל ב-AA. red-300 הוא מה
+     ש-consent-check כבר משתמש בו, ומכאן זה אחיד בכל הטפסים */
   .field .err {
-    @apply mt-1.5 block text-xs text-red-600;
+    @apply mt-1.5 block text-xs text-red-300;
   }
 
   @media (prefers-reduced-motion: reduce) {

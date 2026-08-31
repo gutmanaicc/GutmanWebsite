@@ -77,7 +77,7 @@ const Register = () => {
                   השאירו פרטים
                 </h2>
                 <p className="mx-auto mt-2.5 max-w-md text-sm leading-relaxed text-bone/55">
-                  שלוש דקות, ואנחנו חוזרים אליכם. בלי התחייבות ובלי ספאם.
+                  שלושה שדות, ואנחנו חוזרים אליכם. בלי התחייבות ובלי ספאם.
                 </p>
               </div>
 
