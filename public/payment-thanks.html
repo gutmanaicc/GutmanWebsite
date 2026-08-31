@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>התשלום התקבל | Gutman Academy</title>
+
+<!-- עמוד שאליו מגיעים רק אחרי תשלום. אין סיבה שיופיע בתוצאות חיפוש. -->
+<meta name="robots" content="noindex, nofollow" />
+<meta name="theme-color" content="#0d0c11" />
+<link rel="icon" type="image/png" href="/favicon.png" />
+
+<!--
+  עמוד סטטי עצמאי, לא חלק מאפליקציית ה-React.
+  אין לו ראוטר, אין לו הדר ואין לו פוטר: הוא נשלף ישירות מ-public ולכן
+  הוא ימשיך לעבוד גם אם משהו באתר נשבר. אותו דפוס של
+  accessibility-statement.html ו-terms-and-privacy.html שכבר יושבים כאן.
+-->
+<style>
+  @font-face { font-family: 'Assistant'; font-weight: 400; font-display: swap;
+    src: url('/fonts/assistant-400-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+2000-206F, U+2122; }
+  @font-face { font-family: 'Assistant'; font-weight: 400; font-display: swap;
+    src: url('/fonts/assistant-400-hebrew.woff2') format('woff2');
+    unicode-range: U+0590-05FF, U+20AA, U+FB1D-FB4F; }
+  @font-face { font-family: 'Assistant'; font-weight: 600; font-display: swap;
+    src: url('/fonts/assistant-600-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+2000-206F, U+2122; }
+  @font-face { font-family: 'Assistant'; font-weight: 600; font-display: swap;
+    src: url('/fonts/assistant-600-hebrew.woff2') format('woff2');
+    unicode-range: U+0590-05FF, U+20AA, U+FB1D-FB4F; }
+  @font-face { font-family: 'Assistant'; font-weight: 700; font-display: swap;
+    src: url('/fonts/assistant-700-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+2000-206F, U+2122; }
+  @font-face { font-family: 'Assistant'; font-weight: 700; font-display: swap;
+    src: url('/fonts/assistant-700-hebrew.woff2') format('woff2');
+    unicode-range: U+0590-05FF, U+20AA, U+FB1D-FB4F; }
+  @font-face { font-family: 'Rubik'; font-weight: 800; font-display: swap;
+    src: url('/fonts/rubik-800-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+2000-206F, U+2122; }
+  @font-face { font-family: 'Rubik'; font-weight: 800; font-display: swap;
+    src: url('/fonts/rubik-800-hebrew.woff2') format('woff2');
+    unicode-range: U+0590-05FF, U+20AA, U+FB1D-FB4F; }
+
+  /* הטוקנים לקוחים מ-tailwind.config.js של האתר, כדי שהעמוד יישב באותו מותג */
+  :root {
+    --canvas: #0d0c11;
+    --surface: #131217;
+    --bone: #f2f1ec;
+    --brand: #FF2D85;
+    --line: rgba(255, 255, 255, 0.09);
+    --sans: 'Assistant', 'Helvetica Neue', Arial, sans-serif;
+    --display: 'Rubik', 'Assistant', 'Helvetica Neue', Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--canvas);
+    color: var(--bone);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    /* אף רוחב מסך לא אמור לייצר גלילה אופקית */
+    overflow-x: hidden;
+  }
+
+  /*
+   * הרקע: רשת עדינה וזוהר ורוד אחד מלמעלה, כמו בקנבס של האתר.
+   * fixed ולא absolute, כדי שלא ייווצר גובה שגורם לגלילה מיותרת.
+   */
+  .bg {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      radial-gradient(ellipse 70% 50% at 50% -10%, rgba(255, 45, 133, 0.14), transparent 70%),
+      linear-gradient(to left, var(--line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--line) 1px, transparent 1px);
+    background-size: 100% 100%, 64px 64px, 64px 64px;
+    opacity: 0.55;
+  }
+
+  .wrap {
+    position: relative;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 20px 40px;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 560px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 28px;
+    padding: 40px 28px 32px;
+    text-align: center;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset,
+                0 30px 70px -24px rgba(0, 0, 0, 0.85);
+    animation: rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @media (min-width: 640px) { .card { padding: 52px 48px 40px; } }
+
+  .mark {
+    width: 76px;
+    height: 76px;
+    margin: 0 auto 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 45, 133, 0.1);
+    box-shadow: 0 0 0 1px rgba(255, 45, 133, 0.28), 0 0 44px rgba(255, 45, 133, 0.16);
+  }
+
+  .mark svg { width: 34px; height: 34px; }
+
+  /* הוי נמשך במקום להופיע. stroke-dasharray מאפשר לצייר קו לאורך זמן. */
+  .mark path {
+    stroke: var(--brand);
+    stroke-width: 2.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+    stroke-dasharray: 30;
+    stroke-dashoffset: 30;
+    animation: draw 0.5s ease-out 0.35s forwards;
+  }
+
+  h1 {
+    margin: 0;
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(1.85rem, 6vw, 2.5rem);
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+  }
+
+  .lede {
+    margin: 14px auto 0;
+    max-width: 34ch;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    color: rgba(242, 241, 236, 0.62);
+  }
+
+  .steps {
+    margin: 34px 0 0;
+    padding: 0;
+    list-style: none;
+    text-align: start;
+    border-top: 1px solid var(--line);
+  }
+
+  .steps li {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .num {
+    flex: 0 0 auto;
+    width: 26px;
+    height: 26px;
+    margin-top: 1px;
+    border-radius: 50%;
+    background: rgba(255, 45, 133, 0.12);
+    color: var(--brand);
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .steps h2 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+
+  .steps p {
+    margin: 4px 0 0;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: rgba(242, 241, 236, 0.55);
+  }
+
+  .sign {
+    margin: 28px 0 0;
+    font-family: var(--display);
+    font-size: 1.0625rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .sign span { color: var(--brand); }
+
+  .foot {
+    position: relative;
+    margin-top: 26px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .wordmark {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 1.15rem;
+    letter-spacing: -0.03em;
+    color: rgba(242, 241, 236, 0.5);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    transition: color 0.25s ease;
+    /* מטרת מגע ראויה גם כשהטקסט קטן */
+    min-height: 44px;
+    padding: 0 8px;
+  }
+
+  .wordmark:hover, .wordmark:focus-visible { color: var(--bone); }
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--brand);
+  }
+
+  .note {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: rgba(242, 241, 236, 0.32);
+  }
+
+  a:focus-visible, .wordmark:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 3px;
+    border-radius: 8px;
+  }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+
+  /* מי שביקש פחות תנועה מקבל את העמוד במצבו הסופי, בלי אנימציה */
+  @media (prefers-reduced-motion: reduce) {
+    .card { animation: none; }
+    .mark path { animation: none; stroke-dashoffset: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true"></div>
+
+<main class="wrap">
+  <div class="card">
+    <div class="mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M20 6.5 9.5 17 4 11.5" /></svg>
+    </div>
+
+    <h1>התשלום התקבל</h1>
+    <p class="lede">המקום שלכם שמור. שמחים שאתם איתנו.</p>
+
+    <ol class="steps">
+      <li>
+        <span class="num">1</span>
+        <div>
+          <h2>החשבונית בדרך למייל</h2>
+          <p>חשבונית מס או קבלה נשלחת אליכם באופן אוטומטי, לכתובת שהזנתם בתשלום.</p>
+        </div>
+      </li>
+      <li>
+        <span class="num">2</span>
+        <div>
+          <h2>הפרטים הלוגיסטיים בהמשך</h2>
+          <p>כתובת מדויקת, שעות ומה להביא. הכול יגיע אליכם בוואטסאפ ובמייל לפני המפגש הראשון.</p>
+        </div>
+      </li>
+      <li>
+        <span class="num">3</span>
+        <div>
+          <h2>אם משהו לא ברור</h2>
+          <p>פשוט השיבו למייל שקיבלתם, ונחזור אליכם.</p>
+        </div>
+      </li>
+    </ol>
+
+    <!-- הסוגר בסמיילי מתהפך בתוך פסקה בעברית, ו-(: זה לא מה שרון כתב -->
+    <p class="sign">נתראה בקרוב, רון <span dir="ltr">:)</span></p>
+  </div>
+
+  <div class="foot">
+    <a class="wordmark" href="https://gutmanai.com">
+      <span class="dot" aria-hidden="true"></span>Gutman Academy
+    </a>
+    <p class="note">אפשר לסגור את החלון הזה בבטחה.</p>
+  </div>
+</main>
+</body>
+</html>
