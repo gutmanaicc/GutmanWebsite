@@ -47,6 +47,18 @@
  * דרך FIREBERRY_FIELD_MAP, ואז ההחלטה מודעת.
  */
 
+/*
+ * שכבת הניטור. היא לא משנה שום החלטה כאן: היא מוסיפה תקרת זמן
+ * לקריאות, ומדווחת החוצה על כל מסלול כשל שהיה עד היום לוג שאיש
+ * לא קרא. ראה את ההסבר המלא ב-api/_monitoring.ts.
+ */
+import {
+  fetchFireberry,
+  readLogicalFailure,
+  reportLeadFailure,
+  stageForThrown,
+} from "./_monitoring";
+
 const FIREBERRY_BASE = "https://api.fireberry.com";
 
 /** השדות שהרשומה לא שווה בלעדיהם, ולכן לעולם לא מוסרים אותם */
@@ -170,7 +182,7 @@ const optionCache = new Map<string, Array<{ label: string; value: unknown }> | n
 
 async function fbGet(path: string, token: string): Promise<any | null> {
   try {
-    const res = await fetch(`${FIREBERRY_BASE}${path}`, {
+    const res = await fetchFireberry(`${FIREBERRY_BASE}${path}`, {
       headers: { Accept: "application/json", tokenid: token },
     });
     if (!res.ok) return null;
@@ -400,7 +412,7 @@ function findRejectedField(text: string, body: Record<string, unknown>): string 
 const rejectedFields = new Set<string>();
 
 async function createRecord(token: string, objectType: string, body: Record<string, unknown>) {
-  const response = await fetch(`${FIREBERRY_BASE}/api/record/${objectType}`, {
+  const response = await fetchFireberry(`${FIREBERRY_BASE}/api/record/${objectType}`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "application/json", tokenid: token },
     body: JSON.stringify(body),
@@ -415,7 +427,7 @@ async function updateRecord(
   recordId: string,
   body: Record<string, unknown>,
 ) {
-  const response = await fetch(`${FIREBERRY_BASE}/api/record/${objectType}/${recordId}`, {
+  const response = await fetchFireberry(`${FIREBERRY_BASE}/api/record/${objectType}/${recordId}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json", Accept: "application/json", tokenid: token },
     body: JSON.stringify(body),
@@ -539,25 +551,70 @@ async function handleEnrich(res: any, lead: LeadBody, objectType: string) {
     return res.status(200).json({ ok: true, updated: false, stored: "log" });
   }
 
-  let result = await updateRecord(token, objectType, lead.leadId, body);
-
-  /* שדה שנפסל מוסר, כמו ביצירה, כדי שהוא לא יפיל את השאר */
-  let attempts = 0;
-  while (!result.ok && mapped > 0 && attempts < 3) {
-    attempts += 1;
-    const culprit = findRejectedField(result.text, body);
-    if (!culprit) break;
-    rejectedFields.add(culprit);
-    delete body[culprit];
-    mapped -= 1;
-    console.warn(`Dropping "${culprit}" from the enrichment and retrying without it`);
+  /*
+   * העדכון עטוף, בשונה מקודם. חריגת רשת כאן נמלטה עד לקריסת הפונקציה
+   * בלי לוג ובלי דיווח, וזה בדיוק המצב שהניטור אמור לתפוס. התשובה
+   * לדפדפן זהה לזו שמסלול היצירה מחזיר בכשל, והוא ממילא בודק רק אם
+   * הבקשה נכשלה ולא איזה קוד חזר.
+   */
+  let result;
+  try {
     result = await updateRecord(token, objectType, lead.leadId, body);
+
+    /* שדה שנפסל מוסר, כמו ביצירה, כדי שהוא לא יפיל את השאר */
+    let attempts = 0;
+    while (!result.ok && mapped > 0 && attempts < 3) {
+      attempts += 1;
+      const culprit = findRejectedField(result.text, body);
+      if (!culprit) break;
+      rejectedFields.add(culprit);
+      delete body[culprit];
+      mapped -= 1;
+      console.warn(`Dropping "${culprit}" from the enrichment and retrying without it`);
+      result = await updateRecord(token, objectType, lead.leadId, body);
+    }
+  } catch (error) {
+    console.error("Enrichment request failed", error);
+    audit("fireberry_unreachable");
+    await reportLeadFailure({
+      stage: stageForThrown(error),
+      lead,
+      error,
+      sentFields: body,
+      note: `הקריאה לעדכון הרשומה ${lead.leadId} לא הושלמה`,
+    });
+    return res.status(502).json({ ok: false, error: "fireberry_unreachable" });
   }
 
   if (!result.ok) {
     console.error("Fireberry rejected the enrichment", result.status, result.text.slice(0, 500));
     audit("fireberry_rejected");
+    await reportLeadFailure({
+      stage: "enrich_failed",
+      lead,
+      status: result.status,
+      responseBody: result.text,
+      sentFields: body,
+      note: `פיירברי דחתה את עדכון הרשומה ${lead.leadId}. הליד עצמו כבר קיים ב-CRM, ההשלמה היא שלא נכתבה`,
+    });
     return res.status(502).json({ ok: false, error: "fireberry_error", status: result.status });
+  }
+
+  /*
+   * כישלון לוגי בתוך תשובה תקינה, בדיוק כמו במסלול היצירה. כאן זה
+   * מסוכן במיוחד: הדפדפן מציג "נשמר" והרשומה לא זזה.
+   */
+  const logical = readLogicalFailure(result.text);
+  if (logical) {
+    audit("fireberry_logical_error");
+    await reportLeadFailure({
+      stage: "logical_error",
+      lead,
+      status: result.status,
+      responseBody: result.text,
+      sentFields: body,
+      note: `${logical} (בעדכון הרשומה ${lead.leadId})`,
+    });
   }
 
   return res.status(200).json({ ok: true, updated: true });
@@ -629,6 +686,47 @@ export default async function handler(req: any, res: any) {
     }
   }
 
+  /*
+   * בדיקת שפיות לשרשרת ההתראות, בלי לגעת בפיירברי ובלי לזייף ליד.
+   *
+   *   GET /api/lead?selftest=1&key=<LEAD_DIAG_KEY>
+   *
+   * שולחת דיווח אחד עם פרטים בדויים בעליל דרך אותו מסלול שכשל אמיתי
+   * עובר בו. אם הגיעו מייל ו-issue, כל החוליות עובדות: המשתנים
+   * מוגדרים, ה-DSN תקין, Resend מאשרת את הדומיין וההתראה לא נחתה
+   * בספאם. בלי בדיקה כזאת מגלים ששרשרת ההתראות שבורה רק ביום שבו
+   * נופל ליד אמיתי, וזה היום הגרוע ביותר לגלות את זה.
+   *
+   * מוגן באותו מפתח כמו דוח השדות, כדי שאי אפשר יהיה להפציץ ממנו
+   * את תיבת הדואר מבחוץ.
+   */
+  if (req.method === "GET" && req.query?.selftest) {
+    const key = process.env.LEAD_DIAG_KEY;
+    if (!key || req.query.key !== key) {
+      res.setHeader("Allow", "POST");
+      return res.status(405).json({ ok: false, error: "method_not_allowed" });
+    }
+    await reportLeadFailure({
+      stage: "http_error",
+      lead: {
+        fullName: "בדיקת ניטור",
+        phone: "0500000000",
+        email: "selftest@example.invalid",
+        courseInterest: "selftest",
+        leadSource: "monitoring-selftest",
+      },
+      status: 418,
+      responseBody: '{"success":false,"message":"זו בדיקה יזומה ולא תקלה אמיתית"}',
+      note: "דיווח בדיקה שנוצר ידנית דרך selftest. אין ליד אמיתי מאחוריו.",
+    });
+    return res.status(200).json({
+      ok: true,
+      selftest: "sent",
+      sentry: Boolean(process.env.SENTRY_DSN),
+      email: Boolean(process.env.RESEND_API_KEY && process.env.ALERT_EMAIL_TO && process.env.ALERT_EMAIL_FROM),
+    });
+  }
+
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
@@ -672,6 +770,11 @@ export default async function handler(req: any, res: any) {
       return res.status(200).json({ ok: true, forwarded: false });
     }
     console.error("FIREBERRY_TOKEN is not set - refusing to silently drop a lead");
+    await reportLeadFailure({
+      stage: "not_configured",
+      lead,
+      note: "FIREBERRY_TOKEN לא מוגדר בסביבה הזאת, ולכן אף ליד לא מועבר ל-CRM",
+    });
     return res.status(503).json({ ok: false, error: "crm_not_configured" });
   }
 
@@ -721,10 +824,61 @@ export default async function handler(req: any, res: any) {
     }
   } catch (error) {
     console.warn("Field mapping failed - sending the core fields only", error);
+    /*
+     * הליד עצמו עדיין ייכנס, ולכן זה לא מוציא מייל. הוא כן נרשם
+     * ב-Sentry, כי מטא-דאטה שנופלת שוב ושוב פירושה שכל הלידים נכנסים
+     * בלי מסלול ובלי מקור, וזה נזק שקט שלא רואים ברשומה בודדת.
+     */
+    await reportLeadFailure({
+      stage: "field_mapping_failed",
+      lead,
+      error,
+      note: "מטא-דאטת השדות לא נטענה מפיירברי, הליד נשלח עם שדות הבסיס בלבד",
+    });
   }
 
   try {
     let result = await createRecord(token, objectType, body);
+
+    /*
+     * שתי בדיקות על תשובה שנראית מוצלחת, כי response.ok לבדו לא מספיק.
+     *
+     * הראשונה: פיירברי לא תמיד מתרגמת כישלון ל-status. יש מסלולים שבהם
+     * היא מחזירה 200 עם גוף שמכריז success: false, והקוד כאן היה סופר
+     * אותם כהצלחה. הגולש רואה "קיבלנו" ואין רשומה.
+     *
+     * השנייה: רשומה שנוצרה בלי מזהה שאפשר לשלוף. הליד קיים ב-CRM, אבל
+     * השלב השני בעמוד התודה לא יודע לאיזו רשומה להיצמד ולכן המסלול,
+     * העיסוק והמטרה נופלים ליומן בלבד. זה כשל שקט לגמרי מבחינת הגולש.
+     *
+     * שתיהן מדווחות בלבד ולא משנות את התשובה, בדיוק כמו קודם.
+     */
+    const verifySuccess = async () => {
+      const leadId = findRecordId(result.text);
+      const logical = readLogicalFailure(result.text);
+      if (logical) {
+        audit("fireberry_logical_error");
+        await reportLeadFailure({
+          stage: "logical_error",
+          lead,
+          status: result.status,
+          responseBody: result.text,
+          sentFields: body,
+          note: logical,
+        });
+      } else if (!leadId) {
+        audit("no_record_id");
+        await reportLeadFailure({
+          stage: "no_record_id",
+          lead,
+          status: result.status,
+          responseBody: result.text,
+          sentFields: body,
+          note: "הרשומה נוצרה אבל אין בתשובה מזהה, ולכן השלמת הפרטים בעמוד התודה לא תגיע אליה",
+        });
+      }
+      return leadId;
+    };
 
     /*
      * שדה שנפסל לא מפיל את כל השאר.
@@ -759,15 +913,31 @@ export default async function handler(req: any, res: any) {
       result = await createRecord(token, objectType, core);
       if (result.ok) {
         audit("forwarded_core_only");
+        /* הליד נכנס, אבל בלי מסלול ובלי מקור. Sentry בלבד, בלי מייל */
+        await reportLeadFailure({
+          stage: "field_mapping_failed",
+          lead,
+          status: result.status,
+          sentFields: body,
+          note: "פיירברי דחתה שדות שלא הצלחנו לזהות, והרשומה נפתחה עם שדות הבסיס בלבד",
+        });
         return res
           .status(200)
-          .json({ ok: true, forwarded: true, fields: "core", leadId: findRecordId(result.text) });
+          .json({ ok: true, forwarded: true, fields: "core", leadId: await verifySuccess() });
       }
     }
 
     if (!result.ok) {
       console.error("Fireberry rejected the lead", result.status, result.text.slice(0, 500));
       audit("fireberry_rejected");
+      await reportLeadFailure({
+        stage: "http_error",
+        lead,
+        status: result.status,
+        responseBody: result.text,
+        sentFields: body,
+        note: "פיירברי דחתה את הרשומה גם אחרי הסרת השדות שנפסלו",
+      });
       return res.status(502).json({ ok: false, error: "fireberry_error", status: result.status });
     }
 
@@ -780,11 +950,23 @@ export default async function handler(req: any, res: any) {
       ok: true,
       forwarded: true,
       fields: extras ? "full" : "core",
-      leadId: findRecordId(result.text),
+      leadId: await verifySuccess(),
     });
   } catch (error) {
     console.error("Fireberry request failed", error);
     audit("fireberry_unreachable");
+    /*
+     * stageForThrown מפריד תקיעה מנפילה: תקיעה פירושה שפיירברי חיה
+     * אבל איטית, נפילה פירושה שלא הגענו אליה בכלל. אלה שתי תקלות
+     * שונות עם שני פתרונות שונים, ולכן הן שני issues נפרדים.
+     */
+    await reportLeadFailure({
+      stage: stageForThrown(error),
+      lead,
+      error,
+      sentFields: body,
+      note: "הקריאה ליצירת הרשומה לא הושלמה",
+    });
     return res.status(502).json({ ok: false, error: "fireberry_unreachable" });
   }
 }
