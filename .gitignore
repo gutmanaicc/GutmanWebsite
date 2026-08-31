@@ -6,3 +6,6 @@ dist
 *.pyc
 __pycache__/
 .agents/skills/ui-ux-pro-max/scripts/__pycache__/
+
+# מסמכי הלימוד האישיים של הסקיל learn-codebase. חומר לימוד, לא תיעוד של הפרויקט.
+docs/learn/
