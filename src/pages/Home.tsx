@@ -109,7 +109,7 @@ const Home = () => {
                 initialGoal={inlinePrefill.initialGoal}
                 leadSource={inlinePrefill.leadSource ?? "home-lead"}
                 title="השאירו פרטים "
-                sub="אם עברתם דרך המנחה, המסלול כבר נבחר בשבילכם."
+                sub="שם, טלפון ואימייל. נחזור אליכם עם כל הפרטים."
               />
             </div>
           </ScrollReveal3D>

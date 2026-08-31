@@ -1,15 +1,15 @@
 import { LEAD_TRACKS } from "../data/courses";
-import { trackStandard } from "../pixel";
+import { track, trackStandard } from "../pixel";
 
 export type LeadPayload = {
   fullName: string;
   phone: string;
   email: string;
-  occupation: string;
+  occupation?: string;
   courseInterest: string;
   /** שם המסלול בעברית. אם לא נשלח, נגזר מהסלאג */
   courseInterestLabel?: string;
-  goal: string;
+  goal?: string;
   experienceLevel?: string;
   experienceLevelLabel?: string;
   /** האם סומנה תיבת ההסכמה בטופס */
@@ -21,6 +21,33 @@ export type LeadPayload = {
   referrer: string;
   utm: Record<string, string>;
   submittedAt: string;
+};
+
+/**
+ * מה שמחזירה שליחת ליד.
+ *
+ * לא רק "הצליח". השלב השני של הטופס יושב בעמוד התודה וצריך לעדכן את
+ * אותה רשומה ב-CRM ולא לפתוח חדשה, ולכן המזהה שחוזר מהשרת הוא החלק
+ * החשוב כאן. בלעדיו כל השלמת פרטים הייתה יוצרת כפילות ברשומות.
+ */
+export type LeadResult = {
+  ok: boolean;
+  /** מזהה הרשומה שנפתחה בפיירברי, כשהשרת הצליח לזהות אותו */
+  leadId?: string;
+};
+
+/** הפרטים שנאספים בשלב השני, בעמוד התודה */
+export type LeadEnrichment = {
+  leadId?: string;
+  fullName: string;
+  email: string;
+  occupation?: string;
+  courseInterest?: string;
+  courseInterestLabel?: string;
+  goal?: string;
+  experienceLevel?: string;
+  experienceLevelLabel?: string;
+  leadSource: string;
 };
 
 /**
@@ -53,6 +80,17 @@ export const UNSURE_LABEL = "עדיין מתלבט/ת, אשמח להכוונה";
  * מרשימת המתנה היה נשמט בשקט. תווית מפורשת נשארת רק כגיבוי לסלאג
  * שלא מופיע ברשימת המסלולים.
  */
+/**
+ * אפשרויות בורר המסלול, כולל "עדיין מתלבט/ת".
+ *
+ * כאן ולא בתוך הטופס, כי מאז שהטופס פוצל לשני שלבים הבורר מופיע גם
+ * בטופס ההרשמה (כשהמסלול ידוע מראש) וגם בהשלמת הפרטים בעמוד התודה.
+ */
+export const TRACK_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
+  ...LEAD_TRACKS.map((t) => ({ value: t.slug, label: t.label })),
+  { value: "unsure", label: UNSURE_LABEL },
+];
+
 export function courseLabel(slug: string, provided?: string): string {
   if (!slug) return provided ?? "";
   if (slug === "unsure") return UNSURE_LABEL;
@@ -128,14 +166,15 @@ function saveLocally(lead: LeadPayload) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
 }
 
-async function postOnce(endpoint: string, lead: LeadPayload): Promise<boolean> {
+async function postOnce(endpoint: string, body: unknown): Promise<Record<string, unknown>> {
   const res = await fetch(endpoint, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(lead),
+    body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error(`lead endpoint returned ${res.status}`);
-  return true;
+  /* גוף התשובה נושא את מזהה הרשומה. תשובה שלא נקראת כ-JSON היא עדיין הצלחה */
+  return (await res.json().catch(() => ({}))) as Record<string, unknown>;
 }
 
 /**
@@ -148,7 +187,7 @@ async function postOnce(endpoint: string, lead: LeadPayload): Promise<boolean> {
  *
  * הגיבוי המקומי נשמר בכל מקרה, כדי שאפשר יהיה לשחזר ליד שאבד.
  */
-export async function submitLead(lead: LeadPayload): Promise<boolean> {
+export async function submitLead(lead: LeadPayload): Promise<LeadResult> {
   const endpoint = getLeadEndpoint();
 
   /*
@@ -168,12 +207,112 @@ export async function submitLead(lead: LeadPayload): Promise<boolean> {
     /* אחסון מלא או חסום - לא סיבה להפיל את השליחה */
   }
 
+  if (!endpoint) return { ok: false };
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const body = await postOnce(endpoint, payload);
+      trackStandard("Lead", {
+        content_name: payload.courseInterestLabel || payload.courseInterest,
+        content_category: payload.leadSource,
+      });
+      const leadId = typeof body.leadId === "string" ? body.leadId : undefined;
+      return { ok: true, leadId };
+    } catch {
+      if (attempt === 0) await new Promise((resolve) => setTimeout(resolve, 700));
+    }
+  }
+
+  return { ok: false };
+}
+
+/* ── השלב השני: השלמת פרטים בעמוד התודה ───────────────────────────── */
+
+/**
+ * הכרטיס שעובר מהטופס לעמוד התודה.
+ *
+ * הוא נשמר גם ב-sessionStorage וגם ב-state של הניווט, כי אף אחד
+ * מהשניים לא מספיק לבדו: ה-state נמחק ברענון של עמוד התודה, ו-
+ * sessionStorage לבדו לא יודע להבחין בין מי שהרגע נרשם לבין מי
+ * שהקליד /thank-you בכתובת. שניהם יחד נותנים טופס השלמה שמופיע רק
+ * למי שבאמת השאיר פרטים, וששורד רענון.
+ *
+ * sessionStorage ולא localStorage, מאותה סיבה כמו ב-UTM: הכרטיס תקף
+ * לביקור הזה. אימייל נשמר כדי שאפשר יהיה לזהות השלמה שהגיעה בלי
+ * מזהה רשומה ולחבר אותה ידנית לליד הנכון.
+ */
+export type LeadTicket = {
+  leadId?: string;
+  fullName: string;
+  email: string;
+  courseInterest: string;
+  /** מה שכבר נמסר בשלב הראשון, כדי שלא נבקש אותו שוב */
+  goal?: string;
+  leadSource: string;
+  at: number;
+};
+
+const TICKET_KEY = "gutman-lead-ticket";
+
+/*
+ * חצי שעה. אחריה הכרטיס כבר לא מייצג "הרגע נרשמתי", והצגת טופס
+ * השלמה למי שחזר לעמוד התודה מאוחר יותר רק מבלבלת.
+ */
+const TICKET_TTL = 30 * 60 * 1000;
+
+export function saveLeadTicket(ticket: Omit<LeadTicket, "at">) {
+  try {
+    sessionStorage.setItem(TICKET_KEY, JSON.stringify({ ...ticket, at: Date.now() }));
+  } catch {
+    /* אחסון חסום. השלב השני פשוט לא ישרוד רענון */
+  }
+}
+
+export function readLeadTicket(): LeadTicket | null {
+  try {
+    const raw = sessionStorage.getItem(TICKET_KEY);
+    if (!raw) return null;
+    const ticket = JSON.parse(raw) as LeadTicket;
+    if (!ticket?.fullName || Date.now() - ticket.at > TICKET_TTL) return null;
+    return ticket;
+  } catch {
+    return null;
+  }
+}
+
+export function clearLeadTicket() {
+  try {
+    sessionStorage.removeItem(TICKET_KEY);
+  } catch {
+    /* אחסון חסום */
+  }
+}
+
+/**
+ * שולח את הפרטים הנוספים שנאספו בעמוד התודה.
+ *
+ * זו לא שליחת ליד חדש אלא עדכון של הרשומה שכבר נפתחה, ולכן היא
+ * נושאת את leadId. בלי המזהה השרת רושם את הפרטים ליומן במקום לפתוח
+ * רשומה שנייה: כפילות ב-CRM יקרה יותר מהשלמה שמחכה לחיבור ידני.
+ */
+export async function submitLeadEnrichment(details: LeadEnrichment): Promise<boolean> {
+  const endpoint = getLeadEndpoint();
   if (!endpoint) return false;
+
+  const payload = {
+    mode: "enrich" as const,
+    ...details,
+    courseInterestLabel: details.courseInterest
+      ? courseLabel(details.courseInterest, details.courseInterestLabel)
+      : details.courseInterestLabel,
+    experienceLevelLabel:
+      details.experienceLevelLabel || experienceLabel(details.experienceLevel ?? ""),
+  };
 
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
       await postOnce(endpoint, payload);
-      trackStandard("Lead", {
+      track("LeadDetails", {
         content_name: payload.courseInterestLabel || payload.courseInterest,
         content_category: payload.leadSource,
       });

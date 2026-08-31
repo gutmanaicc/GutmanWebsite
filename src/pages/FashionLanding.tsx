@@ -400,7 +400,7 @@ const FashionLanding = () => {
                     preselectedCourse={FASHION_LP.courseSlug}
                     lockCourse
                     leadSource={FASHION_LP.leadSource}
-                    title="רוצה לבנות קמפיין אופנה"
+                    title={FASHION_LP.form.leadFormTitle}
                     sub="נחזור אליכן עם המחזור הקרוב והפרטים."
                   />
                 </div>
