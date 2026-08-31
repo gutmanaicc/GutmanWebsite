@@ -1,3 +1,4 @@
+import { AlertCircle, RotateCcw } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { SITE } from "../data/site";
@@ -56,6 +57,12 @@ const RegisterForm = ({
   const nameRef = useRef<HTMLInputElement>(null);
   const [values, setValues] = useState({ fullName: "", phone: "", email: "" });
   const [errors, setErrors] = useState<Errors>({});
+  /*
+   * הודעת הכישלון מקבלת פוקוס כשהיא מופיעה. role="alert" מקריא אותה
+   * לקורא מסך, אבל לא מזיז את הפוקוס, ומשתמש מקלדת היה נשאר על כפתור
+   * השליחה בלי לדעת שיש מתחתיו הודעה וכפתור שליחה חוזרת.
+   */
+  const errorRef = useRef<HTMLDivElement>(null);
   /* הסכמה מפורשת לפני שליחה: תיעוד של רגע ההסכמה, ולא הנחה שבשתיקה */
   const [consent, setConsent] = useState(false);
   const [status, setStatus] = useState<
@@ -86,8 +93,11 @@ const RegisterForm = ({
     return errs;
   };
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  /*
+   * השליחה מופרדת מאירוע הטופס, כדי שכפתור "שלחו שוב" בהודעת הכישלון
+   * יפעיל בדיוק את אותו מסלול ולא עותק שלו שיתיישן בנפרד.
+   */
+  const send = async () => {
     if (status === "sending") return;
     const errs = validate();
     setErrors(errs);
@@ -138,6 +148,15 @@ const RegisterForm = ({
     }
   };
 
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    void send();
+  };
+
+  useEffect(() => {
+    if (status === "error") errorRef.current?.focus();
+  }, [status]);
+
   const field = (name: string) => `${leadSource}-${uid}-${name}`;
 
   if (status === "success") {
@@ -172,25 +191,35 @@ const RegisterForm = ({
       )}
 
       {status === "error" && (
-        <div className="form-error-summary" role="alert">
-          לא הצלחנו לשלוח את הפרטים. נסו שוב, ואם זה חוזר על עצמו התקשרו אלינו
-          ל-
-          <a
-            href={`tel:${SITE.contact.phone.replace(/-/g, "")}`}
-            dir="ltr"
-            className="underline underline-offset-2"
+        <div className="form-error-summary" role="alert" tabIndex={-1} ref={errorRef}>
+          <p className="form-error-title">
+            <AlertCircle size={18} aria-hidden="true" />
+            השליחה לא עברה
+          </p>
+          <p className="mt-2 leading-relaxed">
+            משהו נתקע אצלנו בדרך, לא אצלכם. מה שמילאתם עדיין כאן, ואפשר לשלוח
+            שוב בלחיצה אחת.
+          </p>
+          <Pressable
+            type="button"
+            className="form-error-retry"
+            onClick={() => void send()}
           >
-            {SITE.contact.phone}
-          </a>{" "}
-          או כתבו ל-
-          <a
-            href={`mailto:${SITE.contact.email}`}
-            dir="ltr"
-            className="underline underline-offset-2"
-          >
-            {SITE.contact.email}
-          </a>
-          .
+            <RotateCcw aria-hidden="true" />
+            שלחו שוב
+          </Pressable>
+          <p className="form-error-alt">
+            אם זה חוזר, אנחנו זמינים ב-
+            <a href={`tel:${SITE.contact.phone.replace(/-/g, "")}`} dir="ltr">
+              {SITE.contact.phone}
+            </a>{" "}
+            או ב-
+            <a href={`mailto:${SITE.contact.email}`} dir="ltr">
+              {SITE.contact.email}
+            </a>
+            {/* בלי נקודה בסוף: אחרי אלמנט dir="ltr" הדו-כיווניות דוחפת
+                אותה לצד השמאלי של האימייל והשורה נראית שבורה */}
+          </p>
         </div>
       )}
 

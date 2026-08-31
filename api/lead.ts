@@ -857,9 +857,19 @@ export default async function handler(req: any, res: any) {
      * השלב השני בעמוד התודה לא יודע לאיזו רשומה להיצמד ולכן המסלול,
      * העיסוק והמטרה נופלים ליומן בלבד. זה כשל שקט לגמרי מבחינת הגולש.
      *
-     * שתיהן מדווחות בלבד ולא משנות את התשובה, בדיוק כמו קודם.
+     * השתיים מטופלות אחרת, וההבדל מכוון:
+     *
+     * כישלון לוגי מוחזר לגולש ככישלון. פיירברי הכריזה במפורש שהרשומה
+     * לא נוצרה, ולכן "קיבלנו" הוא שקר, ושליחה חוזרת היא בדיוק הפעולה
+     * הנכונה.
+     *
+     * רשומה בלי מזהה מוחזרת כהצלחה. שם פיירברי לא הכריזה על כישלון,
+     * והפירוש הסביר הוא שהרשומה כן נוצרה ורק צורת התשובה הפתיעה
+     * אותנו. לבקש מהגולש לשלוח שוב היה פותח רשומה שנייה לאותו אדם,
+     * ואיש מכירות שמתקשר פעמיים יקר יותר מהשלמה שמחכה לחיבור ידני.
+     * במקום זה יוצא מייל, ואפשר לוודא ידנית ב-CRM.
      */
-    const verifySuccess = async () => {
+    const verifySuccess = async (): Promise<{ ok: boolean; leadId?: string }> => {
       const leadId = findRecordId(result.text);
       const logical = readLogicalFailure(result.text);
       if (logical) {
@@ -872,7 +882,9 @@ export default async function handler(req: any, res: any) {
           sentFields: body,
           note: logical,
         });
-      } else if (!leadId) {
+        return { ok: false };
+      }
+      if (!leadId) {
         audit("no_record_id");
         await reportLeadFailure({
           stage: "no_record_id",
@@ -883,8 +895,12 @@ export default async function handler(req: any, res: any) {
           note: "הרשומה נוצרה אבל אין בתשובה מזהה, ולכן השלמת הפרטים בעמוד התודה לא תגיע אליה",
         });
       }
-      return leadId;
+      return { ok: true, leadId };
     };
+
+    /* תשובת הכישלון זהה לזו שפיירברי דוחה בה במפורש, כי מבחינת הגולש זה אותו דבר */
+    const rejected = () =>
+      res.status(502).json({ ok: false, error: "fireberry_error", status: result.status });
 
     /*
      * שדה שנפסל לא מפיל את כל השאר.
@@ -927,9 +943,11 @@ export default async function handler(req: any, res: any) {
           sentFields: body,
           note: "פיירברי דחתה שדות שלא הצלחנו לזהות, והרשומה נפתחה עם שדות הבסיס בלבד",
         });
+        const verdict = await verifySuccess();
+        if (!verdict.ok) return rejected();
         return res
           .status(200)
-          .json({ ok: true, forwarded: true, fields: "core", leadId: await verifySuccess() });
+          .json({ ok: true, forwarded: true, fields: "core", leadId: verdict.leadId });
       }
     }
 
@@ -952,11 +970,14 @@ export default async function handler(req: any, res: any) {
      * את הליד הזה ולא תפתח שני. הוא מזהה פנימי של רשומה ב-CRM ולא
      * פרט של אדם, ולכן אין בעיה שהוא יעבור לדפדפן שפתח אותה.
      */
+    const verdict = await verifySuccess();
+    if (!verdict.ok) return rejected();
+
     return res.status(200).json({
       ok: true,
       forwarded: true,
       fields: extras ? "full" : "core",
-      leadId: await verifySuccess(),
+      leadId: verdict.leadId,
     });
   } catch (error) {
     console.error("Fireberry request failed", error);
