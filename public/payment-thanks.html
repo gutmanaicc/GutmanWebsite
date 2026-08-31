@@ -215,28 +215,27 @@
   }
 
   .wordmark {
-    font-family: var(--display);
-    font-weight: 800;
-    font-size: 1.15rem;
-    letter-spacing: -0.03em;
-    color: rgba(242, 241, 236, 0.5);
-    text-decoration: none;
     display: inline-flex;
     align-items: center;
-    gap: 7px;
-    transition: color 0.25s ease;
-    /* מטרת מגע ראויה גם כשהטקסט קטן */
+    /* מטרת מגע ראויה, גם כשהלוגו עצמו נמוך */
     min-height: 44px;
     padding: 0 8px;
+    opacity: 0.85;
+    transition: opacity 0.25s ease;
   }
 
-  .wordmark:hover, .wordmark:focus-visible { color: var(--bone); }
+  .wordmark:hover, .wordmark:focus-visible { opacity: 1; }
 
-  .dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--brand);
+  /*
+   * הקובץ הוא גרסה מוקטנת של הלוגו הרשמי ולא המקור.
+   * המקור הוא 2093x521 ושוקל 1.3MB, צילום של שלט אקריליק. בגובה 26
+   * פיקסלים אין שום דרך לראות את ההפרש, ואין סיבה להוריד מגה וחצי
+   * בעמוד שכל תפקידו להרגיע מישהו שהרגע שילם.
+   */
+  .wordmark img {
+    display: block;
+    height: 26px;
+    width: auto;
   }
 
   .note {
@@ -307,7 +306,7 @@
 
   <div class="foot">
     <a class="wordmark" href="https://gutmanai.com">
-      <span class="dot" aria-hidden="true"></span>Gutman Academy
+      <img src="/brand/logo-cutout-sm.png" alt="Gutman" width="358" height="84" />
     </a>
     <p class="note">אפשר לסגור את החלון הזה בבטחה.</p>
   </div>
