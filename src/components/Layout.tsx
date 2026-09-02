@@ -12,6 +12,7 @@ import RegisterModal from "./RegisterModal";
 import WaitlistModal from "./WaitlistModal";
 import { ParallaxGridCanvas } from "./motion";
 import { useMotionCapability } from "../lib/motion";
+import { isLandingPath } from "../lib/landing";
 import { REGISTRATION_FORM_ID, scrollToRegistrationForm } from "../lib/registration";
 import { markScrollReset } from "../lib/scrollLock";
 
@@ -143,6 +144,14 @@ const PageTransition = () => {
 const Layout = () => {
   const reduced = useReducedMotion();
   /*
+   * דפי הנחיתה הממומנים מקבלים מעטפת סגורה: הדר בלי ניווט ופוטר בלי
+   * יציאה לרשתות. הבדיקה יושבת כאן ולא במעטפת נפרדת בכוונה - Layout
+   * מחזיק את Lenis, את איפוס הגלילה, את שכבות הרקע ואת כל הפופאפים,
+   * ומעטפת שנייה שמעתיקה את כל אלה הייתה נסחפת מהמקור בשקט.
+   */
+  const { pathname } = useLocation();
+  const landing = isLandingPath(pathname);
+  /*
    * גם המתג של תפריט הנגישות עוצר את הגלילה החלקה, לא רק הגדרת מערכת
    * ההפעלה.
    *
@@ -169,11 +178,11 @@ const Layout = () => {
         דילוג לתוכן המרכזי
       </a>
       <ScrollManager />
-      <Header />
+      <Header minimal={landing} />
       <main id="main-content" className="relative z-[2]">
         <PageTransition />
       </main>
-      <Footer />
+      <Footer minimal={landing} />
     </div>
     <RegisterModal />
     <WaitlistModal />

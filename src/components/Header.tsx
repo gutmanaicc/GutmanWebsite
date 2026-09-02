@@ -102,7 +102,18 @@ const scrollToTop = () => {
   else window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
-const Header = () => {
+type HeaderProps = {
+  /**
+   * מצב דף נחיתה: בלי ניווט, בלי תפריט נייד, ולוגו שאינו לינק.
+   *
+   * הלוגו נשאר על המסך כטקסט ולא נעלם, כי הוא מה שאומר לגולשת שהגיעה
+   * ממודעה מול מי היא עומדת. מה שיורד הוא רק היכולת ללחוץ עליו ולצאת.
+   * ה-CTA נשאר, כי הוא גולל לטופס שבאותו עמוד ואינו ניווט החוצה.
+   */
+  minimal?: boolean;
+};
+
+const Header = ({ minimal = false }: HeaderProps) => {
   const reduced = useReducedMotion();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -204,22 +215,30 @@ const Header = () => {
           dir="rtl"
         >
           <div className="flex min-w-0 flex-1 items-center justify-start">
-            <Link
-              to="/"
-              onClick={goHome}
-              className="inline-flex min-h-11 shrink items-center transition-opacity hover:opacity-90 active:scale-[0.98]"
-              aria-label="Gutman Academy, לעמוד הראשי"
-            >
-              <Logo height={36} className="max-h-7 w-auto sm:max-h-10" />
-            </Link>
+            {minimal ? (
+              <span className="inline-flex min-h-11 shrink items-center">
+                <Logo height={36} className="max-h-7 w-auto sm:max-h-10" />
+              </span>
+            ) : (
+              <Link
+                to="/"
+                onClick={goHome}
+                className="inline-flex min-h-11 shrink items-center transition-opacity hover:opacity-90 active:scale-[0.98]"
+                aria-label="Gutman Academy, לעמוד הראשי"
+              >
+                <Logo height={36} className="max-h-7 w-auto sm:max-h-10" />
+              </Link>
+            )}
           </div>
 
-          <nav
-            className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1 md:flex lg:gap-2"
-            aria-label="ניווט ראשי"
-          >
-            {NAV.map((item) => renderNavLink(item))}
-          </nav>
+          {!minimal && (
+            <nav
+              className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1 md:flex lg:gap-2"
+              aria-label="ניווט ראשי"
+            >
+              {NAV.map((item) => renderNavLink(item))}
+            </nav>
+          )}
 
           <div className="flex shrink-0 items-center justify-end gap-2 sm:flex-1 sm:gap-2.5">
             <Pressable
@@ -236,6 +255,7 @@ const Header = () => {
               השאירו פרטים
             </Pressable>
 
+            {!minimal && (
             <button
               type="button"
               className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.06] text-bone transition hover:border-white/40 sm:h-11 sm:w-11 md:hidden"
@@ -262,12 +282,13 @@ const Header = () => {
                 />
               </span>
             </button>
+            )}
           </div>
         </div>
       </header>
 
       <AnimatePresence>
-        {open && (
+        {!minimal && open && (
         <>
           <motion.button
             type="button"

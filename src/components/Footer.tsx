@@ -19,7 +19,19 @@ const legalLinkClass =
  * המיותרות ירדו. שורת הדומיין הוסרה - היא חזרה על מה שכתוב בשורת
  * הזכויות מיד מעליה.
  */
-const Footer = () => (
+type FooterProps = {
+  /**
+   * מצב דף נחיתה: רק השורה המשפטית.
+   *
+   * אייקוני האינסטגרם והמייל יורדים כאן לא כי הם מיותרים אלא כי הם
+   * הדליפה הכי יקרה בעמוד: הם מוציאים את הגולשת מהאתר כולו, לא רק
+   * מהעמוד, ומשם היא לא חוזרת. פרטיות והצהרת נגישות נשארות תמיד -
+   * הן חובה בחוק ותנאי במדיניות המודעות של מטא.
+   */
+  minimal?: boolean;
+};
+
+const Footer = ({ minimal = false }: FooterProps) => (
   <footer className="site-footer bg-ink text-white">
     <div className="mx-auto flex w-full max-w-md flex-col items-center justify-center px-5 py-8 text-center sm:py-9">
       <Logo height={28} className="max-h-7 w-auto sm:max-h-8" />
@@ -28,27 +40,29 @@ const Footer = () => (
         האקדמיה הפרונטלית ללימודי בינה מלאכותית
       </p>
 
-      <nav
-        className="mt-4 flex items-center justify-center gap-2.5"
-        aria-label="יצירת קשר ורשתות חברתיות"
-      >
-        <a
-          href={SITE.social.instagram}
-          target="_blank"
-          rel="noreferrer"
-          className={iconBadgeClass}
-          aria-label="Instagram"
+      {!minimal && (
+        <nav
+          className="mt-4 flex items-center justify-center gap-2.5"
+          aria-label="יצירת קשר ורשתות חברתיות"
         >
-          <Instagram size={18} strokeWidth={2} aria-hidden />
-        </a>
-        <a
-          href={`mailto:${SITE.contact.email}`}
-          className={iconBadgeClass}
-          aria-label={`שלחו מייל ל-${SITE.contact.email}`}
-        >
-          <Mail size={18} strokeWidth={2} aria-hidden />
-        </a>
-      </nav>
+          <a
+            href={SITE.social.instagram}
+            target="_blank"
+            rel="noreferrer"
+            className={iconBadgeClass}
+            aria-label="Instagram"
+          >
+            <Instagram size={18} strokeWidth={2} aria-hidden />
+          </a>
+          <a
+            href={`mailto:${SITE.contact.email}`}
+            className={iconBadgeClass}
+            aria-label={`שלחו מייל ל-${SITE.contact.email}`}
+          >
+            <Mail size={18} strokeWidth={2} aria-hidden />
+          </a>
+        </nav>
+      )}
 
       {/* שורה אחת: זכויות ולינקים משפטיים יחד, במקום שלוש שורות נפרדות */}
       <div className="mt-5 flex w-full flex-wrap items-center justify-center gap-x-1 border-t border-white/10 pt-4 text-xs text-white/45">
