@@ -6,11 +6,16 @@ import ImageLightbox from "../components/ImageLightbox";
 import Pressable from "../components/Pressable";
 import RegisterForm from "../components/RegisterForm";
 import ReviewsRatingBadge from "../components/ReviewsRatingBadge";
-import { MotionItem, MotionSection } from "../components/course/CourseMotion";
+import StudentWorksCarousel from "../components/StudentWorksCarousel";
+import HeroScrollCue from "../components/landing/HeroScrollCue";
+import ScrollProgressBar from "../components/landing/ScrollProgressBar";
+import { CountUp, KineticHeading, Reveal, ScrollLine, ScrollScrub } from "../components/motion";
 import { ArrowIcon, CheckIcon } from "../components/icons";
 import { FASHION_LP } from "../data/fashionLanding";
 import { getInstructorsForCourse } from "../data/instructorsData";
+import { getStudentWorksByTrack } from "../data/studentWorksData";
 import { getTestimonialsForCourse, type Testimonial } from "../data/testimonialsData";
+import { REGISTRATION_FORM_ID, scrollToRegistrationForm } from "../lib/registration";
 import { popupJustClosed } from "../lib/scrollLock";
 import { trackStandard } from "../pixel";
 import { faqSchema, useSeo } from "../lib/seo";
@@ -37,8 +42,27 @@ import { useReveal } from "../lib/useReveal";
  * שיווקי מוטמע, כדי שאפשר יהיה לתקן קופי בלי לגעת בקומפוננטה.
  */
 
-const scrollToForm = () => {
-  document.getElementById("lp-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
+/*
+ * הטופס נושא את המזהה הקנוני של האתר ולא מזהה מקומי.
+ *
+ * קודם הוא היה id="lp-form", ולכן getRegistrationSection לא מצא אותו:
+ * כפתור "השאירו פרטים" שבהדר בדק אם יש טופס בעמוד, קיבל תשובה שלילית,
+ * וניווט ל-/register. כלומר הכפתור הבולט ביותר בעמוד היה גם פתח
+ * המילוט הכי גדול ממנו, ובדרך הליד היה נרשם תחת מקור אחר.
+ */
+const scrollToForm = () => scrollToRegistrationForm({ focus: false });
+
+/**
+ * טווח מספרי בתוך ערך סטטיסטי, אם יש כזה.
+ *
+ * רק אחד משלושת המספרים בסקשן השוק הוא באמת מספר ("20-50"); השניים
+ * האחרים הם מילים ("שבועות", "ימים ספורים"). במקום להוסיף שדה לדאטה
+ * שיהיה ריק בשני שלישים מהמקרים, הזיהוי נעשה כאן: זו החלטת תצוגה,
+ * לא עובדה על התוכן.
+ */
+const parseRange = (value: string): [number, number] | null => {
+  const match = /^(\d+)-(\d+)$/.exec(value);
+  return match ? [Number(match[1]), Number(match[2])] : null;
 };
 
 const FashionLanding = () => {
@@ -46,6 +70,16 @@ const FashionLanding = () => {
   const [lightbox, setLightbox] = useState<Testimonial | null>(null);
   const testimonials = getTestimonialsForCourse(FASHION_LP.courseSlug, 3);
   const instructors = getInstructorsForCourse(FASHION_LP.courseSlug);
+  /*
+   * סרטוני מסלול הווידאו, לא של סדנת האופנה.
+   *
+   * getStudentWorksForCourse("ai-fashion") מחזיר רשימה ריקה כי עדיין
+   * אין תוצרי אופנה מצולמים. במקום להוסיף "ai-fashion" ל-courseSlugs
+   * של סרטונים שנוצרו במסלול אחר - כלומר לשקר בשדה המקור - לוקחים
+   * אותם לפי ה-track שלהם, והקופי בסקשן אומר במפורש מאיפה הם.
+   * כשיגיעו תוצרי אופנה: מחליפים כאן ל-getStudentWorksForCourse.
+   */
+  const works = getStudentWorksByTrack("video");
 
   useSeo({
     title: FASHION_LP.seo.title,
@@ -67,13 +101,35 @@ const FashionLanding = () => {
 
   return (
     <div className="course-detail-page">
+      {/*
+        פס ההתקדמות קיים כאן ולא במעטפת הגלובלית.
+        הוא נועד לדף ארוך שאין ממנו יציאה, שבו השאלה "כמה עוד" היא הסיבה
+        הנפוצה לנטישה באמצע. בשאר האתר יש ניווט שעונה על אותה שאלה.
+      */}
+      <ScrollProgressBar />
+
       {/* ── הירו: הכאב הרביעי, לא שם המוצר ─────────────────────── */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 grid-canvas opacity-50" aria-hidden />
-        <div
-          className="pointer-events-none absolute -left-20 top-6 h-40 w-40 rounded-full bg-[#FF2D85]/12 blur-3xl"
-          aria-hidden
-        />
+        {/*
+          שתי ההילות נעות בקצב שונה מהתוכן ובכיוונים מנוגדים.
+          זה מה שנותן להירו עומק בלי להוסיף תמונה: העין קוראת שתי שכבות
+          שזזות בקצב שונה כמרחק, וזה עובד גם כשאין שום נכס ויזואלי בעמוד.
+          ScrollScrub חושף רק ציר אנכי, ולכן אין סיכון לגלילה אופקית.
+        */}
+        <ScrollScrub
+          className="pointer-events-none absolute -left-20 top-6 h-40 w-40"
+          y={[-40, 70]}
+          scale={[0.9, 1.15]}
+        >
+          <div className="h-full w-full rounded-full bg-[#FF2D85]/12 blur-3xl" aria-hidden />
+        </ScrollScrub>
+        <ScrollScrub
+          className="pointer-events-none absolute -right-24 bottom-0 h-56 w-56"
+          y={[60, -50]}
+        >
+          <div className="h-full w-full rounded-full bg-[#FF2D85]/[0.07] blur-3xl" aria-hidden />
+        </ScrollScrub>
 
         <div className="container-site relative py-12 sm:py-16 lg:py-20">
           <motion.div
@@ -86,11 +142,24 @@ const FashionLanding = () => {
               {FASHION_LP.hero.kicker}
             </span>
 
-            <h1 className="text-3xl font-bold leading-tight tracking-tight text-ink sm:text-4xl lg:text-5xl">
-              {FASHION_LP.hero.title}
-              <br />
-              <AccentWord>{FASHION_LP.hero.titleAccent}</AccentWord>
-            </h1>
+            {/*
+              הכותרת נחשפת מילה אחרי מילה. זה הרגע הראשון שהגולשת רואה
+              בעמוד, והיא הגיעה ממודעה בלי להכיר את האקדמיה: חשיפה
+              הדרגתית מכריחה לקרוא את המשפט במקום לסרוק אותו.
+
+              breakBeforeAccent שומר על הקומפוזיציה בשתי שורות. השבירה
+              מכוונת: הכאב בשורה אחת, ההבטחה מתחתיה. accentClassName
+              מקבל בדיוק את המחלקה של AccentWord, שהיא סגנון גופן וצבע
+              ולכן עובדת גם כשהיא חלה על כל מילה בנפרד.
+            */}
+            <KineticHeading
+              as="h1"
+              className="text-3xl font-bold leading-tight tracking-tight text-ink sm:text-4xl lg:text-5xl"
+              text={FASHION_LP.hero.title}
+              accent={FASHION_LP.hero.titleAccent}
+              accentClassName="accent-serif not-italic"
+              breakBeforeAccent
+            />
 
             <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted sm:text-lg">
               {FASHION_LP.hero.sub}
@@ -110,13 +179,71 @@ const FashionLanding = () => {
               </Pressable>
             </div>
           </motion.div>
+
+          {/*
+            רצועת התהליך.
+            flex-wrap ולא רשת בעלת חמש עמודות: חמישה צמתים ברוחב טלפון
+            היו נדחסים או דוחפים גלילה אופקית, וזה אילוץ קשיח באתר.
+            בעטיפה הם מסתדרים לשתי שורות ושומרים על אותו קצב קריאה.
+          */}
+          <motion.ol
+            className="mx-auto mt-9 flex max-w-2xl flex-wrap items-stretch justify-center gap-y-3"
+            initial={reduced ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.25 }}
+            aria-label="התהליך בסדנה"
+          >
+            {FASHION_LP.pipeline.map((node, i) => {
+              const last = i === FASHION_LP.pipeline.length - 1;
+              return (
+                <li key={node.label} className="flex items-center">
+                  {/*
+                    ההשהיה נגזרת מהאינדקס: הרצועה נבנית מימין לשמאל כמו
+                    הקריאה, וכך היא מספרת רצף במקום להופיע כגוש אחד.
+                  */}
+                  <Reveal variant="scale" delay={i * 0.08} amount={0.4}>
+                  <div
+                    className={`rounded-xl border px-3 py-2 text-center transition-colors ${
+                      last
+                        ? "border-[#FF2D85]/40 bg-[#FF2D85]/10"
+                        : "border-white/10 bg-white/[0.03]"
+                    }`}
+                  >
+                    <span
+                      className={`block text-[13px] font-semibold leading-none ${
+                        last ? "text-[#FF2D85]" : "text-bone/85"
+                      }`}
+                    >
+                      {node.label}
+                    </span>
+                    <span className="mt-1 block text-[10px] leading-none text-bone/40">
+                      {node.hint}
+                    </span>
+                  </div>
+                  </Reveal>
+                  {!last && (
+                    /* ArrowIcon מצביע שמאלה, כלומר "קדימה" ב-RTL */
+                    <span className="mx-1.5 text-bone/25 sm:mx-2" aria-hidden>
+                      <ArrowIcon size={14} />
+                    </span>
+                  )}
+                </li>
+              );
+            })}
+          </motion.ol>
+
+          {/*
+            בזרימה ולא absolute bottom: ההירו הזה אינו במסך מלא, ורמז
+            שממוקם לתחתיתו היה נוחת על הסקשן שמתחת במקום לסגור את ההירו.
+          */}
+          <HeroScrollCue className="mt-10 sm:mt-12" />
         </div>
       </section>
 
       {/* ── 1. מה קורה היום בשוק ──────────────────────────────── */}
-      <MotionSection className="py-10 sm:py-14">
+      <section className="py-10 sm:py-14">
         <div className="container-site">
-          <MotionItem>
+          <Reveal>
             <SectionHeader
               compact
               kicker={FASHION_LP.market.kicker}
@@ -127,28 +254,66 @@ const FashionLanding = () => {
               }
               sub={FASHION_LP.market.sub}
             />
-          </MotionItem>
+          </Reveal>
 
+          {/*
+            שלושת המספרים הם למעשה שתי טענות: כמה זה עולה היום, וכמה זמן
+            זה לוקח לפני ואחרי. הכרטיס השלישי הוא ה"אחרי", וכשהשלושה
+            נראו זהים הוא נבלע ביניהם במקום לסגור את הטיעון.
+          */}
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
-            {FASHION_LP.market.stats.map((stat) => (
-              <MotionItem key={stat.label}>
-                <div className="h-full rounded-2xl border border-white/10 bg-surface-1 p-5 text-center shadow-card">
-                  <p className="font-display text-2xl font-bold tracking-tight text-[#FF2D85] sm:text-3xl">
-                    <span dir="ltr">{stat.value}</span>
-                    {stat.unit && <span> {stat.unit}</span>}
-                  </p>
-                  <p className="mt-2 text-sm leading-relaxed text-bone/60">{stat.label}</p>
-                </div>
-              </MotionItem>
-            ))}
+            {FASHION_LP.market.stats.map((stat, i) => {
+              const isAfter = i === FASHION_LP.market.stats.length - 1;
+              const range = parseRange(stat.value);
+              return (
+                <Reveal key={stat.label} variant="scale" delay={i * 0.1}>
+                  <div
+                    className={`group relative h-full overflow-hidden rounded-2xl border p-5 text-center shadow-card transition-[border-color,transform] duration-300 hover:-translate-y-1 ${
+                      isAfter
+                        ? "border-[#FF2D85]/40 bg-[#FF2D85]/[0.07]"
+                        : "border-white/10 bg-surface-1 hover:border-white/25"
+                    }`}
+                  >
+                    {/* זוהר עדין שנדלק בהובר, רק על הכרטיס שמרחפים מעליו */}
+                    <span
+                      className="pointer-events-none absolute -top-16 left-1/2 h-32 w-32 -translate-x-1/2 rounded-full bg-[#FF2D85]/20 opacity-0 blur-3xl transition-opacity duration-500 group-hover:opacity-100"
+                      aria-hidden
+                    />
+                    <p
+                      className={`relative font-display text-2xl font-bold tracking-tight sm:text-3xl ${
+                        isAfter ? "text-[#FF2D85]" : "text-bone"
+                      }`}
+                    >
+                      {/*
+                        המספר נספר כלפי מעלה, המילים לא. ספירה על "שבועות"
+                        היא סתם רעש; על עלות של עשרות אלפי שקלים היא הדבר
+                        שגורם לגולשת לעצור ולקרוא את השורה שמתחת.
+                      */}
+                      {range ? (
+                        <span dir="ltr">
+                          <CountUp to={range[0]} duration={1.1} />-
+                          <CountUp to={range[1]} duration={1.5} />
+                        </span>
+                      ) : (
+                        <span dir="ltr">{stat.value}</span>
+                      )}
+                      {stat.unit && <span> {stat.unit}</span>}
+                    </p>
+                    <p className="relative mt-2 text-sm leading-relaxed text-bone/60">
+                      {stat.label}
+                    </p>
+                  </div>
+                </Reveal>
+              );
+            })}
           </div>
         </div>
-      </MotionSection>
+      </section>
 
       {/* ── 2. הכאב. הכרטיס הראשון הוא הכאב הרביעי ────────────── */}
-      <MotionSection className="py-10 sm:py-14">
+      <section className="py-10 sm:py-14">
         <div className="container-site">
-          <MotionItem>
+          <Reveal>
             <SectionHeader
               compact
               kicker={FASHION_LP.pain.kicker}
@@ -159,11 +324,16 @@ const FashionLanding = () => {
               }
               sub={FASHION_LP.pain.sub}
             />
-          </MotionItem>
+          </Reveal>
 
           <div className="mt-8 grid gap-4 md:grid-cols-2">
+            {/*
+              מסכה ולא עלייה: ארבעה כרטיסים שעולים יחד נראים כמו רשת
+              שנטענה, ומסכה שנפתחת מימין קוראת כמו טקסט שנחשף. הכרטיס
+              הראשון בלי השהיה כי הוא הכאב שנפתחים בו.
+            */}
             {FASHION_LP.pain.cards.map((card, i) => (
-              <MotionItem key={card.title}>
+              <Reveal key={card.title} variant="mask" delay={i * 0.09}>
                 {/*
                   הכרטיס הראשון מסומן ויזואלית. הוא הכאב שנפתחים בו,
                   ובלי הבדל הוא נבלע ברשת של ארבעה כרטיסים זהים.
@@ -180,16 +350,16 @@ const FashionLanding = () => {
                   </h3>
                   <p className="mt-2.5 text-sm leading-relaxed text-bone/60">{card.body}</p>
                 </article>
-              </MotionItem>
+              </Reveal>
             ))}
           </div>
         </div>
-      </MotionSection>
+      </section>
 
       {/* ── 3. מה השתנה ────────────────────────────────────────── */}
-      <MotionSection className="py-10 sm:py-14">
+      <section className="py-10 sm:py-14">
         <div className="container-site">
-          <MotionItem>
+          <Reveal>
             <SectionHeader
               compact
               kicker={FASHION_LP.shift.kicker}
@@ -200,27 +370,64 @@ const FashionLanding = () => {
               }
               sub={FASHION_LP.shift.sub}
             />
-          </MotionItem>
+          </Reveal>
 
-          <div className="mx-auto mt-8 max-w-3xl space-y-3">
-            {FASHION_LP.shift.rows.map((row) => (
-              <MotionItem key={row.after}>
-                <div className="grid gap-3 rounded-2xl border border-white/10 bg-surface-1 p-4 shadow-card sm:grid-cols-2 sm:gap-4 sm:p-5">
-                  <p className="text-sm leading-relaxed text-bone/45 line-through decoration-bone/25">
-                    {row.before}
-                  </p>
-                  <p className="text-sm font-medium leading-relaxed text-bone">{row.after}</p>
-                </div>
-              </MotionItem>
-            ))}
+          {/*
+            כותרות העמודות מוצגות פעם אחת מעל הרשימה, ולא בכל שורה.
+            בלעדיהן הקו החוצה בצד הימני נקרא כמו טעות עריכה ולא כמו
+            "ככה עשו קודם", וארבע השורות מתערבבות לרשימה אחת ארוכה.
+          */}
+          <div className="mx-auto mt-8 max-w-3xl">
+            <Reveal>
+              <div className="mb-2 hidden grid-cols-2 gap-4 px-5 sm:grid">
+                <span className="text-xs font-semibold uppercase tracking-wide text-bone/35">
+                  {FASHION_LP.shift.beforeLabel}
+                </span>
+                <span className="text-xs font-semibold uppercase tracking-wide text-[#FF2D85]">
+                  {FASHION_LP.shift.afterLabel}
+                </span>
+              </div>
+            </Reveal>
+
+            <div className="space-y-3">
+              {/*
+                המסכה נפתחת מה-inline-start, כלומר מימין ב-RTL: העין
+                פוגשת קודם את "הדרך הישנה" ורק אחריה את מה שהחליף אותה.
+                זה בדיוק סדר הקריאה של הטיעון בשורה.
+              */}
+              {FASHION_LP.shift.rows.map((row, i) => (
+                <Reveal key={row.after} variant="mask" delay={i * 0.07}>
+                  <div className="relative grid gap-3 overflow-hidden rounded-2xl border border-white/10 bg-surface-1 p-4 shadow-card sm:grid-cols-2 sm:gap-4 sm:p-5">
+                    {/*
+                      פס ורוד דק על שפת ה"אחרי". ב-RTL העמודה השנייה היא
+                      השמאלית, ולכן הפס יושב ב-inset-inline-end ולא ב-left,
+                      וגם מתהפך נכון אם הכיוון ישתנה אי פעם.
+                    */}
+                    <span
+                      className="pointer-events-none absolute inset-y-0 end-0 hidden w-px bg-gradient-to-b from-transparent via-[#FF2D85]/40 to-transparent sm:block"
+                      aria-hidden
+                    />
+                    <p className="text-sm leading-relaxed text-bone/40 line-through decoration-bone/25">
+                      {row.before}
+                    </p>
+                    <p className="flex items-start gap-2 text-sm font-medium leading-relaxed text-bone">
+                      <span className="mt-0.5 flex-none text-[#FF2D85]" aria-hidden>
+                        <ArrowIcon size={14} />
+                      </span>
+                      <span>{row.after}</span>
+                    </p>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
           </div>
         </div>
-      </MotionSection>
+      </section>
 
       {/* ── 4. הפתרון ──────────────────────────────────────────── */}
-      <MotionSection className="py-10 sm:py-14">
+      <section className="py-10 sm:py-14">
         <div className="container-site">
-          <MotionItem>
+          <Reveal>
             <SectionHeader
               compact
               kicker={FASHION_LP.solution.kicker}
@@ -232,51 +439,111 @@ const FashionLanding = () => {
               }
               sub={FASHION_LP.solution.sub}
             />
-          </MotionItem>
+          </Reveal>
 
-          <div className="mx-auto mt-8 max-w-3xl space-y-3">
-            {FASHION_LP.solution.steps.map((step) => (
-              <MotionItem key={step.step}>
-                <div className="flex gap-4 rounded-2xl border border-white/10 bg-surface-1 p-4 shadow-card sm:p-5">
-                  <span
-                    className="font-display text-xl font-bold tracking-tight text-[#FF2D85]"
-                    dir="ltr"
-                  >
-                    {step.step}
-                  </span>
-                  <div>
-                    <h3 className="font-display text-base font-bold tracking-tight text-bone sm:text-lg">
-                      {step.title}
-                    </h3>
-                    <p className="mt-1.5 text-sm leading-relaxed text-bone/60">{step.body}</p>
-                  </div>
-                </div>
-              </MotionItem>
-            ))}
+          {/*
+            מסילה אנכית שמחברת את חמשת המפגשים.
+            חמישה כרטיסים זהים נקראו כרשימת נושאים שאפשר לקחת מהם אחד;
+            המסילה אומרת שזה מסלול שמתקדם, ושהתוצר נמצא בסוף שלו. היא
+            יושבת ב-inset-inline-start (start) ולא ב-right, כדי שהיא
+            תישאר בצד הנכון בכל כיוון.
+          */}
+          <div className="relative mx-auto mt-8 max-w-3xl">
+            {/*
+              המסילה נמתחת לפי התקדמות הגלילה בסקשן, במקום גרדיאנט קבוע.
+              זה מה שהופך את חמשת המפגשים ממסמך למסלול: הקו מתקדם יחד עם
+              הגולשת, ומגיע לצומת האחרון בדיוק כשהיא מגיעה אליו.
+              הצבע נשאב מ-currentColor דרך text-, לכן אין כאן צבע קשיח נוסף.
+            */}
+            <ScrollLine className="pointer-events-none absolute inset-y-6 start-[39px] hidden w-px text-[#FF2D85]/55 sm:block" />
+
+            <ol className="space-y-3">
+              {FASHION_LP.solution.steps.map((step, i) => (
+                <Reveal key={step.step} delay={i * 0.06} amount={0.3}>
+                  <li className="relative flex gap-4 rounded-2xl border border-white/10 bg-surface-1 p-4 shadow-card transition-colors duration-300 hover:border-[#FF2D85]/30 sm:p-5">
+                    <span
+                      className={`relative z-[1] flex h-[38px] w-[38px] flex-none items-center justify-center rounded-full border font-display text-sm font-bold tracking-tight ${
+                        i === FASHION_LP.solution.steps.length - 1
+                          ? "border-[#FF2D85]/50 bg-[#FF2D85] text-white"
+                          : "border-[#FF2D85]/30 bg-canvas text-[#FF2D85]"
+                      }`}
+                      dir="ltr"
+                    >
+                      {step.step}
+                    </span>
+                    <div>
+                      <h3 className="font-display text-base font-bold tracking-tight text-bone sm:text-lg">
+                        {step.title}
+                      </h3>
+                      <p className="mt-1.5 text-sm leading-relaxed text-bone/60">{step.body}</p>
+                    </div>
+                  </li>
+                </Reveal>
+              ))}
+            </ol>
           </div>
 
-          <MotionItem className="mx-auto mt-8 max-w-3xl">
+          {/*
+            ארבעת התוצרים כרשומות נפרדות ולא כרשימת תבליטים.
+            זה מה שהגולשת מקבלת ביד, וברשימה צפופה בתוך תיבה אחת הוא
+            נקרא כמו "מה נלמד" ולא כמו "מה יהיה שלך בסוף".
+          */}
+          <Reveal className="mx-auto mt-8 max-w-3xl">
             <div className="rounded-2xl border border-[#FF2D85]/25 bg-[#FF2D85]/[0.05] p-5 sm:p-6">
               <h3 className="font-display text-base font-bold tracking-tight text-bone sm:text-lg">
                 עם מה יוצאים
               </h3>
-              <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-                {FASHION_LP.solution.outcomes.map((item) => (
-                  <li key={item} className="flex gap-2 text-sm leading-relaxed text-bone/75">
-                    <CheckIcon size={13} />
+              <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+                {FASHION_LP.solution.outcomes.map((item, i) => (
+                  <Reveal
+                    key={item}
+                    as="li"
+                    variant="scale"
+                    delay={i * 0.08}
+                    className="flex items-start gap-3 rounded-xl border border-white/10 bg-canvas/40 p-3.5 text-sm leading-relaxed text-bone/80"
+                  >
+                    <span
+                      className="mt-px flex h-6 w-6 flex-none items-center justify-center rounded-full bg-[#FF2D85]/15 text-[#FF2D85]"
+                      aria-hidden
+                    >
+                      <CheckIcon size={13} />
+                    </span>
                     <span>{item}</span>
-                  </li>
+                  </Reveal>
                 ))}
               </ul>
             </div>
-          </MotionItem>
+          </Reveal>
         </div>
-      </MotionSection>
+      </section>
+
+      {/* ── 5א. תוצרים בתנועה, לפני ההוכחה בטקסט ───────────────── */}
+      {works.length > 0 && (
+        <StudentWorksCarousel
+          works={works}
+          kicker={FASHION_LP.works.kicker}
+          title={
+            <>
+              {FASHION_LP.works.title} <AccentWord>{FASHION_LP.works.titleAccent}</AccentWord>
+            </>
+          }
+          sub={FASHION_LP.works.sub}
+          note={FASHION_LP.works.note}
+          ctaLabel={FASHION_LP.works.cta}
+          /*
+           * ה-CTA גולל לטופס של הדף ולא פותח את מודאל ההרשמה הגלובלי.
+           * המודאל היה רושם את הליד תחת leadSource משלו ושובר את
+           * ההשוואה בין דף הנחיתה לעמוד המסלול, וגם מוציא את הגולשת
+           * מזרימת העמוד לחלון שקופץ.
+           */
+          onCta={scrollToForm}
+        />
+      )}
 
       {/* ── 5. הוכחה ───────────────────────────────────────────── */}
-      <MotionSection className="py-10 sm:py-14">
+      <section className="py-10 sm:py-14">
         <div className="container-site">
-          <MotionItem>
+          <Reveal>
             <SectionHeader
               compact
               kicker={FASHION_LP.proof.kicker}
@@ -287,11 +554,16 @@ const FashionLanding = () => {
               }
               sub={FASHION_LP.proof.sub}
             />
-          </MotionItem>
+          </Reveal>
 
-          <MotionItem className="mt-6 flex justify-center">
-            <ReviewsRatingBadge />
-          </MotionItem>
+          {/*
+            linked={false} בכוונה: זה עמוד סגור, והבאדג' היה פתח המילוט
+            היחיד ששרד בגוף העמוד אחרי שהניווט ירד מההדר ומהפוטר.
+            המספר עושה את עבודת ההוכחה גם בלי לחיצה.
+          */}
+          <Reveal className="mt-6 flex justify-center">
+            <ReviewsRatingBadge linked={false} />
+          </Reveal>
 
           {/*
             המנחה יושבת בתוך ההוכחה ולא בסקשן משלה. לקהל שלא מכיר את
@@ -300,7 +572,7 @@ const FashionLanding = () => {
           {instructors.length > 0 && (
             <div className="mx-auto mt-8 max-w-3xl space-y-3">
               {instructors.map(({ instructor: person }) => (
-                <MotionItem key={person.id}>
+                <Reveal key={person.id} variant="blur">
                   <div className="flex items-start gap-4 rounded-2xl border border-white/10 bg-surface-1 p-4 shadow-card sm:p-5">
                     <img
                       src={person.image}
@@ -323,15 +595,15 @@ const FashionLanding = () => {
                       </ul>
                     </div>
                   </div>
-                </MotionItem>
+                </Reveal>
               ))}
             </div>
           )}
 
           {testimonials.length > 0 && (
             <div className="mt-8 grid gap-4 md:grid-cols-3">
-              {testimonials.map((item) => (
-                <MotionItem key={item.id}>
+              {testimonials.map((item, i) => (
+                <Reveal key={item.id} variant="scale" delay={i * 0.1}>
                   <article className="flex h-full flex-col rounded-2xl border border-white/10 bg-surface-1 p-5 shadow-card">
                     <p className="font-display text-lg font-bold leading-snug tracking-tight text-bone">
                       {item.quote}
@@ -351,17 +623,17 @@ const FashionLanding = () => {
                       <ArrowIcon size={13} />
                     </button>
                   </article>
-                </MotionItem>
+                </Reveal>
               ))}
             </div>
           )}
         </div>
-      </MotionSection>
+      </section>
 
       {/* ── 6. טופס ────────────────────────────────────────────── */}
-      <MotionSection id="lp-form" className="scroll-mt-20 py-10 sm:py-14">
+      <section id={REGISTRATION_FORM_ID} className="scroll-mt-20 py-10 sm:py-14">
         <div className="container-site">
-          <MotionItem>
+          <Reveal>
             <div className="course-register-banner relative overflow-hidden rounded-3xl p-5 sm:p-6 lg:p-7">
               <div className="pointer-events-none absolute inset-0 opacity-15" aria-hidden>
                 <div
@@ -406,14 +678,14 @@ const FashionLanding = () => {
                 </div>
               </div>
             </div>
-          </MotionItem>
+          </Reveal>
         </div>
-      </MotionSection>
+      </section>
 
       {/* התנגדויות. אחרי הטופס, כמו בעמוד המסלול - מי שכבר משוכנע לא צריך אותן */}
-      <MotionSection className="py-10 sm:py-14">
+      <section className="py-10 sm:py-14">
         <div className="container-site max-w-3xl">
-          <MotionItem>
+          <Reveal>
             <SectionHeader
               compact
               kicker="שאלות"
@@ -423,12 +695,12 @@ const FashionLanding = () => {
                 </>
               }
             />
-          </MotionItem>
-          <MotionItem className="mt-6">
+          </Reveal>
+          <Reveal className="mt-6">
             <FAQAccordion items={FASHION_LP.faq.map((f) => ({ q: f.q, a: f.a }))} />
-          </MotionItem>
+          </Reveal>
 
-          <MotionItem className="mt-8 flex justify-center">
+          <Reveal className="mt-8 flex justify-center">
             <Pressable
               type="button"
               className="btn cursor-pointer bg-[#FF2D85] text-white shadow-pill hover:brightness-105"
@@ -438,9 +710,9 @@ const FashionLanding = () => {
               {FASHION_LP.hero.cta}
               <ArrowIcon />
             </Pressable>
-          </MotionItem>
+          </Reveal>
         </div>
-      </MotionSection>
+      </section>
 
       <ImageLightbox
         src={lightbox?.image ?? null}

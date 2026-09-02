@@ -8,6 +8,22 @@ import { useRegisterModal } from "../context/RegisterModalContext";
 
 type Props = {
   works: StudentWork[];
+  /*
+   * עקיפות הקופי וה-CTA קיימות בשביל דף הנחיתה.
+   *
+   * שם הסקשן הזה מוצג לקהל שלא מכיר את האקדמיה ולא נמצא במסלול וידאו,
+   * ולכן הכותרת הכללית ("עבודות של תלמידים") לא אומרת לו כלום. חשוב
+   * מזה: ה-CTA המובנה פותח את מודאל ההרשמה עם leadSource משלו, וליד
+   * שנוצר ככה מדף הנחיתה היה נרשם ב-CRM תחת מקור אחר ושובר בדיוק את
+   * ההשוואה שבשבילה הדף קיים. onCta מאפשר לדף לנתב לטופס שלו.
+   */
+  kicker?: string;
+  title?: React.ReactNode;
+  sub?: string;
+  /** השורה שמעל ה-CTA */
+  note?: string;
+  ctaLabel?: string;
+  onCta?: () => void;
 };
 
 /** כמה כרטיסים מכל צד נשארים מורכבים. מעבר לזה הם לא ברשת ולא בזיכרון. */
@@ -31,7 +47,15 @@ const VIDEO_WINDOW = 1;
  * כאן index הוא מקור האמת היחיד: החצים, הנקודות והמגע כותבים אליו,
  * והמיקום, הניגון והמונה נגזרים ממנו. אין מדידה ואין טיימר שמתקן.
  */
-const StudentWorksCarousel = ({ works }: Props) => {
+const StudentWorksCarousel = ({
+  works,
+  kicker = "תוצרים",
+  title,
+  sub = "סרטונים אמיתיים שנבנו במהלך המסלול - לא הדגמות מבוימות.",
+  note = "כל אחד מהסרטונים האלה נבנה במסלול, על ידי מישהו שהתחיל מאפס.",
+  ctaLabel = "רוצה לבנות כאלה",
+  onCta,
+}: Props) => {
   const count = works.length;
   const reduced = useReducedMotion();
   const { openRegisterModal } = useRegisterModal();
@@ -179,13 +203,15 @@ const StudentWorksCarousel = ({ works }: Props) => {
       <div className="container-site">
         <SectionHeader
           compact
-          kicker="תוצרים"
+          kicker={kicker}
           title={
-            <>
-              עבודות של <AccentWord>תלמידים</AccentWord>
-            </>
+            title ?? (
+              <>
+                עבודות של <AccentWord>תלמידים</AccentWord>
+              </>
+            )
           }
-          sub="סרטונים אמיתיים שנבנו במהלך המסלול - לא הדגמות מבוימות."
+          sub={sub}
         />
 
         <div className="relative mt-6">
@@ -353,16 +379,14 @@ const StudentWorksCarousel = ({ works }: Props) => {
          * שתלמידים באמת בנו - והקרוסלה נגמרה קודם בלי לבקש ממנו כלום.
          */}
         <div className="mt-8 flex flex-col items-center text-center">
-          <p className="max-w-md text-[15px] leading-relaxed text-bone/55">
-            כל אחד מהסרטונים האלה נבנה במסלול, על ידי מישהו שהתחיל מאפס.
-          </p>
+          <p className="max-w-md text-[15px] leading-relaxed text-bone/55">{note}</p>
           <Pressable
             type="button"
             className="btn btn-brand mt-5 w-full max-w-xs sm:w-auto sm:max-w-none sm:px-8"
             rippleTone="pink"
-            onClick={() => openRegisterModal({ leadSource: "student-works" })}
+            onClick={onCta ?? (() => openRegisterModal({ leadSource: "student-works" }))}
           >
-            רוצה לבנות כאלה
+            {ctaLabel}
           </Pressable>
         </div>
       </div>

@@ -102,3 +102,16 @@ export const STUDENT_WORKS: StudentWork[] = [
 export function getStudentWorksForCourse(slug: string): StudentWork[] {
   return STUDENT_WORKS.filter((work) => work.courseSlugs.includes(slug));
 }
+
+/**
+ * תוצרים לפי מסלול מקור ולא לפי הקורס שמציג אותם.
+ *
+ * דף הנחיתה של האופנה מציג את סרטוני מסלול הווידאו, כי עדיין אין
+ * תוצרי אופנה מצולמים. הפילטר לפי track ולא הוספה של "ai-fashion"
+ * ל-courseSlugs בכוונה: courseSlugs אומר "התוצר הזה נוצר במסלול הזה",
+ * וזיוף שלו היה הופך את שדה המקור עצמו לשקר. כאן ההצגה מפורשת -
+ * לוקחים תוצרי וידאו, והקופי בדף אומר שאלה תוצרי מסלול הווידאו.
+ */
+export function getStudentWorksByTrack(track: StudentWorkTrack): StudentWork[] {
+  return STUDENT_WORKS.filter((work) => work.track === track);
+}
