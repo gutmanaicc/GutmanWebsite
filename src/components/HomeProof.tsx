@@ -2,11 +2,9 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import SectionHeader, { AccentWord } from "./SectionHeader";
-import StudentWorksCarousel from "./StudentWorksCarousel";
 import ImageLightbox from "./ImageLightbox";
 import { popupJustClosed } from "../lib/scrollLock";
 import { ArrowIcon } from "./icons";
-import { STUDENT_WORKS } from "../data/studentWorksData";
 import { TESTIMONIALS, type Testimonial } from "../data/testimonialsData";
 
 /** ההודעות שקוראות הכי חזק; המלאי המלא חי ב-/reviews. */
@@ -92,8 +90,18 @@ const HomeProof = () => {
       </div>
     </section>
 
-    {/* Carousel ships its own <section> + header. */}
-    {STUDENT_WORKS.length > 0 && <StudentWorksCarousel works={STUDENT_WORKS} />}
+    {/*
+     * קרוסלת התוצרים ירדה מכאן ועברה לעמודי המסלולים.
+     *
+     * בעמוד הבית היא הציגה את כל התוצרים יחד, בלי הקשר: המבקר ראה
+     * תשעה סרטוני וידאו בעמוד שמציג חמישה מסלולים שונים, ולא היה לו
+     * דרך לדעת לאיזה מסלול הם שייכים. ב-CourseDetail היא כבר מסוננת
+     * לפי המסלול דרך getStudentWorksForCourse, ושם התוצר עונה על
+     * השאלה שהמבקר בא איתה: "מה יוצא לי מהמסלול הזה".
+     *
+     * רווח נוסף שלא היה המטרה: עמוד הבית הוא הנחיתה הנפוצה ביותר,
+     * והוא הפסיק לטעון וידאו לגמרי.
+     */}
 
     <ImageLightbox
       src={lightbox?.image ?? null}

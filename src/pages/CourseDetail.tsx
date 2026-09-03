@@ -10,6 +10,7 @@ import InstructorBioModal, { type InstructorBio } from "../components/Instructor
 import Pressable from "../components/Pressable";
 import BackButton from "../components/BackButton";
 import StudentWorksCarousel from "../components/StudentWorksCarousel";
+import FashionStillsShowcase from "../components/FashionStillsShowcase";
 import { ParallaxLayer, MagneticCard, MagneticDepth } from "../components/motion";
 import { MotionItem, MotionSection } from "../components/course/CourseMotion";
 import CoursePain from "../components/course/CoursePain";
@@ -40,6 +41,7 @@ import { getMarketingSyllabus, getSyllabusHref, hasSyllabus } from "../data/syll
 import { trackStandard } from "../pixel";
 import { getInstructorsForCourse } from "../data/instructorsData";
 import { getStudentWorksForCourse } from "../data/studentWorksData";
+import { FASHION_STILLS } from "../data/fashionWorks";
 import { REGISTER_FORM_TITLE, SITE } from "../data/site";
 import { useRegisterModal } from "../context/RegisterModalContext";
 import { useReveal } from "../lib/useReveal";
@@ -192,6 +194,16 @@ const CourseDetail = () => {
   const courseInstructors = course ? getInstructorsForCourse(course.slug) : [];
   const [instructorBio, setInstructorBio] = useState<InstructorBio>(null);
   const studentWorks = course ? getStudentWorksForCourse(course.slug) : [];
+  /*
+   * שלוש התמונות של סדנת האופנה, מוצג רק שם.
+   *
+   * מוגדר לפי slug מפורש ולא דרך מנגנון courseSlugs גנרי כמו
+   * studentWorks, כי בשלב הזה יש לו רק מקור נתונים אחד (FASHION_STILLS)
+   * וקורס אחד שמציג אותו. אם מסלול נוסף יקבל תמונות סטילס משלו,
+   * זה הזמן להוסיף שדה courseSlugs ל-FashionStill ולהחליף לגטר
+   * גנרי, לא לפני.
+   */
+  const fashionStills = course?.slug === "ai-fashion" ? FASHION_STILLS : [];
 
   useSeo({
     title: course ? `${course.title} | ${SITE.name}` : `מסלול | ${SITE.name}`,
@@ -528,8 +540,21 @@ const CourseDetail = () => {
 
       <CourseProof slug={course.slug} courseKey={courseKey} />
 
-      {/* הקרוסלה בנויה לקנבס הכהה; רקע בהיר כאן הפך את הכיתובים שלה ללבן על לבן */}
-      {studentWorks.length > 0 && <StudentWorksCarousel works={studentWorks} />}
+      {/*
+        הקרוסלה בנויה לקנבס הכהה; רקע בהיר כאן הפך את הכיתובים שלה ללבן על לבן.
+
+        hideCta כשיש סדרת תמונות מיד אחריה: אחרת ה-CTA המובנה של הקרוסלה
+        ("רוצה לבנות כאלה") נופל בדיוק בין הסרטונים לתמונות - שני נכסי
+        הוכחה מאותה סדנה עם כפתור השארת פרטים תקוע בתפר ביניהם. בעמוד
+        שאין לו המשך תמונות (כל מסלול חוץ מאופנה, כרגע) ה-CTA נשאר, כי
+        הוא הסגירה היחידה של הסקשן.
+      */}
+      {studentWorks.length > 0 && (
+        <StudentWorksCarousel works={studentWorks} hideCta={fashionStills.length > 0} />
+      )}
+
+      {/* אותם נכסים בדיוק כמו בדף הנחיתה הממומן, דרך אותו רכיב משותף */}
+      {fashionStills.length > 0 && <FashionStillsShowcase stills={fashionStills} />}
 
       {courseInstructors.length > 0 && (
         <MotionSection resetKey={`${courseKey}-instructors`} className="py-10 sm:py-12">

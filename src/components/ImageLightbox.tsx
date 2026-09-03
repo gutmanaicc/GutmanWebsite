@@ -15,10 +15,20 @@ const ImageLightbox = ({
   src,
   alt,
   onClose,
+  label = "ההודעה המקורית",
 }: {
   src: string | null;
   alt: string;
   onClose: () => void;
+  /*
+   * הכיתוב שמעל התמונה. null מסיר את הסרגל כולו.
+   *
+   * ברירת המחדל משרתת את רוב השימושים באתר, שהם צילומי הודעות, ושם
+   * הכיתוב אומר לגולש מה הוא מסתכל עליו. בתמונת קמפיין הוא פשוט לא
+   * נכון, ושורת כותרת ריקה מעל תמונה גרועה מאין שורה: היא גונבת גובה
+   * מהתמונה עצמה, שהיא כל מה שבאו לראות.
+   */
+  label?: string | null;
 }) => {
   const reduced = useReducedMotion();
   const open = Boolean(src);
@@ -62,17 +72,34 @@ const ImageLightbox = ({
         transition={{ type: "spring", stiffness: 340, damping: 30 }}
         onPointerDown={(e) => e.stopPropagation()}
       >
-        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-white/10 px-4 py-3">
-          <span className="text-xs font-medium tracking-wide text-bone/50">ההודעה המקורית</span>
+        {label ? (
+          <div className="flex shrink-0 items-center justify-between gap-4 border-b border-white/10 px-4 py-3">
+            <span className="text-xs font-medium tracking-wide text-bone/50">{label}</span>
+            <button
+              type="button"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-bone/70 transition-colors hover:border-white/45 hover:text-bone"
+              onClick={onClose}
+              aria-label="סגירה"
+            >
+              <X size={17} />
+            </button>
+          </div>
+        ) : (
+          /*
+            בלי הסרגל, כפתור הסגירה צף מעל התמונה ולא נעלם איתו.
+            הסרה שלו יחד עם הכותרת הייתה משאירה סגירה רק ב-Escape
+            ובלחיצה בחוץ, ובטלפון אין Escape. end-3 ולא left-3, כדי
+            שיישאר בפינה הנכונה בכל כיוון כתיבה.
+          */
           <button
             type="button"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-bone/70 transition-colors hover:border-white/45 hover:text-bone"
+            className="absolute end-3 top-3 z-[1] inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-black/55 text-bone/80 backdrop-blur-sm transition-colors hover:border-white/50 hover:text-bone"
             onClick={onClose}
             aria-label="סגירה"
           >
-            <X size={17} />
+            <X size={18} />
           </button>
-        </div>
+        )}
 
         {/* התמונה נגללת בתוך הפופאפ, כך שגם צילום ארוך מאוד נשאר קריא */}
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain" data-lenis-prevent>

@@ -3,17 +3,20 @@ import { motion, useReducedMotion } from "framer-motion";
 import SectionHeader, { AccentWord } from "../components/SectionHeader";
 import FAQAccordion from "../components/FAQAccordion";
 import ImageLightbox from "../components/ImageLightbox";
+import InstructorBioModal, { type InstructorBio } from "../components/InstructorBioModal";
 import Pressable from "../components/Pressable";
 import RegisterForm from "../components/RegisterForm";
 import ReviewsRatingBadge from "../components/ReviewsRatingBadge";
 import StudentWorksCarousel from "../components/StudentWorksCarousel";
+import FashionStillsShowcase from "../components/FashionStillsShowcase";
 import HeroScrollCue from "../components/landing/HeroScrollCue";
 import ScrollProgressBar from "../components/landing/ScrollProgressBar";
 import { CountUp, KineticHeading, Reveal, ScrollLine, ScrollScrub } from "../components/motion";
 import { ArrowIcon, CheckIcon } from "../components/icons";
 import { FASHION_LP } from "../data/fashionLanding";
-import { getInstructorsForCourse } from "../data/instructorsData";
-import { getStudentWorksByTrack } from "../data/studentWorksData";
+import { getInstructor, getInstructorsForCourse } from "../data/instructorsData";
+import { FASHION_STILLS } from "../data/fashionWorks";
+import { getStudentWorksForCourse } from "../data/studentWorksData";
 import { getTestimonialsForCourse, type Testimonial } from "../data/testimonialsData";
 import { REGISTRATION_FORM_ID, scrollToRegistrationForm } from "../lib/registration";
 import { popupJustClosed } from "../lib/scrollLock";
@@ -68,18 +71,24 @@ const parseRange = (value: string): [number, number] | null => {
 const FashionLanding = () => {
   const reduced = useReducedMotion();
   const [lightbox, setLightbox] = useState<Testimonial | null>(null);
+  const [instructorBio, setInstructorBio] = useState<InstructorBio>(null);
+  /* נפרד מ-lightbox של ההמלצות: שם המקור הוא Testimonial ולא נתיב תמונה */
   const testimonials = getTestimonialsForCourse(FASHION_LP.courseSlug, 3);
   const instructors = getInstructorsForCourse(FASHION_LP.courseSlug);
   /*
-   * סרטוני מסלול הווידאו, לא של סדנת האופנה.
+   * רון נשלף לפי מזהה ולא דרך getInstructorsForCourse.
    *
-   * getStudentWorksForCourse("ai-fashion") מחזיר רשימה ריקה כי עדיין
-   * אין תוצרי אופנה מצולמים. במקום להוסיף "ai-fashion" ל-courseSlugs
-   * של סרטונים שנוצרו במסלול אחר - כלומר לשקר בשדה המקור - לוקחים
-   * אותם לפי ה-track שלהם, והקופי בסקשן אומר במפורש מאיפה הם.
-   * כשיגיעו תוצרי אופנה: מחליפים כאן ל-getStudentWorksForCourse.
+   * המיפוי של ai-fashion מצביע על הדר בלבד, וזה נכון: היא המנחה של
+   * הסדנה. הוספת רון למיפוי הייתה מציגה אותו גם בעמוד המסלול ובכל
+   * מקום אחר שנגזר מאותו מקור, ומשנה עמודים שלא ביקשנו לשנות.
    */
-  const works = getStudentWorksByTrack("video");
+  const founder = getInstructor(FASHION_LP.founder.instructorId);
+  /*
+   * דרך אותו מנגנון שכל שאר עמודי המסלול משתמשים בו, ולא רשימה נפרדת.
+   * כך /courses/ai-fashion מציג בדיוק את אותם תוצרים אוטומטית, בלי
+   * שני מקורות דאטה שצריך לזכור לעדכן ביחד.
+   */
+  const works = getStudentWorksForCourse(FASHION_LP.courseSlug);
 
   useSeo({
     title: FASHION_LP.seo.title,
@@ -537,8 +546,28 @@ const FashionLanding = () => {
            * מזרימת העמוד לחלון שקופץ.
            */
           onCta={scrollToForm}
+          /* הבקשה יורדת מכאן ומגיעה אחרי סדרת התמונות, כדי לא לקטוע
+             את רצף ההוכחה באמצע */
+          hideCta
         />
       )}
+
+      {/*
+        ── 5ב. הסדרה: אותה דמות בשלושה שוטים ──────────────────────
+        רכיב משותף עם /courses/ai-fashion (FashionStillsShowcase),
+        כדי ששני העמודים יציגו בדיוק את אותה רשת תמונות בלי שני
+        עותקים שיכולים להיסחף זה מזה. note/ctaLabel/onCta כאן הם
+        אותה בקשה משותפת שהייתה קודם אחרי הסרטונים והתמונות גם יחד -
+        לא מבוקשת התחייבות, רק לגלול לטופס של הדף.
+      */}
+      <FashionStillsShowcase
+        stills={FASHION_STILLS}
+        title={FASHION_LP.stills.title}
+        sub={FASHION_LP.stills.sub}
+        note={FASHION_LP.works.note}
+        ctaLabel={FASHION_LP.works.cta}
+        onCta={scrollToForm}
+      />
 
       {/* ── 5. הוכחה ───────────────────────────────────────────── */}
       <section className="py-10 sm:py-14">
@@ -566,14 +595,68 @@ const FashionLanding = () => {
           </Reveal>
 
           {/*
+            המסגרת המוסדית לפני המנחה: קודם "מי אלה בכלל", ואז "מי מלמדת".
+            הכרטיס קומפקטי מזה של הדר בכוונה, כדי שהיא תישאר העוגן.
+          */}
+          {founder && (
+            <Reveal className="mx-auto mt-8 max-w-3xl" variant="blur">
+              <button
+                type="button"
+                /* popupJustClosed חוסם פתיחה מחדש כשסגירת הפופאפ בלחיצה
+                   בחוץ נוחתת על הכרטיס שמתחתיה */
+                onClick={() =>
+                  !popupJustClosed() &&
+                  setInstructorBio({
+                    instructor: founder,
+                    bio: founder.trackBios.general ?? founder.bio,
+                  })
+                }
+                className="flex w-full items-center gap-4 rounded-2xl border border-white/10 bg-surface-1 p-4 text-start shadow-card transition-colors duration-200 hover:border-[#FF2D85]/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2D85]/50 sm:p-5"
+              >
+                <img
+                  src={founder.image}
+                  alt={founder.name}
+                  loading="lazy"
+                  className="h-12 w-12 flex-none rounded-full object-cover"
+                />
+                <div className="min-w-0 flex-1">
+                  {/* שם ואז תפקיד בשורה נפרדת, בדיוק כמו בכרטיס של הדר
+                      שמתחתיו. שני כרטיסי אנשים סמוכים במבנה שונה נקראים
+                      כמו שני רכיבים שהודבקו זה ליד זה. */}
+                  <h3 className="font-display text-base font-bold tracking-tight text-bone">
+                    {founder.name}
+                  </h3>
+                  <p className="text-xs font-medium text-brand">{FASHION_LP.founder.roleLabel}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-bone/60">
+                    {FASHION_LP.founder.line}
+                  </p>
+                  <span className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-bone/55">
+                    {FASHION_LP.founder.more}
+                    <ArrowIcon size={12} />
+                  </span>
+                </div>
+              </button>
+            </Reveal>
+          )}
+
+          {/*
             המנחה יושבת בתוך ההוכחה ולא בסקשן משלה. לקהל שלא מכיר את
             האקדמיה, "מי מלמדת" הוא חלק מהשאלה אם להאמין - לא פרט טכני.
           */}
           {instructors.length > 0 && (
             <div className="mx-auto mt-8 max-w-3xl space-y-3">
-              {instructors.map(({ instructor: person }) => (
+              {instructors.map(({ instructor: person, bio }) => (
                 <Reveal key={person.id} variant="blur">
-                  <div className="flex items-start gap-4 rounded-2xl border border-white/10 bg-surface-1 p-4 shadow-card sm:p-5">
+                  {/*
+                    גם כרטיס המנחה לחיץ. שני כרטיסי אנשים סמוכים שאחד
+                    מהם נפתח והשני לא הם חוסר עקביות שהמשתמשת מרגישה
+                    מיד, וגם חבל: לכל מנחה יש ביו מלא בדאטה שהעמוד
+                    הציג ממנו רק שלוש שורות.
+                  */}
+                  <button
+                    type="button"
+                    onClick={() => !popupJustClosed() && setInstructorBio({ instructor: person, bio })}
+                    className="flex w-full items-start gap-4 rounded-2xl border border-white/10 bg-surface-1 p-4 text-start shadow-card transition-colors duration-200 hover:border-[#FF2D85]/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2D85]/50 sm:p-5">
                     <img
                       src={person.image}
                       alt={person.name}
@@ -584,7 +667,7 @@ const FashionLanding = () => {
                       <h3 className="font-display text-base font-bold tracking-tight text-bone">
                         {person.name}
                       </h3>
-                      <p className="text-xs font-medium text-[#FF2D85]">{person.role}</p>
+                      <p className="text-xs font-medium text-brand">{person.role}</p>
                       <ul className="mt-2 space-y-1">
                         {person.credentials.slice(0, 3).map((line: string) => (
                           <li key={line} className="flex gap-2 text-sm leading-relaxed text-bone/60">
@@ -593,8 +676,12 @@ const FashionLanding = () => {
                           </li>
                         ))}
                       </ul>
+                      <span className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-bone/55">
+                        עוד על {person.shortName ?? person.name}
+                        <ArrowIcon size={12} />
+                      </span>
                     </div>
-                  </div>
+                  </button>
                 </Reveal>
               ))}
             </div>
@@ -713,6 +800,8 @@ const FashionLanding = () => {
           </Reveal>
         </div>
       </section>
+
+      <InstructorBioModal value={instructorBio} onClose={() => setInstructorBio(null)} />
 
       <ImageLightbox
         src={lightbox?.image ?? null}
