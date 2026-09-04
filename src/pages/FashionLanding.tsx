@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import SectionHeader, { AccentWord } from "../components/SectionHeader";
 import FAQAccordion from "../components/FAQAccordion";
 import ImageLightbox from "../components/ImageLightbox";
@@ -12,6 +12,7 @@ import FashionStillsShowcase from "../components/FashionStillsShowcase";
 import HeroScrollCue from "../components/landing/HeroScrollCue";
 import ScrollProgressBar from "../components/landing/ScrollProgressBar";
 import { CountUp, KineticHeading, Reveal, ScrollLine, ScrollScrub } from "../components/motion";
+import { useMotionCapability } from "../lib/motion";
 import { ArrowIcon, CheckIcon } from "../components/icons";
 import { FASHION_LP } from "../data/fashionLanding";
 import { getInstructor, getInstructorsForCourse } from "../data/instructorsData";
@@ -69,7 +70,16 @@ const parseRange = (value: string): [number, number] | null => {
 };
 
 const FashionLanding = () => {
-  const reduced = useReducedMotion();
+  /*
+   * גם עם prefers-reduced-motion כבוי, בנייד ה-level הוא "css3d" ולא
+   * "full". להירו הזה יש רק תנועת כניסה, לא WebGL, אבל ההקלטות ב-Clarity
+   * הראו נחיתות מ-IG שהסתיימו לפני שההירו נצבע: motion.div שמתחיל
+   * ב-opacity:0 מוסיף פריים שלם של המתנה ל-Framer על מכשיר שכבר איטי.
+   * heroAnimated מגביל את הכניסה המונפשת ואת הילות הרקע ל-full בלבד
+   * (מצביע עדין, בלי חיסכון בנתונים), ובכל מכשיר אחר ההירו נצבע גלוי
+   * מהפריים הראשון.
+   */
+  const heroAnimated = useMotionCapability() === "full";
   const [lightbox, setLightbox] = useState<Testimonial | null>(null);
   const [instructorBio, setInstructorBio] = useState<InstructorBio>(null);
   /* נפרד מ-lightbox של ההמלצות: שם המקור הוא Testimonial ולא נתיב תמונה */
@@ -125,25 +135,34 @@ const FashionLanding = () => {
           זה מה שנותן להירו עומק בלי להוסיף תמונה: העין קוראת שתי שכבות
           שזזות בקצב שונה כמרחק, וזה עובד גם כשאין שום נכס ויזואלי בעמוד.
           ScrollScrub חושף רק ציר אנכי, ולכן אין סיכון לגלילה אופקית.
+
+          מוצגות רק כש-heroAnimated: blur-3xl על שתי הילות שמונעות מ-scroll
+          listener + spring הוא עלות ריצה אמיתית, ובדיוק בשניות שההירו צריך
+          להצטייר בהן על מכשיר איטי אין לזה מקום. .grid-canvas מעליהן נשאר
+          תמיד כי הוא גרדיאנט CSS סטטי בלי שום עלות JS.
         */}
-        <ScrollScrub
-          className="pointer-events-none absolute -left-20 top-6 h-40 w-40"
-          y={[-40, 70]}
-          scale={[0.9, 1.15]}
-        >
-          <div className="h-full w-full rounded-full bg-[#FF2D85]/12 blur-3xl" aria-hidden />
-        </ScrollScrub>
-        <ScrollScrub
-          className="pointer-events-none absolute -right-24 bottom-0 h-56 w-56"
-          y={[60, -50]}
-        >
-          <div className="h-full w-full rounded-full bg-[#FF2D85]/[0.07] blur-3xl" aria-hidden />
-        </ScrollScrub>
+        {heroAnimated && (
+          <>
+            <ScrollScrub
+              className="pointer-events-none absolute -left-20 top-6 h-40 w-40"
+              y={[-40, 70]}
+              scale={[0.9, 1.15]}
+            >
+              <div className="h-full w-full rounded-full bg-[#FF2D85]/12 blur-3xl" aria-hidden />
+            </ScrollScrub>
+            <ScrollScrub
+              className="pointer-events-none absolute -right-24 bottom-0 h-56 w-56"
+              y={[60, -50]}
+            >
+              <div className="h-full w-full rounded-full bg-[#FF2D85]/[0.07] blur-3xl" aria-hidden />
+            </ScrollScrub>
+          </>
+        )}
 
         <div className="container-site relative py-12 sm:py-16 lg:py-20">
           <motion.div
             className="mx-auto flex max-w-3xl flex-col items-center text-center"
-            initial={reduced ? false : { opacity: 0, y: 14 }}
+            initial={heroAnimated ? { opacity: 0, y: 14 } : false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           >
@@ -168,6 +187,7 @@ const FashionLanding = () => {
               accent={FASHION_LP.hero.titleAccent}
               accentClassName="accent-serif not-italic"
               breakBeforeAccent
+              eager
             />
 
             <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted sm:text-lg">
@@ -197,7 +217,7 @@ const FashionLanding = () => {
           */}
           <motion.ol
             className="mx-auto mt-9 flex max-w-2xl flex-wrap items-stretch justify-center gap-y-3"
-            initial={reduced ? false : { opacity: 0 }}
+            initial={heroAnimated ? { opacity: 0 } : false}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.25 }}
             aria-label="התהליך בסדנה"
