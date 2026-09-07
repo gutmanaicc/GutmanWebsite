@@ -1,6 +1,7 @@
 import { Fragment, type ReactNode } from "react";
 import { motion, type Variants } from "framer-motion";
-import { SCROLL_EASE, useStillMotion } from "./useStillMotion";
+import { useMotionCapability } from "../../../lib/motion";
+import { SCROLL_EASE } from "./useStillMotion";
 
 type Props = {
   /** הטקסט הרגיל */
@@ -12,6 +13,18 @@ type Props = {
   as?: "h1" | "h2" | "h3";
   /** מתחיל את מקטע ה-accent בשורה חדשה, כששבירת השורה היא החלטת קומפוזיציה ולא מקרה. */
   breakBeforeAccent?: boolean;
+  /**
+   * לכותרת שהיא ה-LCP של העמוד (h1 בהירו): המילים המונפשות מתחילות
+   * ב-opacity:0 עד ש-IntersectionObserver של Framer יורה, כלומר בכניסה
+   * מפרסום בנייד הכותרת האמיתית נעדרת מהמסך בדיוק בשניות שבהן רוב
+   * הגולשים מחליטים אם להישאר. הקלטות Clarity מ-lp/ai-fashion הראו נחיתות
+   * שהסתיימו לפני שהכותרת נצבעה בכלל.
+   *
+   * eager מדלג על החשיפה המדורגת בכל רמה חוץ מ-"full": שם יש מצביע עדין
+   * וחיבור שלא ביקש חיסכון בנתונים, כלומר סביר שהמכשיר כבר הציג את הדף
+   * לפני שהאנימציה מתחילה, ואפשר להרשות לעצמנו את האפקט.
+   */
+  eager?: boolean;
 };
 
 /** ראה ההסבר ב-Reveal: אינדוקס דינמי על ה-proxy מייצר איחוד טיפוסים בלתי אפשרי ל-JSX. */
@@ -107,8 +120,12 @@ const KineticHeading = ({
   accentClassName = "",
   as = "h2",
   breakBeforeAccent = false,
+  eager = false,
 }: Props) => {
-  const still = useStillMotion();
+  const level = useMotionCapability();
+  const still = level === "static";
+  /** ראה ההסבר על eager ב-Props: כותרת LCP מוותרת על החשיפה המדורגת בכל מה שמתחת ל-full. */
+  const plain = still || (eager && level !== "full");
   const segments = buildSegments(text, accent);
   const rows = toRows(segments, breakBeforeAccent);
   const broken = rows.length > 1;
@@ -124,7 +141,7 @@ const KineticHeading = ({
       <Fragment key={key}>{children}</Fragment>
     );
 
-  if (still) {
+  if (plain) {
     const Plain = as as "h2";
     return (
       <Plain className={className}>
