@@ -22,6 +22,9 @@ type Props = {
      הבקשה יורדת מכאן ומצטרפת לבקשה המשותפת שאחרי קרוסלת הסרטונים */
   hideCta?: boolean;
   onCta?: () => void;
+  /* compact כברירת מחדל (עמוד המסלול). דף הנחיתה מעביר false כדי
+     שכותרת הסקשן תהיה באותו גודל בולט כמו שאר הסקשנים בו */
+  compactHeader?: boolean;
 };
 
 /**
@@ -43,6 +46,7 @@ const FashionStillsShowcase = ({
   ctaLabel = "רוצה לבנות כאלה",
   hideCta = false,
   onCta,
+  compactHeader = true,
 }: Props) => {
   const [still, setStill] = useState<string | null>(null);
   const { openRegisterModal } = useRegisterModal();
@@ -53,7 +57,7 @@ const FashionStillsShowcase = ({
     <section className="pb-10 sm:pb-14">
       <div className="container-site">
         <Reveal>
-          <SectionHeader compact title={title} sub={sub} />
+          <SectionHeader compact={compactHeader} title={title} sub={sub} />
         </Reveal>
 
         {/*

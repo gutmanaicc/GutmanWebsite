@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import SectionHeader, { AccentWord } from "../components/SectionHeader";
 import FAQAccordion from "../components/FAQAccordion";
 import ImageLightbox from "../components/ImageLightbox";
@@ -9,15 +9,20 @@ import RegisterForm from "../components/RegisterForm";
 import ReviewsRatingBadge from "../components/ReviewsRatingBadge";
 import StudentWorksCarousel from "../components/StudentWorksCarousel";
 import FashionStillsShowcase from "../components/FashionStillsShowcase";
+import VideoTestimonialStrip from "../components/VideoTestimonialStrip";
 import HeroScrollCue from "../components/landing/HeroScrollCue";
 import ScrollProgressBar from "../components/landing/ScrollProgressBar";
-import { CountUp, KineticHeading, Reveal, ScrollLine, ScrollScrub } from "../components/motion";
+import PainBento from "../components/landing/PainBento";
+import ShiftList from "../components/landing/ShiftList";
+import SolutionStepper from "../components/landing/SolutionStepper";
+import { CountUp, KineticHeading, Reveal, ScrollScrub } from "../components/motion";
 import { useMotionCapability } from "../lib/motion";
 import { ArrowIcon, CheckIcon } from "../components/icons";
 import { FASHION_LP } from "../data/fashionLanding";
 import { getInstructor, getInstructorsForCourse } from "../data/instructorsData";
 import { FASHION_STILLS } from "../data/fashionWorks";
 import { getStudentWorksForCourse } from "../data/studentWorksData";
+import { getVideoTestimonialsForCourse } from "../data/videoTestimonialsData";
 import { getTestimonialsForCourse, type Testimonial } from "../data/testimonialsData";
 import { REGISTRATION_FORM_ID, scrollToRegistrationForm } from "../lib/registration";
 import { popupJustClosed } from "../lib/scrollLock";
@@ -69,6 +74,24 @@ const parseRange = (value: string): [number, number] | null => {
   return match ? [Number(match[1]), Number(match[2])] : null;
 };
 
+/*
+ * גוף הנחש של רצועת התהליך בנייד, בקואורדינטות ה-viewBox (0..100).
+ *
+ * הקו בנוי כרצף של חמישה מקטעים ישרים אנכיים בקצה (x=94 מימין, x=6
+ * משמאל, בדיוק מרכז הסמן) ובין כל שניים עקומת C אחת. הכלל שמונע
+ * חציית מלל: המקטע הישר מכסה את גובה הסמן, והעקומה יוצאת ממנו צמודה
+ * לקצה (x~90 בזון של הכיתוב) ומתרחקת למרכז רק אחרי שהיא מתחת לשורה
+ * האחרונה של ה-hint. הכיתוב עצמו מוזח 16% פנימה מהקצה, כך שנשאר מרווח.
+ *
+ * הבקרה הראשונה של כל C יושבת על אותו x כמו הקצה שממנו יוצאים
+ * והאחרונה על אותו x כמו הקצה שאליו נכנסים, ולכן המשיק בכל חיבור
+ * בין קטע ישר לעקומה אנכי: אין "ברך", הנחש זורם כקו אחד. הבקרה
+ * הראשונה רחוקה יותר מהקצה כדי שהקו "ידבק" לו רגע לפני שהוא נשטח.
+ * המקטע האחרון נעצר ב-y=91, מרכז סמן 05 בדיוק - אין זנב מעברו.
+ */
+const SNAKE_PATH =
+  "M94 2 V8.5 C94 17.5 6 17.5 6 21.5 V30 C6 39 94 39 94 43 V51.5 C94 60.5 6 60.5 6 64.5 V73 C6 82 94 82 94 86 V91";
+
 const FashionLanding = () => {
   /*
    * גם עם prefers-reduced-motion כבוי, בנייד ה-level הוא "css3d" ולא
@@ -79,7 +102,16 @@ const FashionLanding = () => {
    * (מצביע עדין, בלי חיסכון בנתונים), ובכל מכשיר אחר ההירו נצבע גלוי
    * מהפריים הראשון.
    */
-  const heroAnimated = useMotionCapability() === "full";
+  const motionLevel = useMotionCapability();
+  const heroAnimated = motionLevel === "full";
+  /*
+   * משיכת הקו של הנחש בנייד. css3d עדיין מקבל אותה (מצביע גס אינו בקשה
+   * לעצור תנועה, בדיוק כמו ב-useStillMotion), רק static ו-
+   * prefers-reduced-motion מכבים. כשהיא כבויה המחלקות לא נוספות בכלל
+   * וה-CSS מצייר את הקו במצבו הסופי.
+   */
+  const prefersReducedMotion = useReducedMotion();
+  const snakeDraws = motionLevel !== "static" && prefersReducedMotion !== true;
   const [lightbox, setLightbox] = useState<Testimonial | null>(null);
   const [instructorBio, setInstructorBio] = useState<InstructorBio>(null);
   /* נפרד מ-lightbox של ההמלצות: שם המקור הוא Testimonial ולא נתיב תמונה */
@@ -99,6 +131,24 @@ const FashionLanding = () => {
    * שני מקורות דאטה שצריך לזכור לעדכן ביחד.
    */
   const works = getStudentWorksForCourse(FASHION_LP.courseSlug);
+  /*
+   * עדויות וידאו של משתתפות. ריק עד שמוסיפים קבצים ל-videoTestimonialsData,
+   * ואז VideoTestimonialStrip מציג רצועה בתוך סקשן ההוכחה, מעל עדויות הטקסט.
+   */
+  const videoTestimonials = getVideoTestimonialsForCourse(FASHION_LP.courseSlug);
+  /*
+   * רון והדר כרשימה אחת, לשני העיגולים בסקשן ההוכחה.
+   *
+   * רון מגיע מ-getInstructor (מסגרת מוסדית, roleLabel מקוצר), הדר מ-
+   * getInstructorsForCourse (המנחה של הסדנה, ה-role המלא שלה). המיזוג
+   * כאן ולא בדאטה כי שני המקורות שונים בכוונה - ראו ההערות שליד כל אחד.
+   */
+  const proofPeople = [
+    ...(founder
+      ? [{ person: founder, role: FASHION_LP.founder.roleLabel, bio: founder.trackBios.general ?? founder.bio }]
+      : []),
+    ...instructors.map(({ instructor, bio }) => ({ person: instructor, role: instructor.role, bio })),
+  ];
 
   useSeo({
     title: FASHION_LP.seo.title,
@@ -210,56 +260,171 @@ const FashionLanding = () => {
           </motion.div>
 
           {/*
-            רצועת התהליך.
-            flex-wrap ולא רשת בעלת חמש עמודות: חמישה צמתים ברוחב טלפון
-            היו נדחסים או דוחפים גלילה אופקית, וזה אילוץ קשיח באתר.
-            בעטיפה הם מסתדרים לשתי שורות ושומרים על אותו קצב קריאה.
+            רצועת התהליך, שתי פריסות נפרדות:
+
+            נייד - "נחש" מקצה לקצה: כל צומת על צד אחר של המסך, מחוברים
+            בקו S רציף אחד שמתפתל למטה. המספר יושב על הקו בקצה, והכיתוב
+            לצידו לכיוון המרכז. ה-flex-wrap הקודם נשבר ל-3+2 מכוער; כאן
+            המסלול עצמו מצייר את הרצף.
+
+            המיכל ב-dir="ltr" כדי שקואורדינטות ה-SVG, ה-left/right של
+            הסמנים וכיוון ה-S יסתדרו יחד; כל כיתוב חוזר ל-rtl בנפרד.
+
+            דסקטופ (sm ומעלה) - שרשרת אופקית של צ'יפים עם חצים, כמו קודם.
           */}
-          <motion.ol
-            className="mx-auto mt-9 flex max-w-2xl flex-wrap items-stretch justify-center gap-y-3"
+          <motion.div
+            className="mt-8 sm:mt-9"
             initial={heroAnimated ? { opacity: 0 } : false}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.25 }}
-            aria-label="התהליך בסדנה"
           >
-            {FASHION_LP.pipeline.map((node, i) => {
-              const last = i === FASHION_LP.pipeline.length - 1;
-              return (
-                <li key={node.label} className="flex items-center">
-                  {/*
-                    ההשהיה נגזרת מהאינדקס: הרצועה נבנית מימין לשמאל כמו
-                    הקריאה, וכך היא מספרת רצף במקום להופיע כגוש אחד.
-                  */}
-                  <Reveal variant="scale" delay={i * 0.08} amount={0.4}>
-                  <div
-                    className={`rounded-xl border px-3 py-2 text-center transition-colors ${
-                      last
-                        ? "border-[#FF2D85]/40 bg-[#FF2D85]/10"
-                        : "border-white/10 bg-white/[0.03]"
-                    }`}
-                  >
-                    <span
-                      className={`block text-[13px] font-semibold leading-none ${
-                        last ? "text-[#FF2D85]" : "text-bone/85"
-                      }`}
+            {/* ── נייד: נחש מקצה לקצה ── */}
+            <div dir="ltr" className="relative mx-auto h-[34rem] w-full max-w-[20rem] sm:hidden">
+              {/*
+                גוף הנחש (ה-d ב-SNAKE_PATH). הקו צמוד לקצה (x=94 או x=6,
+                מרכז הסמן) דרך כל הזון של הכיתוב, ומתפתל למרכז רק בפער
+                האנכי שאין בו טקסט. כך הקו לעולם לא חוצה מלל.
+                preserveAspectRatio="none" מותח את ה-viewBox לגובה המיכל,
+                non-scaling-stroke שומר עובי קו אחיד. אורך הקו על המסך
+                (~1385px ברוחב המיכל המרבי, 20rem) הוא ה-dash של אנימציית
+                המשיכה ב-index.css - pathLength לא נורמל נכון תחת מתיחה
+                לא-אחידה בכרום, ולכן המספר קבוע שם.
+
+                שני path על אותו d: התחתון מטושטש ומשמש הילה שנותנת לוורוד
+                נפח בלי לעבות את הקו החד שמעליו.
+              */}
+              <svg
+                className="pointer-events-none absolute inset-0 h-full w-full text-[#FF2D85]/60"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+                aria-hidden
+              >
+                <path
+                  className={snakeDraws ? "fashion-snake-glow" : undefined}
+                  d={SNAKE_PATH}
+                  fill="none"
+                  stroke="#FF2D85"
+                  strokeWidth={3.5}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  vectorEffect="non-scaling-stroke"
+                  opacity={0.45}
+                  style={{ filter: "blur(3px)" }}
+                />
+                <path
+                  className={snakeDraws ? "fashion-snake-line" : undefined}
+                  d={SNAKE_PATH}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  vectorEffect="non-scaling-stroke"
+                />
+              </svg>
+
+              <ol aria-label="התהליך בסדנה">
+                {FASHION_LP.pipeline.map((node, i) => {
+                  const last = i === FASHION_LP.pipeline.length - 1;
+                  const right = i % 2 === 0; // 0,2,4 בצד ימין
+                  /* top לכל צומת = תחילת המקטע הישר-בקצה בנתיב */
+                  const top = [2, 23.5, 45, 66.5, 88][i];
+                  return (
+                    <li
+                      key={node.label}
+                      className="absolute inset-x-0"
+                      style={{ top: `${top}%` }}
                     >
-                      {node.label}
-                    </span>
-                    <span className="mt-1 block text-[10px] leading-none text-bone/40">
-                      {node.hint}
-                    </span>
-                  </div>
-                  </Reveal>
-                  {!last && (
-                    /* ArrowIcon מצביע שמאלה, כלומר "קדימה" ב-RTL */
-                    <span className="mx-1.5 text-bone/25 sm:mx-2" aria-hidden>
-                      <ArrowIcon size={14} />
-                    </span>
-                  )}
-                </li>
-              );
-            })}
-          </motion.ol>
+                      <Reveal variant="scale" delay={i * 0.07} amount={0.5}>
+                        <div className="relative">
+                          {/*
+                            הסמן על הקו, בקצה. ה-box-shadow הכפול: טבעת
+                            אטומה בצבע הקנבס חותכת מרווח נקי בין הקו לעיגול
+                            ("חרוז על חוט"), ומתחתיה נגיעת ורוד רכה לעומק.
+                            צומת 05 מלא וזוהר כי הוא היעד, לא עוד שלב.
+                          */}
+                          <span
+                            className={`absolute top-0 flex h-8 w-8 items-center justify-center rounded-full border text-[11px] font-bold tabular-nums leading-none tracking-[0.02em] ${
+                              right ? "right-[1%]" : "left-[1%]"
+                            } ${
+                              last
+                                ? "border-[#FF2D85] bg-[#FF2D85] text-white shadow-[0_0_0_5px_#0d0c11,0_0_22px_rgba(255,45,133,0.55)]"
+                                : "border-[#FF2D85]/70 bg-canvas text-[#FF2D85] shadow-[0_0_0_5px_#0d0c11,0_2px_12px_-4px_rgba(255,45,133,0.45)]"
+                            }`}
+                            aria-hidden
+                          >
+                            {String(i + 1).padStart(2, "0")}
+                          </span>
+
+                          {/* הכיתוב לצד הסמן, לכיוון המרכז. pt-[3px] כדי
+                              שהשורה הראשונה תתיישר אופטית עם מרכז הסמן */}
+                          <div
+                            dir="rtl"
+                            className={`absolute top-0 pt-[3px] ${
+                              right
+                                ? "right-[16%] left-[6%] text-right"
+                                : "left-[16%] right-[6%] text-left"
+                            }`}
+                          >
+                            <span
+                              className={`block text-[15px] font-semibold leading-snug ${
+                                last ? "text-[#FF2D85]" : "text-bone"
+                              }`}
+                            >
+                              {node.label}
+                            </span>
+                            <span className="mt-1 block text-[11.5px] font-medium leading-snug text-bone/55">
+                              {node.hint}
+                            </span>
+                          </div>
+                        </div>
+                      </Reveal>
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
+
+            {/* ── דסקטופ: שרשרת אופקית ── */}
+            <ol
+              className="mx-auto hidden max-w-2xl flex-row flex-wrap items-stretch justify-center gap-y-3 sm:flex"
+              aria-label="התהליך בסדנה"
+            >
+              {FASHION_LP.pipeline.map((node, i) => {
+                const last = i === FASHION_LP.pipeline.length - 1;
+                return (
+                  <li key={node.label} className="flex items-center">
+                    <Reveal variant="scale" delay={i * 0.07} amount={0.4}>
+                      <div
+                        className={`rounded-xl border px-3 py-2 text-center transition-colors ${
+                          last
+                            ? "border-[#FF2D85]/40 bg-[#FF2D85]/10"
+                            : "border-white/10 bg-white/[0.03]"
+                        }`}
+                      >
+                        <span
+                          className={`block text-[13px] font-semibold leading-none ${
+                            last ? "text-[#FF2D85]" : "text-bone/85"
+                          }`}
+                        >
+                          {node.label}
+                        </span>
+                        <span className="mt-1 block text-[10px] leading-none text-bone/40">
+                          {node.hint}
+                        </span>
+                      </div>
+                    </Reveal>
+                    {!last && (
+                      /* ArrowIcon מצביע שמאלה = "קדימה" ב-RTL */
+                      <span className="mx-2 text-bone/25" aria-hidden>
+                        <ArrowIcon size={14} />
+                      </span>
+                    )}
+                  </li>
+                );
+              })}
+            </ol>
+          </motion.div>
 
           {/*
             בזרימה ולא absolute bottom: ההירו הזה אינו במסך מלא, ורמז
@@ -270,11 +435,10 @@ const FashionLanding = () => {
       </section>
 
       {/* ── 1. מה קורה היום בשוק ──────────────────────────────── */}
-      <section className="py-10 sm:py-14">
+      <section className="cv-section py-10 sm:py-14">
         <div className="container-site">
           <Reveal>
             <SectionHeader
-              compact
               kicker={FASHION_LP.market.kicker}
               title={
                 <>
@@ -339,12 +503,11 @@ const FashionLanding = () => {
         </div>
       </section>
 
-      {/* ── 2. הכאב. הכרטיס הראשון הוא הכאב הרביעי ────────────── */}
-      <section className="py-10 sm:py-14">
+      {/* ── 2. הכאב. בנטו אייקונים, האריח הראשון הוא הדיפרנציאטור ─ */}
+      <section className="cv-section py-10 sm:py-14">
         <div className="container-site">
           <Reveal>
             <SectionHeader
-              compact
               kicker={FASHION_LP.pain.kicker}
               title={
                 <>
@@ -355,42 +518,15 @@ const FashionLanding = () => {
             />
           </Reveal>
 
-          <div className="mt-8 grid gap-4 md:grid-cols-2">
-            {/*
-              מסכה ולא עלייה: ארבעה כרטיסים שעולים יחד נראים כמו רשת
-              שנטענה, ומסכה שנפתחת מימין קוראת כמו טקסט שנחשף. הכרטיס
-              הראשון בלי השהיה כי הוא הכאב שנפתחים בו.
-            */}
-            {FASHION_LP.pain.cards.map((card, i) => (
-              <Reveal key={card.title} variant="mask" delay={i * 0.09}>
-                {/*
-                  הכרטיס הראשון מסומן ויזואלית. הוא הכאב שנפתחים בו,
-                  ובלי הבדל הוא נבלע ברשת של ארבעה כרטיסים זהים.
-                */}
-                <article
-                  className={`h-full rounded-2xl border p-5 shadow-card ${
-                    i === 0
-                      ? "border-[#FF2D85]/35 bg-[#FF2D85]/[0.06]"
-                      : "border-white/10 bg-surface-1"
-                  }`}
-                >
-                  <h3 className="font-display text-lg font-bold leading-snug tracking-tight text-bone">
-                    {card.title}
-                  </h3>
-                  <p className="mt-2.5 text-sm leading-relaxed text-bone/60">{card.body}</p>
-                </article>
-              </Reveal>
-            ))}
-          </div>
+          <PainBento cards={FASHION_LP.pain.cards} />
         </div>
       </section>
 
       {/* ── 3. מה השתנה ────────────────────────────────────────── */}
-      <section className="py-10 sm:py-14">
+      <section className="cv-section py-10 sm:py-14">
         <div className="container-site">
           <Reveal>
             <SectionHeader
-              compact
               kicker={FASHION_LP.shift.kicker}
               title={
                 <>
@@ -401,64 +537,19 @@ const FashionLanding = () => {
             />
           </Reveal>
 
-          {/*
-            כותרות העמודות מוצגות פעם אחת מעל הרשימה, ולא בכל שורה.
-            בלעדיהן הקו החוצה בצד הימני נקרא כמו טעות עריכה ולא כמו
-            "ככה עשו קודם", וארבע השורות מתערבבות לרשימה אחת ארוכה.
-          */}
-          <div className="mx-auto mt-8 max-w-3xl">
-            <Reveal>
-              <div className="mb-2 hidden grid-cols-2 gap-4 px-5 sm:grid">
-                <span className="text-xs font-semibold uppercase tracking-wide text-bone/35">
-                  {FASHION_LP.shift.beforeLabel}
-                </span>
-                <span className="text-xs font-semibold uppercase tracking-wide text-[#FF2D85]">
-                  {FASHION_LP.shift.afterLabel}
-                </span>
-              </div>
-            </Reveal>
-
-            <div className="space-y-3">
-              {/*
-                המסכה נפתחת מה-inline-start, כלומר מימין ב-RTL: העין
-                פוגשת קודם את "הדרך הישנה" ורק אחריה את מה שהחליף אותה.
-                זה בדיוק סדר הקריאה של הטיעון בשורה.
-              */}
-              {FASHION_LP.shift.rows.map((row, i) => (
-                <Reveal key={row.after} variant="mask" delay={i * 0.07}>
-                  <div className="relative grid gap-3 overflow-hidden rounded-2xl border border-white/10 bg-surface-1 p-4 shadow-card sm:grid-cols-2 sm:gap-4 sm:p-5">
-                    {/*
-                      פס ורוד דק על שפת ה"אחרי". ב-RTL העמודה השנייה היא
-                      השמאלית, ולכן הפס יושב ב-inset-inline-end ולא ב-left,
-                      וגם מתהפך נכון אם הכיוון ישתנה אי פעם.
-                    */}
-                    <span
-                      className="pointer-events-none absolute inset-y-0 end-0 hidden w-px bg-gradient-to-b from-transparent via-[#FF2D85]/40 to-transparent sm:block"
-                      aria-hidden
-                    />
-                    <p className="text-sm leading-relaxed text-bone/40 line-through decoration-bone/25">
-                      {row.before}
-                    </p>
-                    <p className="flex items-start gap-2 text-sm font-medium leading-relaxed text-bone">
-                      <span className="mt-0.5 flex-none text-[#FF2D85]" aria-hidden>
-                        <ArrowIcon size={14} />
-                      </span>
-                      <span>{row.after}</span>
-                    </p>
-                  </div>
-                </Reveal>
-              ))}
-            </div>
-          </div>
+          <ShiftList
+            rows={FASHION_LP.shift.rows}
+            beforeLabel={FASHION_LP.shift.beforeLabel}
+            afterLabel={FASHION_LP.shift.afterLabel}
+          />
         </div>
       </section>
 
-      {/* ── 4. הפתרון ──────────────────────────────────────────── */}
-      <section className="py-10 sm:py-14">
+      {/* ── 4. הפתרון: סטפר אינטראקטיבי + רשת תוצרים ──────────── */}
+      <section className="cv-section py-10 sm:py-14">
         <div className="container-site">
           <Reveal>
             <SectionHeader
-              compact
               kicker={FASHION_LP.solution.kicker}
               title={
                 <>
@@ -470,79 +561,11 @@ const FashionLanding = () => {
             />
           </Reveal>
 
-          {/*
-            מסילה אנכית שמחברת את חמשת המפגשים.
-            חמישה כרטיסים זהים נקראו כרשימת נושאים שאפשר לקחת מהם אחד;
-            המסילה אומרת שזה מסלול שמתקדם, ושהתוצר נמצא בסוף שלו. היא
-            יושבת ב-inset-inline-start (start) ולא ב-right, כדי שהיא
-            תישאר בצד הנכון בכל כיוון.
-          */}
-          <div className="relative mx-auto mt-8 max-w-3xl">
-            {/*
-              המסילה נמתחת לפי התקדמות הגלילה בסקשן, במקום גרדיאנט קבוע.
-              זה מה שהופך את חמשת המפגשים ממסמך למסלול: הקו מתקדם יחד עם
-              הגולשת, ומגיע לצומת האחרון בדיוק כשהיא מגיעה אליו.
-              הצבע נשאב מ-currentColor דרך text-, לכן אין כאן צבע קשיח נוסף.
-            */}
-            <ScrollLine className="pointer-events-none absolute inset-y-6 start-[39px] hidden w-px text-[#FF2D85]/55 sm:block" />
-
-            <ol className="space-y-3">
-              {FASHION_LP.solution.steps.map((step, i) => (
-                <Reveal key={step.step} delay={i * 0.06} amount={0.3}>
-                  <li className="relative flex gap-4 rounded-2xl border border-white/10 bg-surface-1 p-4 shadow-card transition-colors duration-300 hover:border-[#FF2D85]/30 sm:p-5">
-                    <span
-                      className={`relative z-[1] flex h-[38px] w-[38px] flex-none items-center justify-center rounded-full border font-display text-sm font-bold tracking-tight ${
-                        i === FASHION_LP.solution.steps.length - 1
-                          ? "border-[#FF2D85]/50 bg-[#FF2D85] text-white"
-                          : "border-[#FF2D85]/30 bg-canvas text-[#FF2D85]"
-                      }`}
-                      dir="ltr"
-                    >
-                      {step.step}
-                    </span>
-                    <div>
-                      <h3 className="font-display text-base font-bold tracking-tight text-bone sm:text-lg">
-                        {step.title}
-                      </h3>
-                      <p className="mt-1.5 text-sm leading-relaxed text-bone/60">{step.body}</p>
-                    </div>
-                  </li>
-                </Reveal>
-              ))}
-            </ol>
-          </div>
-
-          {/*
-            ארבעת התוצרים כרשומות נפרדות ולא כרשימת תבליטים.
-            זה מה שהגולשת מקבלת ביד, וברשימה צפופה בתוך תיבה אחת הוא
-            נקרא כמו "מה נלמד" ולא כמו "מה יהיה שלך בסוף".
-          */}
-          <Reveal className="mx-auto mt-8 max-w-3xl">
-            <div className="rounded-2xl border border-[#FF2D85]/25 bg-[#FF2D85]/[0.05] p-5 sm:p-6">
-              <h3 className="font-display text-base font-bold tracking-tight text-bone sm:text-lg">
-                עם מה יוצאים
-              </h3>
-              <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-                {FASHION_LP.solution.outcomes.map((item, i) => (
-                  <Reveal
-                    key={item}
-                    as="li"
-                    variant="scale"
-                    delay={i * 0.08}
-                    className="flex items-start gap-3 rounded-xl border border-white/10 bg-canvas/40 p-3.5 text-sm leading-relaxed text-bone/80"
-                  >
-                    <span
-                      className="mt-px flex h-6 w-6 flex-none items-center justify-center rounded-full bg-[#FF2D85]/15 text-[#FF2D85]"
-                      aria-hidden
-                    >
-                      <CheckIcon size={13} />
-                    </span>
-                    <span>{item}</span>
-                  </Reveal>
-                ))}
-              </ul>
-            </div>
-          </Reveal>
+          <SolutionStepper
+            steps={FASHION_LP.solution.steps}
+            outcomes={FASHION_LP.solution.outcomes}
+            outcomesTitle="עם מה יוצאים"
+          />
         </div>
       </section>
 
@@ -569,6 +592,8 @@ const FashionLanding = () => {
           /* הבקשה יורדת מכאן ומגיעה אחרי סדרת התמונות, כדי לא לקטוע
              את רצף ההוכחה באמצע */
           hideCta
+          /* כותרת סקשן גדולה כמו כל שאר הסקשנים בדף הנחיתה */
+          compactHeader={false}
         />
       )}
 
@@ -587,14 +612,14 @@ const FashionLanding = () => {
         note={FASHION_LP.works.note}
         ctaLabel={FASHION_LP.works.cta}
         onCta={scrollToForm}
+        compactHeader={false}
       />
 
       {/* ── 5. הוכחה ───────────────────────────────────────────── */}
-      <section className="py-10 sm:py-14">
+      <section className="cv-section py-10 sm:py-14">
         <div className="container-site">
           <Reveal>
             <SectionHeader
-              compact
               kicker={FASHION_LP.proof.kicker}
               title={
                 <>
@@ -615,121 +640,81 @@ const FashionLanding = () => {
           </Reveal>
 
           {/*
-            המסגרת המוסדית לפני המנחה: קודם "מי אלה בכלל", ואז "מי מלמדת".
-            הכרטיס קומפקטי מזה של הדר בכוונה, כדי שהיא תישאר העוגן.
+            שני האנשים כשני עיגולים ולא כשני מלבני טקסט.
+            פורטרט + שם + תפקיד + "קראו עוד" עונים על "מי אלה" בלי פסקה;
+            הביו המלא, שכולל את שיטת הלימוד של רון ואת הקרדיטים של הדר,
+            נפתח בפופאפ. אותו InstructorBioModal לשניהם.
           */}
-          {founder && (
-            <Reveal className="mx-auto mt-8 max-w-3xl" variant="blur">
-              <button
-                type="button"
-                /* popupJustClosed חוסם פתיחה מחדש כשסגירת הפופאפ בלחיצה
-                   בחוץ נוחתת על הכרטיס שמתחתיה */
-                onClick={() =>
-                  !popupJustClosed() &&
-                  setInstructorBio({
-                    instructor: founder,
-                    bio: founder.trackBios.general ?? founder.bio,
-                  })
-                }
-                className="flex w-full items-center gap-4 rounded-2xl border border-white/10 bg-surface-1 p-4 text-start shadow-card transition-colors duration-200 hover:border-[#FF2D85]/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2D85]/50 sm:p-5"
-              >
-                <img
-                  src={founder.image}
-                  alt={founder.name}
-                  loading="lazy"
-                  className="h-12 w-12 flex-none rounded-full object-cover"
-                />
-                <div className="min-w-0 flex-1">
-                  {/* שם ואז תפקיד בשורה נפרדת, בדיוק כמו בכרטיס של הדר
-                      שמתחתיו. שני כרטיסי אנשים סמוכים במבנה שונה נקראים
-                      כמו שני רכיבים שהודבקו זה ליד זה. */}
-                  <h3 className="font-display text-base font-bold tracking-tight text-bone">
-                    {founder.name}
-                  </h3>
-                  <p className="text-xs font-medium text-brand">{FASHION_LP.founder.roleLabel}</p>
-                  <p className="mt-2 text-sm leading-relaxed text-bone/60">
-                    {FASHION_LP.founder.line}
-                  </p>
-                  <span className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-bone/55">
-                    {FASHION_LP.founder.more}
-                    <ArrowIcon size={12} />
+          {proofPeople.length > 0 && (
+            <Reveal
+              className="mx-auto mt-8 flex max-w-md flex-wrap items-start justify-center gap-x-10 gap-y-8 sm:gap-x-16"
+              variant="blur"
+            >
+              {proofPeople.map(({ person, role, bio }) => (
+                <button
+                  key={person.id}
+                  type="button"
+                  /* popupJustClosed חוסם פתיחה מחדש כשסגירת הפופאפ בלחיצה
+                     בחוץ נוחתת על העיגול שמתחתיה */
+                  onClick={() => !popupJustClosed() && setInstructorBio({ instructor: person, bio })}
+                  className="group flex w-28 flex-col items-center text-center focus-visible:outline-none"
+                >
+                  <img
+                    src={person.image}
+                    alt={person.name}
+                    loading="lazy"
+                    className="h-20 w-20 rounded-full object-cover ring-2 ring-white/10 transition duration-200 group-hover:ring-[#FF2D85]/50 group-focus-visible:ring-[#FF2D85]/60 sm:h-24 sm:w-24"
+                  />
+                  <span className="mt-3 font-display text-sm font-bold tracking-tight text-bone">
+                    {person.name}
                   </span>
-                </div>
-              </button>
+                  <span className="mt-0.5 text-xs font-medium text-brand">{role}</span>
+                  <span className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-bone/55 transition-colors group-hover:text-bone/85">
+                    {FASHION_LP.team.readMore}
+                    <ArrowIcon size={11} />
+                  </span>
+                </button>
+              ))}
             </Reveal>
           )}
 
           {/*
-            המנחה יושבת בתוך ההוכחה ולא בסקשן משלה. לקהל שלא מכיר את
-            האקדמיה, "מי מלמדת" הוא חלק מהשאלה אם להאמין - לא פרט טכני.
+            עדויות וידאו מעל עדויות הטקסט: פנים ודיבור עושים את עבודת
+            האמון מהר יותר מציטוט, ולכן הן קודמות. מוסתר כשאין קבצים.
           */}
-          {instructors.length > 0 && (
-            <div className="mx-auto mt-8 max-w-3xl space-y-3">
-              {instructors.map(({ instructor: person, bio }) => (
-                <Reveal key={person.id} variant="blur">
-                  {/*
-                    גם כרטיס המנחה לחיץ. שני כרטיסי אנשים סמוכים שאחד
-                    מהם נפתח והשני לא הם חוסר עקביות שהמשתמשת מרגישה
-                    מיד, וגם חבל: לכל מנחה יש ביו מלא בדאטה שהעמוד
-                    הציג ממנו רק שלוש שורות.
-                  */}
-                  <button
-                    type="button"
-                    onClick={() => !popupJustClosed() && setInstructorBio({ instructor: person, bio })}
-                    className="flex w-full items-start gap-4 rounded-2xl border border-white/10 bg-surface-1 p-4 text-start shadow-card transition-colors duration-200 hover:border-[#FF2D85]/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2D85]/50 sm:p-5">
-                    <img
-                      src={person.image}
-                      alt={person.name}
-                      loading="lazy"
-                      className="h-16 w-16 flex-none rounded-full object-cover"
-                    />
-                    <div>
-                      <h3 className="font-display text-base font-bold tracking-tight text-bone">
-                        {person.name}
-                      </h3>
-                      <p className="text-xs font-medium text-brand">{person.role}</p>
-                      <ul className="mt-2 space-y-1">
-                        {person.credentials.slice(0, 3).map((line: string) => (
-                          <li key={line} className="flex gap-2 text-sm leading-relaxed text-bone/60">
-                            <CheckIcon size={12} />
-                            <span>{line}</span>
-                          </li>
-                        ))}
-                      </ul>
-                      <span className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-bone/55">
-                        עוד על {person.shortName ?? person.name}
-                        <ArrowIcon size={12} />
-                      </span>
-                    </div>
-                  </button>
-                </Reveal>
-              ))}
-            </div>
-          )}
+          <VideoTestimonialStrip
+            items={videoTestimonials}
+            heading={FASHION_LP.proof.videos.heading}
+            sub={FASHION_LP.proof.videos.sub}
+          />
 
+          {/*
+            עדויות הטקסט ירדו לכרטיס ציטוט בלבד: המשפט המודגש + השם.
+            הפסקה המלאה של ההודעה כבר קיימת בלייטבוקס שנפתח בהקשה, ועל
+            פני הכרטיס היא הייתה עוד שלוש שורות טקסט אחרי רצועת הווידאו.
+          */}
           {testimonials.length > 0 && (
             <div className="mt-8 grid gap-4 md:grid-cols-3">
               {testimonials.map((item, i) => (
-                <Reveal key={item.id} variant="scale" delay={i * 0.1}>
-                  <article className="flex h-full flex-col rounded-2xl border border-white/10 bg-surface-1 p-5 shadow-card">
-                    <p className="font-display text-lg font-bold leading-snug tracking-tight text-bone">
-                      {item.quote}
+                <Reveal key={item.id} variant="scale" delay={i * 0.08}>
+                  <button
+                    type="button"
+                    /* popupJustClosed חוסם פתיחה מחדש כשסגירת הלייטבוקס
+                       בלחיצה בחוץ נוחתת על הכרטיס שמתחתיה */
+                    onClick={() => !popupJustClosed() && setLightbox(item)}
+                    className="flex h-full w-full flex-col rounded-2xl border border-white/10 bg-surface-1 p-5 text-start shadow-card transition-colors duration-200 hover:border-[#FF2D85]/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2D85]/50"
+                  >
+                    <p className="flex-1 font-display text-lg font-bold leading-snug tracking-tight text-bone">
+                      “{item.quote}”
                     </p>
-                    <p className="mt-3 flex-1 text-sm leading-relaxed text-bone/55">{item.text}</p>
                     {item.author && (
                       <span className="mt-4 text-xs font-medium text-bone/50">{item.author}</span>
                     )}
-                    <button
-                      type="button"
-                      /* popupJustClosed חוסם פתיחה מחדש כשסגירת הלייטבוקס
-                         בלחיצה בחוץ נוחתת על הכרטיס שמתחתיה */
-                      onClick={() => !popupJustClosed() && setLightbox(item)}
-                      className="mt-4 inline-flex min-h-11 items-center gap-2 self-start text-xs font-medium text-bone/55 transition-colors hover:text-brand"
-                    >
+                    <span className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-bone/55">
                       לצפייה בהודעה המקורית
-                      <ArrowIcon size={13} />
-                    </button>
-                  </article>
+                      <ArrowIcon size={12} />
+                    </span>
+                  </button>
                 </Reveal>
               ))}
             </div>
@@ -758,16 +743,18 @@ const FashionLanding = () => {
                   <span className="mb-2 inline-flex rounded-full border border-white/25 bg-white/10 px-2.5 py-0.5 text-[11px] font-semibold tracking-wide">
                     {FASHION_LP.form.kicker}
                   </span>
-                  <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
+                  <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
                     {FASHION_LP.form.title}
                   </h2>
                   <p className="mt-2 max-w-md text-sm leading-relaxed text-white/80">
                     {FASHION_LP.form.sub}
                   </p>
-                  <ul className="mt-3 space-y-1.5 text-sm text-white/85">
+                  <ul className="mt-3 grid gap-x-4 gap-y-2 text-sm text-white/85 sm:grid-cols-2">
                     {FASHION_LP.form.bullets.map((line) => (
-                      <li key={line} className="flex gap-2">
-                        <CheckIcon size={13} />
+                      <li key={line} className="flex items-start gap-2">
+                        <span className="mt-0.5 flex-none text-white/70" aria-hidden>
+                          <CheckIcon size={13} />
+                        </span>
                         <span>{line}</span>
                       </li>
                     ))}
@@ -790,11 +777,10 @@ const FashionLanding = () => {
       </section>
 
       {/* התנגדויות. אחרי הטופס, כמו בעמוד המסלול - מי שכבר משוכנע לא צריך אותן */}
-      <section className="py-10 sm:py-14">
+      <section className="cv-section py-10 sm:py-14">
         <div className="container-site max-w-3xl">
           <Reveal>
             <SectionHeader
-              compact
               kicker="שאלות"
               title={
                 <>

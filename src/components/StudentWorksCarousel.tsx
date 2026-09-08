@@ -31,6 +31,12 @@ type Props = {
    * לתמונות קוטעת את רצף ההוכחה באמצע. שם הבקשה מגיעה אחרי שתיהן.
    */
   hideCta?: boolean;
+  /*
+   * כותרת הסקשן: compact כברירת מחדל (עמוד המסלול, שם הדף צפוף).
+   * דף הנחיתה מעביר false כדי שכל כותרות הסקשנים בו יהיו באותו גודל
+   * בולט, ויהיה ברור מתי מגיעים לסקשן חדש.
+   */
+  compactHeader?: boolean;
 };
 
 /** כמה כרטיסים מכל צד נשארים מורכבים. מעבר לזה הם לא ברשת ולא בזיכרון. */
@@ -73,6 +79,7 @@ const StudentWorksCarousel = ({
   ctaLabel = "רוצה לבנות כאלה",
   onCta,
   hideCta = false,
+  compactHeader = true,
 }: Props) => {
   const count = works.length;
   const reduced = useReducedMotion();
@@ -220,7 +227,7 @@ const StudentWorksCarousel = ({
     <section className="py-10 sm:py-12">
       <div className="container-site">
         <SectionHeader
-          compact
+          compact={compactHeader}
           kicker={kicker}
           title={
             title ?? (
