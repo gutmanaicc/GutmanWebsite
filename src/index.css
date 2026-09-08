@@ -32,6 +32,23 @@
     @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
   }
 
+  /*
+   * דילוג רינדור לסקשנים שמחוץ למסך.
+   *
+   * content-visibility: auto נותן לדפדפן לוותר על layout/paint לכל סקשן
+   * שלא קרוב לחלון הצפייה. במכשיר נייד חלש זה ההבדל בין דף שנצבע בבת אחת
+   * לדף שנצבע תוך כדי גלילה. contain-intrinsic-size שומר גובה משוער כדי
+   * שסרגל הגלילה לא יקפוץ, וה-auto מאפשר לדפדפן לזכור את הגובה האמיתי
+   * אחרי הרינדור הראשון.
+   *
+   * לא על ההירו (הוא ה-LCP וחייב להיצבע מיד) ולא על הטופס (קפיצת גובה
+   * ליד שדות קלט מורגשת). רק על סקשני התוכן באמצע.
+   */
+  .cv-section {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 640px;
+  }
+
   .grid-canvas {
     background-image:
       linear-gradient(to right, rgba(242, 241, 236, 0.05) 1px, transparent 1px),
@@ -1529,4 +1546,40 @@
 /* הווידאו של ההירו קבוע מאחורי הדף, אז כל מה שאחריו חייב רקע אטום */
 main > :not(section:first-child) {
   position: relative;
+}
+
+/*
+  נחש התהליך בהירו של דף האופנה בנייד: הקו "נמשך" פעם אחת בכניסה.
+  stroke-dashoffset בלבד - לא מפעיל layout ולא צובע טקסט מחדש - והוא
+  חד-פעמי (forwards). מחוץ למדיה הזאת, וגם כש-snakeDraws שקרי (static
+  או prefers-reduced-motion), המחלקות לא נוספות בכלל וה-path מצויר מלא.
+
+  1400 = אורך הקו על המסך בפיקסלים ברוחב המיכל המרבי (20rem, ~1385px)
+  ועוד שוליים. תחת preserveAspectRatio="none" + non-scaling-stroke
+  ה-dash נמדד במרחב המסך ולא ב-viewBox, ו-pathLength לא עוזר. במסכים
+  צרים יותר הקו קצר יותר: המשיכה פשוט מסתיימת שבריר שנייה מוקדם.
+*/
+@media (prefers-reduced-motion: no-preference) {
+  .fashion-snake-line {
+    stroke-dasharray: 1400;
+    stroke-dashoffset: 1400;
+    animation: fashion-snake-draw 1.5s cubic-bezier(0.65, 0, 0.35, 1) 0.35s forwards;
+  }
+
+  .fashion-snake-glow {
+    opacity: 0;
+    animation: fashion-snake-glow-in 1.1s ease-out 0.7s forwards;
+  }
+}
+
+@keyframes fashion-snake-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes fashion-snake-glow-in {
+  to {
+    opacity: 0.45;
+  }
 }
