@@ -23,23 +23,23 @@ const ShiftList = ({
   return (
     <div className="mx-auto mt-8 max-w-2xl">
       <Reveal>
-        <p className="mb-3 flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-wide text-bone/35">
-          <span className="line-through decoration-bone/25">{beforeLabel}</span>
-          <ArrowIcon size={12} />
+        <p className="mb-4 flex items-center justify-center gap-2.5 text-[15px] font-semibold tracking-wide text-bone/45">
+          <span className="line-through decoration-bone/30">{beforeLabel}</span>
+          <ArrowIcon size={14} />
           <span className="text-[#FF2D85]">{afterLabel}</span>
         </p>
       </Reveal>
 
-      <div className="space-y-2.5">
+      <div className="space-y-3.5">
         {rows.map((row, i) => (
           <Reveal key={row.after} variant="scale" delay={i * 0.06}>
-            <div className="rounded-2xl border border-white/10 bg-surface-1 p-4 shadow-card">
-              <span className="text-xs leading-relaxed text-bone/35 line-through decoration-bone/25">
+            <div className="rounded-2xl border border-white/10 bg-surface-1 p-5 shadow-card sm:p-6">
+              <span className="text-base leading-relaxed text-bone/50 line-through decoration-bone/30">
                 {row.before}
               </span>
-              <p className="mt-1 flex items-start gap-2 text-sm font-medium leading-relaxed text-bone">
-                <span className="mt-0.5 flex-none text-[#FF2D85]" aria-hidden>
-                  <ArrowIcon size={14} />
+              <p className="mt-2 flex items-start gap-2.5 text-lg font-semibold leading-relaxed text-bone sm:text-xl">
+                <span className="mt-1 flex-none text-[#FF2D85]" aria-hidden>
+                  <ArrowIcon size={18} />
                 </span>
                 <span>{row.after}</span>
               </p>

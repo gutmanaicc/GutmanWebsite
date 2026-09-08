@@ -28,10 +28,17 @@ const DEFAULT_PREFS: A11yPrefs = {
 const FONT_MIN = -2;
 const FONT_MAX = 4;
 const FONT_STEP_PCT = 10;
+/*
+ * בסיס הטיפוגרפיה של האתר: 112.5% (18px במקום 16px). מתואם ל-html
+ * font-size ב-index.css, ומוגדר גם כאן כי הסגנון האינלייני שנכתב על
+ * <html> גובר על ה-CSS. מדרגות הנגישות (± FONT_STEP_PCT) עדיין עובדות
+ * ביחס לבסיס הזה.
+ */
+const FONT_BASE_PCT = 112.5;
 
 export const applyA11yPrefs = (p: A11yPrefs) => {
   const root = document.documentElement;
-  root.style.fontSize = `${100 + p.fontStep * FONT_STEP_PCT}%`;
+  root.style.fontSize = `${FONT_BASE_PCT + p.fontStep * FONT_STEP_PCT}%`;
   root.classList.toggle("a11y-high-contrast", p.highContrast);
   root.classList.toggle("a11y-invert", p.invertColors);
   root.classList.toggle("a11y-grayscale", p.grayscale);
