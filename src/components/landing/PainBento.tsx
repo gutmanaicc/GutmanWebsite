@@ -40,25 +40,23 @@ const PainBento = ({ cards }: { cards: readonly PainCard[] }) => {
             className={featured ? "sm:col-span-2" : undefined}
           >
             <article
-              className={`flex h-full items-start gap-3.5 rounded-2xl border p-4 shadow-card sm:p-5 ${
+              className={`flex h-full items-start gap-3.5 rounded-2xl border bg-surface-1 p-4 shadow-card sm:p-5 ${
                 featured
-                  ? "border-[#FF2D85]/35 bg-[#FF2D85]/[0.06]"
-                  : "border-white/10 bg-surface-1"
+                  ? "border-dashed border-[#FF2D85]/60"
+                  : "border-white/10"
               }`}
             >
               <span
-                className={`flex h-10 w-10 flex-none items-center justify-center rounded-xl ${
-                  featured ? "bg-[#FF2D85]/15 text-[#FF2D85]" : "bg-white/[0.04] text-bone/70"
-                }`}
+                className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-white/[0.04] text-bone/70"
                 aria-hidden
               >
                 <Icon size={19} strokeWidth={1.75} />
               </span>
               <div className="min-w-0">
-                <h3 className="font-display text-base font-bold leading-snug tracking-tight text-bone">
+                <h3 className="font-display text-[17px] font-bold leading-snug tracking-tight text-bone">
                   {card.title}
                 </h3>
-                <p className="mt-1 text-sm leading-relaxed text-bone/60">{card.body}</p>
+                <p className="mt-1 text-[15px] leading-relaxed text-bone/70">{card.body}</p>
               </div>
             </article>
           </Reveal>

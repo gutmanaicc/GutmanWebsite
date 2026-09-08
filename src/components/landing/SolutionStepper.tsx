@@ -47,13 +47,17 @@ const SolutionStepper = ({
 
         {steps.map((step, i) => {
           const isOpen = i === open;
-          const isLast = i === steps.length - 1;
           return (
             <Reveal key={step.step} variant="scale" delay={i * 0.05} as="li">
               <div className="relative flex gap-4 pb-2.5">
+                {/*
+                  הנקודה מלאה רק כשהשלב פתוח - כמו כל שאר השלבים. אין
+                  יותר חריג ל"אחרון תמיד מלא": זה היה נקרא כאילו שלב 5
+                  פתוח כברירת מחדל.
+                */}
                 <span
                   className={`relative z-[1] mt-1 flex h-[38px] w-[38px] flex-none items-center justify-center rounded-full border font-display text-sm font-bold tracking-tight transition-colors ${
-                    isLast || isOpen
+                    isOpen
                       ? "border-[#FF2D85]/50 bg-[#FF2D85] text-white"
                       : "border-[#FF2D85]/30 bg-canvas text-[#FF2D85]"
                   }`}
@@ -67,13 +71,13 @@ const SolutionStepper = ({
                     type="button"
                     onClick={() => setOpen(isOpen ? -1 : i)}
                     aria-expanded={isOpen}
-                    className="flex min-h-[44px] w-full items-center justify-between gap-3 px-4 py-2.5 text-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2D85]/50 sm:px-5"
+                    className="flex min-h-[44px] w-full items-center justify-between gap-3 px-4 py-3 text-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2D85]/50 sm:px-5"
                   >
-                    <h3 className="font-display text-base font-bold tracking-tight text-bone">
+                    <h3 className="font-display text-[17px] font-bold tracking-tight text-bone">
                       {step.title}
                     </h3>
                     <ChevronDown
-                      size={17}
+                      size={18}
                       className={`flex-none text-bone/40 transition-transform duration-200 ${
                         isOpen ? "rotate-180" : ""
                       }`}
@@ -86,7 +90,7 @@ const SolutionStepper = ({
                       initial={reduced ? false : { opacity: 0, y: -4 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-                      className="px-4 pb-3.5 text-sm leading-relaxed text-bone/60 sm:px-5"
+                      className="px-4 pb-4 text-[15px] leading-relaxed text-bone/65 sm:px-5"
                     >
                       {step.body}
                     </motion.p>
@@ -101,7 +105,7 @@ const SolutionStepper = ({
       {/* עם מה יוצאים: רשת אייקונים 2x2, בלי זנבות טקסט */}
       <Reveal className="mx-auto mt-8 max-w-2xl">
         <div className="rounded-2xl border border-[#FF2D85]/25 bg-[#FF2D85]/[0.05] p-4 sm:p-5">
-          <h3 className="text-center font-display text-base font-bold tracking-tight text-bone">
+          <h3 className="text-center font-display text-[17px] font-bold tracking-tight text-bone">
             {outcomesTitle}
           </h3>
           <ul className="mt-4 grid grid-cols-2 gap-2.5 sm:gap-3">
@@ -110,7 +114,7 @@ const SolutionStepper = ({
               return (
                 <li
                   key={item.label}
-                  className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-canvas/40 p-3 text-sm font-medium text-bone/85"
+                  className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-canvas/40 p-3 text-[15px] font-medium text-bone/85"
                 >
                   <span
                     className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-[#FF2D85]/15 text-[#FF2D85]"
