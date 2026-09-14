@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import SectionHeader, { AccentWord } from "../components/SectionHeader";
 import FAQAccordion from "../components/FAQAccordion";
@@ -112,6 +112,53 @@ const FashionLanding = () => {
    */
   const prefersReducedMotion = useReducedMotion();
   const snakeDraws = motionLevel !== "static" && prefersReducedMotion !== true;
+  /*
+   * אורך הקו על המסך, לחישוב stroke-dasharray/dashoffset של המשיכה.
+   *
+   * למה זה לא קבוע: vector-effect="non-scaling-stroke" מוציא את ה-dash
+   * ממרחב ה-viewBox ומציב אותו במרחב המסך, כדי שעובי הקו לא ימתח יחד
+   * עם preserveAspectRatio="none". זה אומר שאורך המשיכה תלוי בגודל
+   * המיכל בפועל בפיקסלים - שמשתנה גם ברוחב מסך (20rem מקסימום, אבל
+   * container-site יכול לצמצם אותו) וגם בכל שינוי ל-font-size של ה-root
+   * (34rem מתורגם לפיקסלים אחרים). קבוע קשיח (1400, שכוון פעם אחת לגודל
+   * ישן) נשבר בשקט בכל שינוי כזה: המשיכה מסתיימת עם offset:0 לפני שהיא
+   * מכסה את כל אורך הקו החדש, והתוצאה קו שנעצר ממש לפני 05 בלי שגיאה
+   * בשום מקום. המדידה כאן דוגמת נקודות אמיתיות מה-path ומתרגמת אותן
+   * לפיקסלים לפי הגודל הנוכחי של ה-svg, כך שהיא נכונה בכל רוחב מסך
+   * ובכל font-size, כולל שינוי עתידי.
+   */
+  const snakePathRef = useRef<SVGPathElement>(null);
+  const snakeSvgRef = useRef<SVGSVGElement>(null);
+  const [snakeDashLength, setSnakeDashLength] = useState<number | null>(null);
+  useLayoutEffect(() => {
+    const measure = () => {
+      const path = snakePathRef.current;
+      const svg = snakeSvgRef.current;
+      if (!path || !svg) return;
+      const svgRect = svg.getBoundingClientRect();
+      if (!svgRect.width || !svgRect.height) return;
+      const scaleX = svgRect.width / 100;
+      const scaleY = svgRect.height / 100;
+      const totalLength = path.getTotalLength();
+      const SAMPLES = 200;
+      let onScreenLength = 0;
+      let prev: { x: number; y: number } | null = null;
+      for (let i = 0; i <= SAMPLES; i += 1) {
+        const point = path.getPointAtLength((totalLength * i) / SAMPLES);
+        const current = { x: point.x * scaleX, y: point.y * scaleY };
+        if (prev) onScreenLength += Math.hypot(current.x - prev.x, current.y - prev.y);
+        prev = current;
+      }
+      /* מרווח קטן קבוע כדי שהמשיכה תמיד תשלים עד הסוף גם עם עיגול פיקסלים */
+      setSnakeDashLength(Math.ceil(onScreenLength) + 4);
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, []);
+  const snakeDashStyle = snakeDashLength
+    ? ({ "--snake-len": snakeDashLength } as React.CSSProperties)
+    : undefined;
   const [lightbox, setLightbox] = useState<Testimonial | null>(null);
   const [instructorBio, setInstructorBio] = useState<InstructorBio>(null);
   /* נפרד מ-lightbox של ההמלצות: שם המקור הוא Testimonial ולא נתיב תמונה */
@@ -285,15 +332,18 @@ const FashionLanding = () => {
                 מרכז הסמן) דרך כל הזון של הכיתוב, ומתפתל למרכז רק בפער
                 האנכי שאין בו טקסט. כך הקו לעולם לא חוצה מלל.
                 preserveAspectRatio="none" מותח את ה-viewBox לגובה המיכל,
-                non-scaling-stroke שומר עובי קו אחיד. אורך הקו על המסך
-                (~1385px ברוחב המיכל המרבי, 20rem) הוא ה-dash של אנימציית
-                המשיכה ב-index.css - pathLength לא נורמל נכון תחת מתיחה
-                לא-אחידה בכרום, ולכן המספר קבוע שם.
+                non-scaling-stroke שומר עובי קו אחיד. בגלל אותה תכונה
+                אורך המשיכה (stroke-dasharray/dashoffset) נמדד במרחב המסך
+                ולא ב-viewBox, ו-pathLength לא נורמל נכון תחת מתיחה
+                לא-אחידה בכרום - לכן snakeDashStyle מודד אותו בפועל
+                (ראו ההערה ליד snakeDashLength למעלה) ומזריק אותו כמשתנה
+                CSS, במקום מספר קבוע שנשבר בשקט בכל שינוי גודל.
 
                 שני path על אותו d: התחתון מטושטש ומשמש הילה שנותנת לוורוד
                 נפח בלי לעבות את הקו החד שמעליו.
               */}
               <svg
+                ref={snakeSvgRef}
                 className="pointer-events-none absolute inset-0 h-full w-full text-[#FF2D85]/60"
                 viewBox="0 0 100 100"
                 preserveAspectRatio="none"
@@ -312,6 +362,7 @@ const FashionLanding = () => {
                   style={{ filter: "blur(3px)" }}
                 />
                 <path
+                  ref={snakePathRef}
                   className={snakeDraws ? "fashion-snake-line" : undefined}
                   d={SNAKE_PATH}
                   fill="none"
@@ -320,6 +371,7 @@ const FashionLanding = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   vectorEffect="non-scaling-stroke"
+                  style={snakeDashStyle}
                 />
               </svg>
 
@@ -385,9 +437,23 @@ const FashionLanding = () => {
               </ol>
             </div>
 
-            {/* ── דסקטופ: שרשרת אופקית ── */}
+            {/*
+              ── דסקטופ: שרשרת אופקית ──
+              צ'יפים גדולים יותר מקודם (היה px-3 py-2, טקסט 13px/10px),
+              אבל בלי max-w שמכריח שבירה: ברוחב הישן ה-ol היה מוגבל
+              ל-max-w-2xl ואז ל-max-w-3xl, וזה בדיוק מה ששבר - חמישה
+              צ'יפים גדולים יותר כבר לא נכנסו לרוחב המוגבל, ו-flex-wrap
+              (שנשאר כרשת ביטחון) הפיל את "וידאו" לשורה שנייה במרכז.
+              max-w-4xl נותן מספיק רוחב, ו-lg:flex-nowrap מבטיח שורה אחת
+              מ-1024px ומעלה בלי לגעת ב-sm/md הצרים יותר, ששם flex-wrap
+              עדיין מגן מפני גלילה אופקית. ההגדלה עצמה במרווחים (px, מרווח
+              בין צ'יפים) ולא בגודל הפונט - כך הרוחב הכולל צפוי וניתן
+              לחישוב, במקום להמר על רוחב טקסט עברי בגופן גדול יותר.
+              בלי לגעת בנחש הנייד - שתי הפריסות בלתי תלויות (sm:hidden
+              מול sm:flex) ולא חולקות שום מידה.
+            */}
             <ol
-              className="mx-auto hidden max-w-2xl flex-row flex-wrap items-stretch justify-center gap-y-3 sm:flex"
+              className="mx-auto hidden max-w-4xl flex-row flex-wrap items-stretch justify-center gap-y-4 sm:flex lg:flex-nowrap"
               aria-label="התהליך בסדנה"
             >
               {FASHION_LP.pipeline.map((node, i) => {
@@ -396,28 +462,28 @@ const FashionLanding = () => {
                   <li key={node.label} className="flex items-center">
                     <Reveal variant="scale" delay={i * 0.07} amount={0.4}>
                       <div
-                        className={`rounded-xl border px-3 py-2 text-center transition-colors ${
+                        className={`rounded-2xl border px-6 py-4 text-center transition-colors ${
                           last
                             ? "border-[#FF2D85]/40 bg-[#FF2D85]/10"
                             : "border-white/10 bg-white/[0.03]"
                         }`}
                       >
                         <span
-                          className={`block text-[13px] font-semibold leading-none ${
+                          className={`block whitespace-nowrap text-[15px] font-semibold leading-none ${
                             last ? "text-[#FF2D85]" : "text-bone/85"
                           }`}
                         >
                           {node.label}
                         </span>
-                        <span className="mt-1 block text-[10px] leading-none text-bone/40">
+                        <span className="mt-2 block whitespace-nowrap text-xs leading-none text-bone/40">
                           {node.hint}
                         </span>
                       </div>
                     </Reveal>
                     {!last && (
                       /* ArrowIcon מצביע שמאלה = "קדימה" ב-RTL */
-                      <span className="mx-2 text-bone/25" aria-hidden>
-                        <ArrowIcon size={14} />
+                      <span className="mx-4 text-bone/25 lg:mx-6" aria-hidden>
+                        <ArrowIcon size={20} />
                       </span>
                     )}
                   </li>

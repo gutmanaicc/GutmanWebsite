@@ -1563,15 +1563,18 @@ main > :not(section:first-child) {
   חד-פעמי (forwards). מחוץ למדיה הזאת, וגם כש-snakeDraws שקרי (static
   או prefers-reduced-motion), המחלקות לא נוספות בכלל וה-path מצויר מלא.
 
-  1400 = אורך הקו על המסך בפיקסלים ברוחב המיכל המרבי (20rem, ~1385px)
-  ועוד שוליים. תחת preserveAspectRatio="none" + non-scaling-stroke
-  ה-dash נמדד במרחב המסך ולא ב-viewBox, ו-pathLength לא עוזר. במסכים
-  צרים יותר הקו קצר יותר: המשיכה פשוט מסתיימת שבריר שנייה מוקדם.
+  var(--snake-len) מוזרק מ-FashionLanding.tsx: מדידה בפועל של אורך הקו
+  על המסך (ראו ההערה ליד snakeDashLength שם). תחת preserveAspectRatio=
+  "none" + non-scaling-stroke ה-dash נמדד במרחב המסך ולא ב-viewBox,
+  ו-pathLength לא עוזר, ולכן מספר קבוע נשבר בכל שינוי לגודל המיכל או
+  ל-font-size של ה-root (זה בדיוק מה שקרה כשה-html קיבל font-size:112.5%
+  אחרי שהקבוע כאן כוון). ה-1400 בברירת המחדל הוא רק רשת ביטחון למקרה
+  שה-JS עוד לא רץ (למשל SSR, שאין כאן, אבל עדיף מ-0).
 */
 @media (prefers-reduced-motion: no-preference) {
   .fashion-snake-line {
-    stroke-dasharray: 1400;
-    stroke-dashoffset: 1400;
+    stroke-dasharray: var(--snake-len, 1400);
+    stroke-dashoffset: var(--snake-len, 1400);
     animation: fashion-snake-draw 1.5s cubic-bezier(0.65, 0, 0.35, 1) 0.35s forwards;
   }
 
