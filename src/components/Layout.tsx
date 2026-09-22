@@ -1,4 +1,4 @@
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import Lenis from "lenis";
@@ -10,9 +10,12 @@ import { Consent } from "./Consent";
 import AccessibilityMenu from "./AccessibilityMenu";
 import RegisterModal from "./RegisterModal";
 import WaitlistModal from "./WaitlistModal";
+import InstructorBioModal, { type InstructorBio } from "./InstructorBioModal";
 import { ParallaxGridCanvas } from "./motion";
 import { useMotionCapability } from "../lib/motion";
 import { isLandingPath } from "../lib/landing";
+import { FASHION_LP } from "../data/fashionLanding";
+import { getInstructorsForCourse } from "../data/instructorsData";
 import { REGISTRATION_FORM_ID, scrollToRegistrationForm } from "../lib/registration";
 import { markScrollReset } from "../lib/scrollLock";
 
@@ -152,6 +155,30 @@ const Layout = () => {
   const { pathname } = useLocation();
   const landing = isLandingPath(pathname);
   /*
+   * תמונת הדר בכותרת, רק בדף הנחיתה של האופנה.
+   *
+   * בדיקה על הנתיב הספציפי ולא על isLandingPath הכללי: יום שיהיה דף
+   * /lp/ נוסף עם מנחה אחר, isLandingPath היה מדליק את הפרצוף הלא נכון
+   * שם בלי שינוי מודע. כשזה יקרה, זה עובר למבנה per-campaign אמיתי.
+   *
+   * getInstructorsForCourse ולא getInstructor: היא זו שבוחרת את ה-bio
+   * הספציפי לאופנה (trackBios.fashion) ולא את הכללי, בדיוק כמו שגוף
+   * העמוד עצמו עושה לעיגול שלה בסקשן ההוכחה. אותו טקסט בשני המקומות.
+   */
+  const fashionLpInstructor =
+    pathname === FASHION_LP.path ? getInstructorsForCourse(FASHION_LP.courseSlug)[0] : undefined;
+  /*
+   * כרטיס הביו של הדר, נפתח מהעיגול בכותרת.
+   *
+   * state נפרד מזה שבגוף העמוד (FashionLanding מחזיק InstructorBioModal
+   * משלו לעיגולי סקשן ההוכחה) ולא state משותף: Layout הוא הורה של הדף
+   * דרך Outlet, לא יכול לקרוא ל-setState של הדף, ובניית Context גלובלי
+   * רק בשביל התמונה הזו בכותרת היא over-engineering לפיצ'ר שמוגבל לדף
+   * אחד. שני מופעים בלתי-תלויים של אותו קומפוננטה portal לא מתנגשים,
+   * כי רק לחיצה אחת בכל רגע נתון יכולה לפתוח אחד מהם.
+   */
+  const [headerBio, setHeaderBio] = useState<InstructorBio>(null);
+  /*
    * גם המתג של תפריט הנגישות עוצר את הגלילה החלקה, לא רק הגדרת מערכת
    * ההפעלה.
    *
@@ -178,7 +205,16 @@ const Layout = () => {
         דילוג לתוכן המרכזי
       </a>
       <ScrollManager />
-      <Header minimal={landing} />
+      <Header
+        minimal={landing}
+        avatarSrc={fashionLpInstructor?.instructor.image}
+        avatarAlt={fashionLpInstructor?.instructor.name}
+        onAvatarClick={
+          fashionLpInstructor
+            ? () => setHeaderBio({ instructor: fashionLpInstructor.instructor, bio: fashionLpInstructor.bio })
+            : undefined
+        }
+      />
       <main id="main-content" className="relative z-[2]">
         <PageTransition />
       </main>
@@ -186,6 +222,7 @@ const Layout = () => {
     </div>
     <RegisterModal />
     <WaitlistModal />
+    <InstructorBioModal value={headerBio} onClose={() => setHeaderBio(null)} />
     <Consent />
     <AccessibilityMenu />
   </div>

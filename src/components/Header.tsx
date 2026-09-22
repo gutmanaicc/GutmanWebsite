@@ -8,7 +8,7 @@ import MobileTracksAccordion from "./MobileTracksAccordion";
 import Pressable from "./Pressable";
 import { prefersStillMotion } from "../lib/motion";
 import { getRegistrationSection } from "../lib/registration";
-import { markScrollReset, useScrollLock } from "../lib/scrollLock";
+import { markScrollReset, popupJustClosed, useScrollLock } from "../lib/scrollLock";
 
 type NavItem = {
   to?: string;
@@ -111,9 +111,21 @@ type HeaderProps = {
    * ה-CTA נשאר, כי הוא גולל לטופס שבאותו עמוד ואינו ניווט החוצה.
    */
   minimal?: boolean;
+  /**
+   * פרצוף קטן ליד כפתור ה-CTA, לדפי נחיתה ספציפיים בלבד.
+   *
+   * Header משותף לכל האתר, ולכן זה לא ידע על "הדר" או "אופנה" - Layout
+   * הוא זה שמחליט לפי הנתיב הנוכחי אם להעביר תמונה, ורק אז היא מוצגת.
+   * בלי הפרדה כזו כל דף נחיתה עתידי תחת /lp/ היה יורש בטעות את הפרצוף
+   * של הקמפיין הראשון.
+   */
+  avatarSrc?: string;
+  avatarAlt?: string;
+  /** לחיצה על התמונה פותחת את כרטיס המנחה. בלי handler התמונה לא לחיצה. */
+  onAvatarClick?: () => void;
 };
 
-const Header = ({ minimal = false }: HeaderProps) => {
+const Header = ({ minimal = false, avatarSrc, avatarAlt, onAvatarClick }: HeaderProps) => {
   const reduced = useReducedMotion();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -241,6 +253,33 @@ const Header = ({ minimal = false }: HeaderProps) => {
           )}
 
           <div className="flex shrink-0 items-center justify-end gap-2 sm:flex-1 sm:gap-2.5">
+            {avatarSrc && (
+              /*
+                נצמד לכפתור ולא לצד השני של הכותרת: זו הוכחה שיש בן אדם
+                אמיתי מאחורי הבקשה "השאירו פרטים", ברגע שבו הגולשת שוקלת
+                ללחוץ עליו. הכותרת דביקה (sticky), ולכן זה נשאר על המסך
+                לאורך כל הגלילה - לא רק במסך הראשון כמו כל שאר ההירו.
+
+                button ולא img עם onClick: זה אלמנט לחיץ אמיתי, נגיש
+                למקלדת ולקורא מסך. popupJustClosed חוסם פתיחה מחדש כשסגירת
+                כרטיס קודם בלחיצה בחוץ נוחתת בטעות בדיוק כאן - אותו באג
+                שכבר נפתר בעיגולי המנחים בגוף העמוד.
+              */
+              <button
+                type="button"
+                onClick={() => !popupJustClosed() && onAvatarClick?.()}
+                className="shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2D85]/60"
+                aria-label={avatarAlt ? `פרטים על ${avatarAlt}` : "פרטים על המנחה"}
+              >
+                <img
+                  src={avatarSrc}
+                  alt=""
+                  className="h-9 w-9 rounded-full border border-white/15 object-cover sm:h-10 sm:w-10"
+                  loading="eager"
+                  decoding="async"
+                />
+              </button>
+            )}
             <Pressable
               type="button"
               className="navbar-lead-cta group/cta relative inline-flex min-h-10 shrink-0 items-center justify-center gap-2 overflow-hidden rounded-full px-4 text-[13px] font-semibold text-white sm:min-h-11 sm:px-5 sm:text-sm"

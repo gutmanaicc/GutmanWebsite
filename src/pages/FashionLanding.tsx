@@ -304,6 +304,15 @@ const FashionLanding = () => {
                 <ArrowIcon />
               </Pressable>
             </div>
+
+            {/*
+              אות אמון בהירו, לא רק בסקשן ההוכחה שרוב הגולשות (42% עומק
+              גלילה ממוצע במובייל) לא מגיעות אליו. אותו ReviewsRatingBadge
+              בדיוק - "הוכחה חברתית במשקל טיפוגרפי", בלי לוגו ובלי
+              כוכביות - כדי שהעמוד לא ילמד שני שפות ויזואליות לאותה טענה.
+              linked={false} כי /lp/ הוא מסלול סגור בלי לינקים יוצאים.
+            */}
+            <ReviewsRatingBadge linked={false} className="mt-6" />
           </motion.div>
 
           {/*
