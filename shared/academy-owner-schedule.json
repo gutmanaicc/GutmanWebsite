@@ -1,0 +1,12 @@
+{
+  "reference": "owner-2026-10-12-october-six-seminars",
+  "venue": "SOK, ראשון לציון, מקום בתכנון",
+  "dates": [
+    { "date": "2026-10-20", "seminarId": "ai-video-content" },
+    { "date": "2026-10-21", "seminarId": "ai-business-owners" },
+    { "date": "2026-10-22", "seminarId": "social-media-ai" },
+    { "date": "2026-10-27", "seminarId": "ai-video-content" },
+    { "date": "2026-10-28", "seminarId": "ai-business-owners" },
+    { "date": "2026-10-29", "seminarId": "social-media-ai" }
+  ]
+}
