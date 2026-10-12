@@ -1,28 +1,26 @@
 # סליקה, הרשמה ואוטומציות — מצב בפועל
 
-עודכן: 12.10.2026. בוצעה עבודת פיתוח ובדיקות מקומיות בלבד. אין חיבור לחשבון הסוחר, חיובים אמיתיים, שליחת הודעות, קבלות או שינוי נתוני ייצור.
+עודכן: 12.10.2026. המסלול הנוכחי הוא ענן, בענף `feature/gutman-academy-seminars-v2`. פרויקט Vercel הנכון הוא `ai-workshop-landing` בצוות `gutmanai`. גרסת תצוגה עלתה; אתר הייצור ודומייניו לא שונו.
 
-## עדכון בעקבות בקשת חיבור Morning וקישורי סליקה
+## חיבור Morning ושרת הענן
 
-הבעלים אישר איתור credentials ב־Keychain ויצירת קישורי סליקה לפי הצורך. בדיקת הסביבה מצאה Linux, ללא `/usr/bin/security`, ללא secrets או outbound identities מוגדרים; אין כלי מחובר לגישה ל־Keychain של ה־Mac. חשבון Vercel המחובר כולל שלושה פרויקטים, ללא פרויקט תואם לאתר/ריפו הנוכחי. לא נקראו ערכי סודות מפרויקטים אחרים. מדיניות הרשת של סביבת הפיתוח מאפשרת כעת package-manager hosts בלבד, ולא את שרתי Morning.
+המימוש החדש נמצא ב־`server/morning-client.mjs`, `server/morning-checkout-adapter.mjs`, `server/cloud-runtime.mjs` ו־`api/academy.ts`. חוזה הספק אומת מול [OpenAPI הרשמי](https://developers.morning.co/docs/openapi.bundled.json), גרסה2.0.0. אין שימוש ב־API של Grow במקום Morning.
 
-`server/morning-credentials.mjs` וסקריפט `scripts/academy-keychain.mjs` מאפשרים הרצה **על ה־Mac של הבעלים**: קריאה ממוקדת של פריט JSON המכיל `id`/`secret` או `client_id`/`client_secret`, או שני פריטים נפרדים. אין dump של ה־Keychain, אין סריקה של פריטים שאינם Morning, ואין הדפסת מפתחות. האפשרות `--serve` מעבירה אותם בזיכרון לתהליך השרת בלבד; היא אינה מפעילה את ספק הסליקה.
+- OAuth: `POST https://api.morning.co/idp/v1/oauth/token`, עם `grant_type=client_credentials`, `client_id` ו־`client_secret`. token נשמר בזיכרון בלבד ומתרענן לפני `expiresAt`.
+- יצירת טופס: `POST https://api.greeninvoice.co.il/api/v1/payments/form`. הסכום הסופי הוא1190ILS לפני קופון, קבלה400, VAT של מסמך1 ושורה2 לעוסק פטור. תשלום אחד בלבד. פרטי העסק ומעמד המס חייבים אימות לפני הפעלה.
+- תשובת הטופס כוללת URL; **אין בחוזה מזהה קישור, single-use או תפוגת טופס**. האפליקציה שומרת אסמכתת מסמך ייחודית ומועד תפוגת מושב משלה. `providerExpiryEnforced=false`: תשלום מאוחר עשוי עדיין להיות אפשרי בטופס Morning, ומועבר ל־`refund_required`, ללא הרשמה אוטומטית.
+- `documents/search` ואחריו `GET /documents/:id` מאמתים קבלה המתאימה בדיוק לאסמכתת הזמנה, סוג מסמך, סכום,ILS, מעמד עוסק פטור, מספר עסק ותשלומים בפועל. סטטוס מסמך או redirect לבדם אינם הוכחת גבייה.
+- callback של טופס הוא אות לבדיקה בלבד. הגוף אינו יכול לאשר תשלום. HMAC של Webhooks הכלליים הוא SHA256 של הגוף המקורי עם הסוד, בקידוד hex; אין הנחה לגבי מעטפת האירוע או שימוש בחתימת הסימולציה.
 
-```bash
-npm run academy:keychain -- --check --service '<שם השירות של הפריט הקיים>'
-# אם המזהה והסוד שמורים בנפרד:
-npm run academy:keychain -- --check --id-service '<שם פריט המזהה>' --secret-service '<שם פריט הסוד>'
-```
+`HostedCheckout` שומר claim לפני קריאת ספק מחוץ לטרנזקציה; timeout עמום אינו מוביל לניסיון יצירה כפול. רק origins מאומתים ב־HTTPS מתקבלים. טוקן הזמנה נשמר בטאב ונדרש לקריאת סטטוס/בדיקת תשלום.
 
-אין למסור את ערכי המפתחות בצ׳אט, בארגומנטים או במשתני `VITE_*`. בתשתית ענן יש לקשור `MORNING_API_ID` ו־`MORNING_API_SECRET` כסודות שרת, ולאפשר את שרתי ה־API הרשמיים אחרי אימות הכתובות.
+`DurableCommerceRepository` מפעיל את ליבת SQLite בזיכרון על snapshot פרטי עם ETag וכתיבה מותנית; כל הזמנה, קופון, תשלום ורישום מתחייבים יחד. `BlobCommerceBackend` קורא ישירות מאחסון פרטי (`useCache=false`), מצפין AES256GCM ומסרב לאפס מידע פגום. שום נתוני מסחר אינם נשמרים בדיסק הזמני של Vercel. namespace נפרד לתצוגה ולייצור. מגבלת snapshot5MiB/10000רשומות מחייבת תכנון מעבר למסד נתונים לפני גידול משמעותי.
 
-נוספה `HostedCheckout` ב־`server/hosted-checkout.mjs`: יצירת קישור אחת לכל הזמנה באמצעות claim הנשמר ב־SQLite, ללא טרנזקציה פתוחה במהלך קריאה לספק. כשל/timeout עמום אינו יוצר קישור חדש בניסיון חוזר; המקום נשאר שמור עד התפוגה ונפתחת משימת בדיקה. קישור מוחזר לדפדפן רק אם יעד ה־HTTPS מופיע ברשימת origins של adapter שנבדק, ואם תוקפו אצל הספק אינו ארוך משמירת המקום. קופון המוריד מחיר לאפס חסום בזרימת הסליקה הזו ודורש מסלול הרשמה ללא גבייה שטרם מומש.
+ללא אחסון/מפתחות/אימות עסק, הקטלוג מחזיר200 עם `ready=false`, ללא מועדים זמינים. רכישה וניהול חסומים. סימולציה חסומה לחלוטין בשרת הענן. עשרת המועדים המוצעים נשארים טיוטות פרטיות.
 
-הדפדפן שומר token הזמנה בטאב ומעביר לדף הסליקה שקיבל מהשרת. בחזרה הוא בודק את מצב התשלום; polling מוגבל וניסיון חוזר ידני תומכים באישור שמתעכב. `POST /orders/:id/reconcile` דורש Bearer של ההזמנה. הנתיב `/payments/morning/notify/:id` הוא **אות לבדיקת ספק בלבד**: אף שדה callback אינו מקור אמת. רק תשובה שה־adapter קיבל בקריאת ספק מאומתת, עם מזהה קישור/הזמנה, סכום, מטבע ואסמכתא תואמים, יכולה להיכנס למנגנון הרישום. חוזה callback וה־acknowledgement הרשמי עדיין צריכים מימוש לפי מפרט Morning.
+**חסמים בפועל:** בחיבור הנוכחי לא קיימים סודות Morning. כניסה ל־Chrome הפרטי אינה מתחברת לדפדפן הענן, שבו עדיין מוצג login. יצירת private Blob דרך החיבור הקיים נדחתה403 של הרשאת ספק; לא נוצר אחסון. לא נוצרו קישורי Morning אמיתיים ולא בוצעו חיובים, קבלות, sandbox או שליחת הודעות. RESEND/FIREBERRY קיימים בפרויקט, אך זרימת משלוח השירות החדשה עוד אינה פעילה.
 
-מצב `morning` קיים בליבה, אך adapter ברירת המחדל נשאר `ready=false`; הגדרת מפתחות לבדה אינה משנה זאת. token ההזמנה נגזר מ־`ACADEMY_ORDER_SECRET` נפרד, חזק וקבוע. אפשרויות הסימולציה והחזרי הדגמה חסומות במצב זה. בדיקות הספק המדומה מוכיחות מעבר, חזרה, אימות ורישום יחיד; **אינן בדיקת sandbox של Morning**.
-
-קריאה נוספת ב־[תיעוד Morning הרשמי](https://developers.morning.co/) ובקישור `/api` מצאה explorer המבוסס JavaScript שלא חשף דרך כלי הקריאה את סכמות יצירת הקישור, lookup, callback ומסמכים. אין שימוש ב־endpoints משוערים ממקורות קהילה. להשלמה נדרשת הרצה עם גישה ל־Mac/סודות שרת ולמפרט הרשמי, ואז בדיקת חשבון וסביבת sandbox. קבלות, דיוור, CRM ואחסון ייצור נשארים חסמים כמפורט בהמשך.
+המשתנים הדרושים והבדיקות עד הפעלה מפורטים ב־`docs/academy-cloud-setup.md`. אין למסור מפתחות בצ׳אט, להדפיס אותם או להגדיר אותם ב־`VITE_*`.
 
 ## מה עובד בפיתוח
 
@@ -53,7 +51,7 @@ npm run academy:keychain -- --check --id-service '<שם פריט המזהה>' --
 
 ## הרצה בטוחה
 
-דרישה: Node 24 ומעלה עם `node:sqlite`. אין תוספת תלויות npm.
+דרישה: Node24 ומעלה עם `node:sqlite`. שרת הענן מוסיף `@vercel/blob`2.7.0; ההוראות המקומיות להלן הן כלי פיתוח בלבד.
 
 ```bash
 # בתוך תיקיית הפרויקט. בחרו סודות חזקים שונים ושמרו אותם מקומית בלבד.
@@ -122,21 +120,9 @@ node scripts/academy-server.mjs
 
 לא בוצעו כתיבות ל־Fireberry, Resend, Morning או Grow. אין worker מופעל, ולכן כל המשימות נשארות pending עד חיבור ספק מאושר. מיפוי קורסים/מחזורים/רשומות קיימות, אימות יעד ההודעות, קישורי חומרי ההכנה וקבלות הם חסמי השקה.
 
-## Morning / Grow — מה אומת ומה עדיין חסום
+## ספק ומגבלות
 
-נערכה קריאה בלבד בתיעוד הציבורי הרשמי. אין חשבון או credentials זמינים, אין בקשות checkout לספק ואין שימוש בכרטיסים או ארנקים.
-
-המקורות שנבדקו:
-
-1. [Grow Regular Payment Overview](https://developers.grow.business/reference/regular-payment-overview): יצירת דף תשלום מאובטח בשרת, מזהי `userId`/`pageCode` שהספק מוסר, וקישור עם תוקף של עשר דקות. פרטי לקוח וסכום חייבים לצאת מהשרת.
-2. [Grow Create Payment Process](https://developers.grow.business/reference/create-payment-process): התיעוד מציג `paymentNum` בין 1–12 ו־`maxPaymentNum`. שישה תשלומים אפשריים בחוזה ה־API, אך הזכאות וההגדרה בחשבון הסוחר לא אומתו. האתר המקומי מקבל כרגע תשלום אחד בלבד.
-3. [Grow Server to Server Callback](https://developers.grow.business/reference/server-to-server-callback): `notifyUrl` ב־HTTPS, callback עם שדות form ולא JSON, ו־acknowledgement באמצעות `ApproveTransaction`. התשלום עשוי להתבצע גם אם acknowledgement נכשל. **לא אומת חוזה חתימה/אימות מקור מספק בעמודים שנקראו**; אין לקבל callback בלתי מאומת כאישור הרשמה.
-4. [Grow Approve Transaction](https://developers.grow.business/reference/approve-transaction-5): method ושדות רשמיים מתועדים; לא מומש או נוסה נגד הספק ללא אישור וחשבון.
-5. [Grow Live Environment](https://developers.grow.business/reference/live-environment): הספק דורש בדיקת logs/callbacks/HTTP200/acknowledgement לפני הפעלת פרטי ייצור.
-6. [Grow Testing Environment](https://developers.grow.business/reference/testing-environment): אזהרה מפורשת שארנקים Bit/Google Pay/Apple Pay עלולים לחייב כסף אמיתי גם בתהליך בדיקות. בבדיקת sandbox עתידית מאושרת יש להשתמש רק בכרטיסי הבדיקה שהספק מפרסם.
-7. [Morning Developers](https://developers.morning.co/): המבוא מתאר JSON/HTTPS, OAuth2 ו־token של שעה. מפרט endpoints הנחוץ לא נגיש במלואו בקריאה שנערכה; אין להסיק endpoints ישנים או מערכת מסמכים מחיבור Grow בלבד.
-
-`MorningGrowAdapter` ב־`server/payment-adapters.mjs` מגדיר גבול עבור `createCheckout`, `verifyWebhook`, `refund`, `reconcile`; כל פעולה נכשלת במפורש עם `PAYMENT_UNAVAILABLE`. לא הומצאו endpoints, חתימות או מפתחות ספק. `api/academy.ts` מחזיר 503 בסביבה serverless; הוא אינו מנסה להפעיל SQLite זמני ב־Vercel. התאמת נתיבי catch-all לשרת פיתוח מתבצעת ב־Vite; הגדרת ניתוב ייצור אינה מחברת סליקה.
+`MorningGrowAdapter` הישן נשאר stub חסום עבור השרת המקומי; שרת הענן משתמש ב־`MorningCheckoutAdapter` החדש. סביבת sandbox משתמשת ב־`api.sandbox.morning.dev` ל־OAuth וב־`sandbox.d.greeninvoice.co.il/api/v1` למסמכים. המימוש נבדק עם ספק מדומה בלבד, ואין להציג זאת כאימות חשבון Morning.
 
 ## בדיקות שבוצעו
 
@@ -152,7 +138,7 @@ node --test tests/commerce.test.mjs
 - תנאי הרשמה, ביטול/דחייה, החזרים, מינימום משתתפים ופרטיות מאושרים; דגל פיתוח אינו תחליף לכך.
 - בסיס נתונים מתמשך לייצור עם גיבויים, שחזור, מניעת overselling בטרנזקציות, הצפנה/גישה ושמירת מידע אישי. SQLite מקומי אינו מתאים לפונקציות Vercel עם דיסק זמני או לכמה מופעים נפרדים ללא אחסון משותף.
 - אימות מנהל לייצור: זהויות אישיות, הרשאות, MFA/rotation/revocation, יומן מנהל לפי זהות. token סביבתי אחד הוא כלי פיתוח בלבד.
-- פרטי סוחר Morning/Grow מורשים, מפרט רשמי נגיש, adapter ליצירת hosted checkout ו־lookup מאומת, חוזה callback/acknowledgement, בדיקות sandbox, refund/reconciliation ואישור ספק לייצור. תשתית hosted checkout נבדקה עם ספק מדומה בלבד; אין להעתיק את חתימת הסימולציה לתוך חוזה הספק.
+- פרטי סוחר Morning/Grow מורשים, מפתחות ואימות חשבון בפועל, בדיקות sandbox, refund/reconciliation ואישור ספק לייצור. תשתית hosted checkout נבדקה עם ספק מדומה בלבד; אין להעתיק את חתימת הסימולציה לתוך חוזה הספק.
 - אימות רו״ח למעמד עוסק פטור ופרטי מסמכי תשלום; חיבור הפקת קבלה אמיתית וקישור אליה.
 - אימות תשלומים עד שש מול חשבון הסוחר; טקסטים וסכומים לפי התנאים האמיתיים.
 - adapters מאושרים לשליחת שירות/CRM ו־worker עם ניטור וניסיון חוזר; ספק עם idempotency.

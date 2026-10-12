@@ -21,9 +21,9 @@ export class HostedCheckout {
   }
   async start(created) {
     if (!this.ready) unavailable();
-    const { claimed, order } = this.store.claimCheckout(created.orderId);
+    const { claimed, order } = await this.store.claimCheckout(created.orderId);
     if (!claimed) return { ...created, ...this.store.orderResult(order) };
-    if (order.totalAgorot <= 0) return { ...created, ...this.store.checkoutFailed(order.id, { unknown: false, reasonCode: 'ZERO_AMOUNT_UNSUPPORTED' }) };
+    if (order.totalAgorot <= 0) return { ...created, ...await this.store.checkoutFailed(order.id, { unknown: false, reasonCode: 'ZERO_AMOUNT_UNSUPPORTED' }) };
     try {
       const result = await this.adapter.createCheckout({
         orderId: order.id, amountAgorot: order.totalAgorot, currency: order.currency,
@@ -38,10 +38,10 @@ export class HostedCheckout {
       if (typeof result.providerLinkId !== 'string' || !result.providerLinkId || result.providerLinkId.length > 200) throw new Error('Missing provider reference.');
       const expires = Date.parse(result.expiresAt);
       if (!Number.isFinite(expires) || expires <= this.store.clock() || expires > Date.parse(order.holdExpiresAt)) throw new Error('Provider checkout must expire within the reserved seat period.');
-      return { ...created, ...this.store.completeCheckout(order.id, { ...result, checkoutUrl: url.href }) };
+      return { ...created, ...await this.store.completeCheckout(order.id, { ...result, checkoutUrl: url.href }) };
     } catch {
       // A timeout can occur after the provider has created the link. Do not create another link on retry.
-      return { ...created, ...this.store.checkoutFailed(order.id, { unknown: true, reasonCode: 'PROVIDER_RESULT_UNKNOWN' }) };
+      return { ...created, ...await this.store.checkoutFailed(order.id, { unknown: true, reasonCode: 'PROVIDER_RESULT_UNKNOWN' }) };
     }
   }
   async refresh(orderId) {
@@ -52,7 +52,7 @@ export class HostedCheckout {
   }
   async lookup(orderId) {
     if (!this.ready) unavailable();
-    const order = this.store.get('orders', orderId);
+    const order = await this.store.get('orders', orderId);
     if (!order) throw new CommerceError('ORDER_NOT_FOUND', 'ההזמנה לא נמצאה.', 404);
     if (!order.providerLinkId || order.simulation || ['paid', 'refunded'].includes(order.status)) return this.store.orderResult(order);
     const event = await this.adapter.reconcile({ orderId, providerLinkId: order.providerLinkId });
@@ -60,12 +60,12 @@ export class HostedCheckout {
     if (!event || event.orderId !== orderId || event.providerLinkId !== order.providerLinkId || event.provider !== 'morning') throw new CommerceError('INVALID_PROVIDER_RESULT', 'אימות פרטי התשלום לא הושלם.', 502);
     // Event comes from the server-authenticated provider response, never from callback/redirect fields.
     const { providerLinkId: _reference, ...normalized } = event;
-    return this.store.processVerifiedEvent(normalized);
+    return await this.store.processVerifiedEvent(normalized);
   }
   async refreshPending(limit = 20) {
     if (!this.ready) return;
     const cutoff = this.store.clock() - 86_400_000;
-    const due = this.store.all('orders').filter(item => !item.simulation && item.providerLinkId && ['pending', 'expired'].includes(item.status) && Date.parse(item.holdExpiresAt) >= cutoff);
+    const due = (await this.store.all('orders')).filter(item => !item.simulation && item.providerLinkId && ['pending', 'expired'].includes(item.status) && Date.parse(item.holdExpiresAt) >= cutoff);
     if (!due.length) return;
     const start = this.cursor % due.length;
     const batch = [...due.slice(start), ...due.slice(0, start)].slice(0, limit);

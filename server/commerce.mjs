@@ -288,7 +288,7 @@ export class CommerceStore {
     });
   }
   /** Caller must also verify the URL against the actual provider's canonical host allowlist. */
-  completeCheckout(orderId,{providerLinkId,checkoutUrl,expiresAt}) {
+  completeCheckout(orderId,{providerLinkId,checkoutUrl,expiresAt,expiryEnforced=true}) {
     if(this.mode!=='morning')fail('PAYMENT_UNAVAILABLE','ספק התשלום אינו פעיל.',503);
     const linkId=requiredString(providerLinkId,200);
     const url=requiredString(checkoutUrl,2000);
@@ -305,6 +305,7 @@ export class CommerceStore {
       }
       if(!['creating','unknown'].includes(order.checkoutState))fail('CHECKOUT_NOT_CLAIMED','יצירת קישור התשלום לא הוזמנה.',409);
       order.providerLinkId=linkId;
+      order.providerExpiryEnforced=expiryEnforced===true;
       order.checkoutExpiresAt=iso(Math.min(providerExpiry,Date.parse(order.holdExpiresAt)));
       if(order.status!=='pending'||Date.parse(order.checkoutExpiresAt)<=this.clock()){
         order.checkoutState='unknown';order.checkoutFailureCode='LINK_AFTER_HOLD_EXPIRY';order.checkoutUrl=null;

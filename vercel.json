@@ -6,7 +6,7 @@
   "rewrites": [
     {
       "source": "/api/academy/:path*",
-      "destination": "/api/academy"
+      "destination": "/api/academy?academyPath=:path*"
     },
     {
       "source": "/payment-thanks",
