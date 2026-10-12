@@ -1,7 +1,10 @@
 import test, { before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { AcademyLeadIntake } from '../server/hubspot-leads.mjs';
 import { randomBytes } from 'node:crypto';
 import { chromium } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
@@ -216,11 +219,29 @@ test('client ribbon loops, pauses, supports dragging and remains usable with red
     const before=await transform();
     const box=await ribbon.boundingBox();await page.mouse.move(box.x+180,box.y+40);await page.mouse.down();await page.mouse.move(box.x+65,box.y+40,{steps:8});await page.mouse.up();
     assert.notEqual(await transform(),before,'manual pointer dragging works');
-    await ribbon.focus();const dragged=await transform();await page.keyboard.press('ArrowRight');assert.notEqual(await transform(),dragged,'manual keyboard control works');
+    await ribbon.focus();const dragged=await transform();await page.keyboard.press('ArrowRight');await page.waitForFunction(previous=>getComputedStyle(document.querySelector('.academy-client-belt')).transform!==previous,dragged);assert.notEqual(await transform(),dragged,'manual keyboard control works');
     const names=await page.locator('.academy-client-logos:not([aria-hidden]) img').evaluateAll(images=>images.map(image=>image.alt));
     assert.equal(names.length,14);assert.equal(new Set(names).size,14);
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
     await page.getByRole('link',{name:'לכל ההמלצות',exact:false}).click();await page.waitForURL(base+'/reviews');await page.locator('h1').waitFor();
     await context.close();
   }
+});
+
+test('seminar enquiry uses durable lead API, keeps marketing optional and reports provider failure truthfully',async()=>{
+ const directory=mkdtempSync(join(tmpdir(),'academy-lead-browser-'));let calls=0;
+ const intake=new AcademyLeadIntake({path:join(directory,'leads.sqlite'),adapter:{submit:async()=>{calls++;if(calls===1)throw new Error('Uncertain test provider transport');}}});
+ const localStore=new CommerceStore();const apiServer=createAcademyServer({store:localStore,leadIntake:intake,allowedOrigins:[base]});await new Promise(resolve=>apiServer.listen(0,'127.0.0.1',resolve));const apiOrigin=`http://127.0.0.1:${apiServer.address().port}`;
+ const context=await browser.newContext({viewport:{width:375,height:812},reducedMotion:'reduce'});const page=await context.newPage();
+ try{
+  await page.route('**/api/academy/**',async route=>{const request=route.request();const response=await fetch(apiOrigin+new URL(request.url()).pathname,{method:request.method(),headers:{...request.headers(),host:new URL(apiOrigin).host},...(request.postData()?{body:request.postData()}: {})});await route.fulfill({status:response.status,headers:{'content-type':'application/json'},body:await response.text()});});
+  await page.goto(base+'/courses/social-media-ai');await page.locator('.academy-interest-form').waitFor();
+  await page.getByLabel('שם מלא',{exact:true}).fill('פניית בדיקה');await page.getByLabel('אימייל',{exact:true}).fill('lead-browser@example.invalid');await page.getByLabel('טלפון',{exact:true}).fill('0500000000');
+  assert.equal(await page.getByRole('checkbox').isChecked(),false);const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();assert.equal(axe.violations.length,0,JSON.stringify(axe.violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)}))));
+  await page.getByRole('button',{name:'חזרו אליי עם פרטים',exact:true}).click();await page.getByRole('alert').waitFor();assert.equal(await page.getByText('הפנייה שלכם נקלטה.',{exact:true}).count(),0);
+  await page.getByRole('button',{name:'חזרו אליי עם פרטים',exact:true}).click();await page.getByRole('alert').waitFor();assert.equal(calls,1,'uncertain provider call is not repeated');
+  await page.getByLabel('מה תרצו לדעת?',{exact:false}).fill('מידע על הסמינר');await page.getByRole('button',{name:'חזרו אליי עם פרטים',exact:true}).click();await page.getByText('הפנייה שלכם נקלטה.',{exact:true}).waitFor();
+  const rows=intake.db.prepare("SELECT data FROM leads WHERE state='accepted'").all();assert.equal(rows.length,1);assert.equal(JSON.parse(rows[0].data).marketingConsent,false);assert.equal(localStore.all('orders').length,0);assert.equal(localStore.all('registrations').length,0);
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+ }finally{await context.close();await new Promise(resolve=>apiServer.close(resolve));localStore.close();intake.close();rmSync(directory,{recursive:true,force:true});}
 });

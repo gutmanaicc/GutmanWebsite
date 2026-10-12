@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import LeadInterestForm from './LeadInterestForm';
 import SeminarPrice from './SeminarPrice';
 import { CalendarDays, ArrowLeft, MapPin } from 'lucide-react';
 import { ACADEMY_CONFIG, academyRequest, formatSeminarDate, trackAcademy, type Catalog } from '../../lib/academy';
@@ -31,6 +32,7 @@ export default function BookingPanel({ seminarSlug, seminarTitle }: { seminarSlu
       {date && <p><MapPin size={16} aria-hidden /> {date.venue}</p>}
       {catalog.commerce.ready && selected ? <Link className="academy-button" to={`/register?date=${encodeURIComponent(selected)}&seminar=${encodeURIComponent(seminarSlug)}`} onClick={() => trackAcademy('begin_checkout', { seminar_id: seminarSlug, date_id: selected })}>הרשמה לסמינר <ArrowLeft size={18} aria-hidden /></Link> : <p className="academy-notice">{selected ? 'ההרשמה בתשלום תיפתח לאחר השלמת ההגדרות הנדרשות.' : 'בחרו מועד כדי להמשיך להרשמה.'}</p>}
     </> : <div className="academy-notice"><CalendarDays size={22} aria-hidden /><strong>עדיין אין מועד מאושר להרשמה</strong><p>כשהמועדים יאושרו, תוכלו לבחור כאן תאריך ולהירשם אונליין.</p></div>}
+    {catalog?.leads?.ready && <LeadInterestForm seminarSlug={seminarSlug} requestedDate={date?.date} />}
     <p className="academy-fineprint">הסמינר מתקיים בקבוצה של 8-12 משתתפים. פתיחת הקבוצה מותנית ב־8 הרשמות בתשלום. פרטי המקום ותנאי הביטול יוצגו לפני הרשמה.</p>
   </section>;
 }

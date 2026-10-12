@@ -1,4 +1,5 @@
-import { isAbsolute } from 'node:path';
+import { dirname, isAbsolute, join } from 'node:path';
+import { AcademyLeadIntake, HubSpotFormAdapter } from './hubspot-leads.mjs';
 import { CommerceStore } from './commerce.mjs';
 import { createAcademyHandler } from './http.mjs';
 import { MorningClient } from './morning-client.mjs';
@@ -33,15 +34,17 @@ export function createSelfHostedRuntime(env = process.env, { fetchImpl = globalT
   const mode = env.ACADEMY_PAYMENT_MODE || 'disabled';
   const client = new MorningClient({ clientId: env.MORNING_API_ID, clientSecret: env.MORNING_API_SECRET, webhookSecret: env.MORNING_WEBHOOK_SECRET, environment: env.MORNING_ENVIRONMENT || 'production', businessTaxId: env.MORNING_BUSINESS_TAX_ID, merchantVerified: env.MORNING_MERCHANT_VERIFIED === '1', checkoutOrigins: String(env.MORNING_CHECKOUT_ORIGINS ?? '').split(',').map(value => value.trim()).filter(Boolean), fetchImpl, clock });
   let store;
+  let leadIntake;
   const adapter = new MorningCheckoutAdapter({ client, getOrder: id => store.get('orders', id) });
   store = new CommerceStore({ path, clock, mode, adapter, orderSecret: env.ACADEMY_ORDER_SECRET, bookingTermsApproved: env.ACADEMY_BOOKING_TERMS_APPROVED === '1' });
   try {
     store.seedDrafts();
+    if (env.HUBSPOT_LEADS_ENABLED === '1') leadIntake = new AcademyLeadIntake({ path: env.ACADEMY_LEADS_DB_PATH || join(dirname(path), 'academy-leads.sqlite'), adapter: new HubSpotFormAdapter({ portalId: env.HUBSPOT_PORTAL_ID, formId: env.HUBSPOT_FORM_ID, publicOrigin, fetchImpl }), clock });
     const repository = new SelfHostedRepository(store);
     const checkout = new HostedCheckout({ store, adapter, publicOrigin });
     const deliveryAdapter = createResendDeliveryAdapter(env, { fetchImpl });
     const deliveryWorker = new DurableOutboxWorker({ repository, adapter: deliveryAdapter, clock });
-    const handler = createAcademyHandler({ store, checkout, deliveryWorker, adminToken: env.ACADEMY_ADMIN_TOKEN, allowedOrigins: origins });
-    return { store, client, checkout, repository, deliveryWorker, handler, allowedOrigins: origins, close: () => store.close() };
-  } catch (error) { store.close(); throw error; }
+    const handler = createAcademyHandler({ store, checkout, deliveryWorker, leadIntake, adminToken: env.ACADEMY_ADMIN_TOKEN, allowedOrigins: origins });
+    return { store, client, checkout, repository, deliveryWorker, leadIntake, handler, allowedOrigins: origins, close: () => { leadIntake?.close(); store.close(); } };
+  } catch (error) { leadIntake?.close(); store.close(); throw error; }
 }

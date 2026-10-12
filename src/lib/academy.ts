@@ -20,6 +20,7 @@ export type SeminarDate = {
   approvalStatus: string; published: boolean; minimumEnrollmentMet: boolean;
 };
 export type Catalog = {
+  leads?: { ready: boolean };
   dates: SeminarDate[];
   commerce: { mode: 'disabled' | 'simulation' | 'morning'; ready: boolean; bookingTermsApproved?: boolean };
   pricing: { launchPriceAgorot: number; regularPriceAgorot: number; activePrice?: string; currency: string };

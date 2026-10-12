@@ -30,7 +30,7 @@ async function body(req) {
   catch {throw new CommerceError('INVALID_JSON','הבקשה אינה תקינה.');}
 }
 
-export function createAcademyHandler({store,checkout,deliveryWorker,adminToken,allowedOrigins=['http://localhost:5173','http://127.0.0.1:5173','http://localhost:5174','http://127.0.0.1:5174','http://localhost:4173','http://127.0.0.1:4173']}={}) {
+export function createAcademyHandler({store,checkout,deliveryWorker,leadIntake,adminToken,allowedOrigins=['http://localhost:5173','http://127.0.0.1:5173','http://localhost:5174','http://127.0.0.1:5174','http://localhost:4173','http://127.0.0.1:4173']}={}) {
   if(adminToken && adminToken.length<32)throw new Error('Admin token must contain at least 32 characters.');
   const allowed = new Set(allowedOrigins);
   const limits=new Map();
@@ -58,7 +58,7 @@ export function createAcademyHandler({store,checkout,deliveryWorker,adminToken,a
       const admin=path.startsWith('/api/academy/admin/');
       if(admin&&!tokenMatches(bearer(req),adminToken)){rateLimit(req,'admin-auth',20);throw new CommerceError('UNAUTHORIZED','נדרש אימות מנהל.',401);}
       if(req.method!=='GET')rateLimit(req,'mutations');
-      if(req.method==='GET'&&path==='/api/academy/catalog'){send(res,200,{dates:await store.dates(),commerce:{...store.commerce,...(store.mode==='morning'?{ready:Boolean(checkout?.ready)}:{})},pricing:config});return;}
+      if(req.method==='GET'&&path==='/api/academy/catalog'){send(res,200,{dates:await store.dates(),commerce:{...store.commerce,...(store.mode==='morning'?{ready:Boolean(checkout?.ready)}:{})},pricing:config,leads:{ready:Boolean(leadIntake?.ready)}});return;}
       const orderMatch=path.match(/^\/api\/academy\/orders\/([^/]+)$/);
       if(req.method==='GET'&&orderMatch){send(res,200,await store.authorizedOrder(orderMatch[1],bearer(req)));return;}
       const notifyMatch=path.match(/^\/api\/academy\/payments\/morning\/notify\/([^/]+)$/);
@@ -76,6 +76,7 @@ export function createAcademyHandler({store,checkout,deliveryWorker,adminToken,a
       }
       if(['POST','PATCH'].includes(req.method)){
         const {data,raw}=await body(req);
+        if(req.method==='POST'&&path==='/api/academy/leads'){rateLimit(req,'lead-intake',10);if(!leadIntake?.ready)throw new CommerceError('LEADS_UNAVAILABLE','קליטת הפניות אינה זמינה כרגע.',503);send(res,200,await leadIntake.submit(data,req.headers['idempotency-key']));return;}
         if(req.method==='POST'&&path==='/api/academy/quote'){const {couponId,...publicQuote}=await store.quote(data);send(res,200,publicQuote);return;}
         if(req.method==='POST'&&path==='/api/academy/orders'){
           if(store.mode==='morning'&&!checkout?.ready)throw new CommerceError('PAYMENT_UNAVAILABLE','החיבור לסליקה עדיין אינו זמין.',503);
