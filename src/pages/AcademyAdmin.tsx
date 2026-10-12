@@ -48,7 +48,7 @@ const money = (amount: number) => new Intl.NumberFormat("he-IL", { style: "curre
 const seminarTitle = (id: string) => SEMINARS.find(s => s.id === id)?.title ?? id;
 const dateLabel = (date: string) => new Intl.DateTimeFormat("he-IL", { dateStyle: "medium", timeZone: "Asia/Jerusalem" }).format(new Date(`${date}T12:00:00+02:00`));
 const timestamp = (value: string | null) => value ? new Intl.DateTimeFormat("he-IL", { dateStyle: "short", timeStyle: "short", timeZone: "Asia/Jerusalem" }).format(new Date(value)) : ",";
-const emptyDate = (): DateDraft => ({ seminarId: SEMINARS[0].id, date: "", venue: "SOK, ראשון לציון, מיקום בתכנון", capacity: 12, status: "draft", published: false });
+const emptyDate = (): DateDraft => ({ seminarId: SEMINARS[0].id, date: "", venue: "הטרמינל לעיצוב, אהוד קינמון 32, בת ים", capacity: 12, status: "draft", published: false });
 const emptyCoupon = (): CouponDraft => ({ code: "", type: "percentage", value: 10, seminarIds: [], dateIds: [], startsAt: null, expiresAt: null, maxRedemptions: 1, perCustomerLimit: 1, active: false, notes: "" });
 
 export default function AcademyAdmin() {

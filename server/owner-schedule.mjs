@@ -11,7 +11,7 @@ export function applyOwnerSchedule(store, schedule, { apply = false } = {}) {
       if (matches.length > 1) throw new Error('Multiple active dates require individual review.');
       const before = matches[0];
       if (before) {
-        const exact = before.seminarId === item.seminarId && before.ownerScheduleReference === schedule.reference;
+        const exact = before.seminarId === item.seminarId && before.venue === schedule.venue && before.ownerScheduleReference === schedule.reference;
         if (exact) { dates.push({ date: item.date, seminarId: item.seminarId, changed: false }); continue; }
         const view = store.dateView(before);
         if (view.paidCount || view.pendingCount || before.approvalStatus === 'approved' || before.published) throw new Error('Published or reserved dates require individual review.');
@@ -20,7 +20,7 @@ export function applyOwnerSchedule(store, schedule, { apply = false } = {}) {
         id: before?.id ?? randomUUID(), seminarId: item.seminarId, date: item.date,
         venue: schedule.venue, capacity: 12, status: 'draft', approvalStatus: 'pending', published: false,
         ownerScheduleReference: schedule.reference,
-        sourceNote: 'Dates and seminar assignments supplied by the owner. Venue details are pending; no booking or payment approval inferred.',
+        sourceNote: 'Dates and seminar assignments supplied by the owner. Venue supplied by the owner; no booking checks or payment approval inferred.',
       }, before ?? {});
       if (before) store.save('dates', record);
       else store.db.prepare('INSERT INTO dates(id,data) VALUES (?,?)').run(record.id, JSON.stringify(record));
