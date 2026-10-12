@@ -171,6 +171,45 @@
           255
         ]
       }
+    },
+    {
+      "name": "levinsky-wingate",
+      "page": "https://www.l-w.ac.il/",
+      "asset": "https://www.l-w.ac.il/wp-content/uploads/2025/01/RGB_logo_1-copy-H.png",
+      "file": "levinsky-wingate.png",
+      "bytes": 10860,
+      "httpStatus": 200,
+      "evidence": {
+        "size": [
+          580,
+          197
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "sha256": "3a3b026d16f65770ba46a00eccd2a05f0519e322c21e5eee3f4abaa3e02ca948",
+        "source": "Original official header image observed in browser DOM and downloaded byte-identically"
+      }
+    },
+    {
+      "name": "touchstore",
+      "page": "https://www.touchstore.co.il/",
+      "asset": "https://www.touchstore.co.il/wp-content/uploads/2026/02/touch-logo.svg",
+      "file": "touchstore.svg",
+      "bytes": 42584,
+      "acquisition": "Original logo downloaded by ordinary browser after page loaded; direct HTTP remained403 and was not bypassed. Browser-reported size15929was incorrect; saved SVG measured42584bytes.",
+      "evidence": {
+        "viewBox": "0 0 431.59 63.28",
+        "fills": [
+          "#fff",
+          "none",
+          "#1ecad3"
+        ],
+        "sha256": "21b0d58e39f8ed951a9d51831b8a6f595a610be8d45020e2ad65d4a2327ae07d",
+        "source": "Original touch-logo SVG from official header, original paths/styles retained"
+      }
     }
   ]
 }

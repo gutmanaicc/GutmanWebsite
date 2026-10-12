@@ -8,6 +8,8 @@ export type ClientBrand = {
 // Only original assets from identified brands. Ron supplied the client relationships.
 // Asset provenance and unresolved names are recorded in docs/academy-client-brand-research.md.
 export const CLIENT_BRANDS: ClientBrand[] = [
+  { name: 'Touch Store', logo: '/clients/touchstore.svg', source: 'https://www.touchstore.co.il/', light: true },
+  { name: 'המרכז האקדמי לוינסקי־וינגייט', logo: '/clients/levinsky-wingate.png', source: 'https://www.l-w.ac.il/', light: true },
   { name: 'אלפא ספורט', logo: '/clients/alfa.svg', source: 'https://alfasport.co.il/' },
   { name: 'הדיה', logo: '/clients/hedia.png', source: 'https://hedia.co.il/', light: true },
   { name: 'Foundera', logo: '/clients/foundera.svg', source: 'https://www.foundera.co/', light: true },

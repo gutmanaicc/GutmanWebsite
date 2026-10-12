@@ -9,7 +9,7 @@ services:
     volumes:
       - academy_preview_media:/app/dist/videos/first-cohort:ro
   media-seed:
-    image: gutman-academy-preview-media:${GUTMAN_IMAGE_TAG:?Set the media image tag already built on this VPS}
+    image: gutman-academy-preview-media:${GUTMAN_MEDIA_IMAGE_TAG:-${GUTMAN_IMAGE_TAG:?Set the media image tag already built on this VPS}}
     pull_policy: never
     command: ['node', '/app/scripts/self-hosted-media-seed.mjs']
     restart: 'no'

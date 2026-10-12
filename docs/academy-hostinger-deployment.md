@@ -1,6 +1,6 @@
 # אתר Gutman ב־Hostinger — מצב Preview וחבילת פריסה
 
-האתר הבסיסי כבר רץ ב־VPS הקיים של Hostinger, image `1f06ce7ed426`, ומדווח healthy. `/healthz` מחזיר `status: ok`; קטלוג ה־API במצב disabled וללא מועדים מאושרים. בדיקת דפדפן של המפעיל אימתה את סדר 12 לוגואי הלקוחות, הסרטונים הקיימים וסמינר WhatsApp. **ה־Preview נגיש ב־HTTPS תקין; סרטון העדויות וחיבור מסחר אמיתי עדיין ממתינים להשלמה**; אין טענה שהמעבר לייצור הושלם.
+האתר רץ ב־VPS הקיים של Hostinger ומדווח healthy. `/healthz` מחזיר `status: ok`; קטלוג ה־API במצב disabled וללא מועדים מאושרים. העיצוב, סרטוני בלדי ונאלה וסמינר WhatsApp נבדקו בדפדפן. **ה־Preview נגיש ב־HTTPS תקין, וסרטון המלצות המחזור הראשון מוגש מהנפח הפרטי בשרת**. חיבור מסחר אמיתי עדיין ממתין להשלמה; המעבר לדומיין הייצור לא הושלם.
 
 גישה מאומתת ל־Docker Manager דרך Hostinger `proxy_execute` נמצאה. Traefik הקיים פועל ב־`network_mode: host`, עם כניסת `websecure` ו־resolver בשם `letsencrypt`. `academy-preview.srv1942778.hstgr.cloud` פותר ל־VPS ב־76.13.37.15. בקשת התעודה הראשונה חזרה עם ״Certificate not found״/404 ב־CA; המפעיל שינה רק את שם router של פרויקט ה־Preview ל־`tls2`. הניסיון הבא הצליח, ונבדק HTTPS עם אימות תעודה רגיל (ללא עקיפה): דף הבית 200, health 200, קטלוג 200, מנהל ללא אסימון 401 וקובץ וידאו קיים 200 עם MIME מתאים ו־noindex. אין restart או שינוי לשירותי Traefik/פרויקטים קיימים. בפריסת העדכון יש לשמר את router ה־Preview התקין והנפחים.
 
@@ -76,7 +76,7 @@ docker compose --env-file deploy/hostinger/.env.preview -f deploy/hostinger/comp
 
 ## סרטון המחזור הראשון — באתר בלבד, ללא GitHub ציבורי או אחסון ביניים
 
-הבעלים בחרו במפורש לא לפרסם את הקובץ ב־GitHub. `public/videos/first-cohort/` מוחרג גם מ־Git וגם מ־Docker build context. אין source video או poster בינארי חדש במאגר, בתמונה, ב־Composio artifacts או ב־S3. מקור הקובץ הוא קובץ Drive המקורי; ה־Drive connector נותן כתובת הורדה חתומה זמנית ב־`sdmntprnortheu.oaiusercontent.com`, שהיא stream של המקור ולא יעד upload חדש.
+הבעלים בחרו במפורש לא לפרסם את הקובץ ב־GitHub. `public/videos/first-cohort/` מוחרג גם מ־Git וגם מ־Docker build context. אין source video או poster בינארי חדש במאגר, בתמונה, ב־Composio artifacts או ב־S3. מקור הקובץ הוא קובץ Drive המקורי; ה־Drive connector נותן כתובת הורדה חתומה זמנית תחת `sdmnt*.oaiusercontent.com`, שהיא stream של המקור ולא יעד upload חדש. אזור השרת משתנה בין בקשות; הפניות של כתובת stream מותרות רק בתוך אותו hostname.
 
 המסלול: מקור Drive/stream מאושר → named volume פרטי של פרויקט Hostinger → transcode מקומי → שני קבצים באתר. `scripts/self-hosted-media-seed.mjs` מקבל רק `ACADEMY_TESTIMONIAL_SOURCE` ו־`ACADEMY_TESTIMONIAL_SOURCE_SHA256`. יש לקבל URL טרי **אחרי בניית שתי התמונות**, ממש לפני ה־seed, משום שהוא פג לאחר כחמש דקות. אין להעביר URL מדיה ל־builder או ל־build args, ואין להדפיס אותו בלוגים או בקשות תמיכה.
 
