@@ -30,7 +30,7 @@ async function body(req) {
   catch {throw new CommerceError('INVALID_JSON','הבקשה אינה תקינה.');}
 }
 
-export function createAcademyHandler({store,checkout,adminToken,allowedOrigins=['http://localhost:5173','http://127.0.0.1:5173','http://localhost:5174','http://127.0.0.1:5174','http://localhost:4173','http://127.0.0.1:4173']}={}) {
+export function createAcademyHandler({store,checkout,deliveryWorker,adminToken,allowedOrigins=['http://localhost:5173','http://127.0.0.1:5173','http://localhost:5174','http://127.0.0.1:5174','http://localhost:4173','http://127.0.0.1:4173']}={}) {
   if(adminToken && adminToken.length<32)throw new Error('Admin token must contain at least 32 characters.');
   const allowed = new Set(allowedOrigins);
   const limits=new Map();
@@ -70,6 +70,7 @@ export function createAcademyHandler({store,checkout,adminToken,allowedOrigins=[
         await checkout.refresh(notifyMatch[1]);send(res,200,{received:true});return;
       }
       if(req.method==='GET'&&admin){
+        if(path==='/api/academy/admin/delivery-readiness'){send(res,200,deliveryWorker?.getReadiness()??{ready:false,durableClaims:false});return;}
         const routes={summary:async()=>await store.summary(),dates:async()=>({dates:await store.dates(true)}),coupons:async()=>({coupons:await store.coupons()}),registrations:async()=>({registrations:await store.all('registrations')}),orders:async()=>({orders:(await store.summary()).orders}),revenue:async()=>await store.revenue(),outbox:async()=>({outbox:await store.all('outbox')})};
         const endpoint=path.slice('/api/academy/admin/'.length);if(routes[endpoint]){send(res,200,await routes[endpoint]());return;}
       }
@@ -93,6 +94,12 @@ export function createAcademyHandler({store,checkout,adminToken,allowedOrigins=[
           send(res,200,await store.processSignedEvent(raw,req.headers));return;
         }
         if(admin){
+          if(req.method==='POST'&&path==='/api/academy/admin/outbox/drain'){
+            if(!deliveryWorker?.ready)throw new CommerceError('DELIVERY_UNAVAILABLE','שליחת הודעות השירות עדיין אינה זמינה.',503);
+            const limit=data.limit??20;
+            if(!Number.isSafeInteger(limit)||limit<1||limit>20)throw new CommerceError('INVALID_LIMIT','מספר ההודעות אינו תקין.');
+            send(res,200,await deliveryWorker.drain(limit));return;
+          }
           if(path==='/api/academy/admin/dates'&&req.method==='POST'){send(res,201,{date:await store.createDate(data)});return;}
           if(path==='/api/academy/admin/coupons'&&req.method==='POST'){send(res,201,{coupon:await store.createCoupon(data)});return;}
           const dateMatch=path.match(/^\/api\/academy\/admin\/dates\/([^/]+)(?:\/(approve|reject))?$/);

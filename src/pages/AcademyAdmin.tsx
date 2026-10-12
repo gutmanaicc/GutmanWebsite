@@ -65,6 +65,7 @@ export default function AcademyAdmin() {
   const [couponDraft, setCouponDraft] = useState<CouponDraft>(emptyCoupon);
   const [couponId, setCouponId] = useState<string | null>(null);
   const [checks, setChecks] = useState<Record<string, boolean>>({});
+  const [deliveryReady, setDeliveryReady] = useState(false);
 
   useEffect(() => {
     document.title = "ניהול סמינרים | Gutman Academy";
@@ -83,14 +84,14 @@ export default function AcademyAdmin() {
       ...(body === undefined ? {} : { body: JSON.stringify(body) }), cache: "no-store",
     });
     const result = await response.json().catch(() => null);
-    if (!response.ok) throw new Error(response.status === 401 || response.status === 403 ? "אסימון הניהול אינו תקף או חסר הרשאה." : result?.error?.message ?? (typeof result?.error === "string" ? result.error : "הפעולה לא הושלמה. בדקו שהשרת המקומי פעיל ונסו שוב."));
+    if (!response.ok) throw new Error(response.status === 401 || response.status === 403 ? "אסימון הניהול אינו תקף או חסר הרשאה." : result?.error?.message ?? (typeof result?.error === "string" ? result.error : "הפעולה לא הושלמה. נסו שוב בעוד רגע."));
     if (!result) throw new Error("השרת החזיר תשובה לא תקינה.");
     return result as T;
   }
 
   async function load(authToken: string) {
-    const result = await request<Summary>("/summary", authToken);
-    if (activeToken.current === authToken) setSummary(result);
+    const [result, delivery] = await Promise.all([request<Summary>("/summary", authToken), request<{ ready: boolean }>("/delivery-readiness", authToken)]);
+    if (activeToken.current === authToken) { setSummary(result); setDeliveryReady(delivery.ready === true); }
   }
 
   async function login(event: FormEvent) {
@@ -101,15 +102,25 @@ export default function AcademyAdmin() {
     finally { setBusy(false); }
   }
 
-  async function mutate(path: string, body: unknown, method = "POST", success = "השינוי נשמר בשרת המקומי.") {
+  async function mutate(path: string, body: unknown, method = "POST", success = "השינוי נשמר.") {
     setBusy(true); setError(""); setMessage("");
     try { await request(path, token, body, method); await load(token); setMessage(success); return true; }
     catch (cause) { setError(cause instanceof Error ? cause.message : "הפעולה נכשלה."); return false; }
     finally { setBusy(false); }
   }
 
+  async function drainMessages() {
+    setBusy(true); setError(""); setMessage("");
+    try {
+      const report = await request<{ sent: number; failed: number; reviewRequired: number }>("/outbox/drain", token, { limit: 20 });
+      await load(token);
+      setMessage(`ספק הדיוור קיבל ${report.sent} הודעות. ${report.failed} נכשלו; ${report.reviewRequired} דורשות בדיקה. אישור ספק אינו אישור מסירה לנמען.`);
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "לא ניתן לשלוח כעת."); }
+    finally { setBusy(false); }
+  }
+
   async function refresh() { setBusy(true); setError(""); try { await load(token); } catch (cause) { setError(cause instanceof Error ? cause.message : "הרענון נכשל."); } finally { setBusy(false); } }
-  function logout() { activeToken.current = ""; setToken(""); setTokenInput(""); setSummary(null); setChecks({}); setError(""); setMessage(""); setDateDraft(emptyDate()); setDateId(null); setCouponDraft(emptyCoupon()); setCouponId(null); }
+  function logout() { activeToken.current = ""; setToken(""); setTokenInput(""); setSummary(null); setDeliveryReady(false); setChecks({}); setError(""); setMessage(""); setDateDraft(emptyDate()); setDateId(null); setCouponDraft(emptyCoupon()); setCouponId(null); }
   function editDate(entry: DateEntry) { setDateId(entry.id); setDateDraft({ seminarId: entry.seminarId, date: entry.date, venue: entry.venue, capacity: entry.capacity, status: entry.status, published: entry.published }); setChecks({}); requestAnimationFrame(() => document.getElementById("academy-date-editor")?.focus()); }
   function editCoupon(entry: Coupon) { setCouponId(entry.id); const { id: _id, totalRedemptions: _redemptions, ...draft } = entry; setCouponDraft(draft); requestAnimationFrame(() => document.getElementById("academy-coupon-editor")?.focus()); }
   const dateName = (id: string) => { const entry = summary?.dates.find(d => d.id === id); return entry ? `${dateLabel(entry.date)} · ${seminarTitle(entry.seminarId)}` : id; };
@@ -146,7 +157,7 @@ export default function AcademyAdmin() {
       </section>}
       {summary && tab === "registrations" && <section className="academy-admin-panel"><h2>הרשמות ותשלומים בסביבה המקומית</h2><p>מידע אישי מוגן. אין להעביר רשומות לאנליטיקה או לפרסם צילומי מסך עם פרטי משתתפים.</p><div className="academy-admin-table"><table><thead><tr><th>משתתף</th><th>מועד</th><th>מצב</th><th>סכום</th><th>הזמנה / עסקה</th></tr></thead><tbody>{summary.registrations.map(r => <tr key={r.id}><td>{r.customer.name}<br /><span dir="ltr">{r.customer.email}</span><br /><span dir="ltr">{r.customer.phone}</span></td><td>{dateName(r.dateId)}</td><td>{r.status === "confirmed" ? "מאושר" : r.status === "cancelled" ? "בוטל" : r.status}<br />{timestamp(r.createdAt)}</td><td>{money(r.totalAgorot)}<br />{r.couponCode ? `קופון: ${r.couponCode}` : "ללא קופון"}</td><td><span dir="ltr">{r.orderId}</span><br /><span dir="ltr">{r.transactionId}</span></td></tr>)}</tbody></table>{summary.registrations.length === 0 && <p>אין הרשמות. לא הוזנו משתתפים פיקטיביים.</p>}</div></section>}
       {summary && tab === "revenue" && <section className="academy-admin-panel"><h2>הכנסות סימולציה</h2><div className="academy-admin-stats"><p>ברוטו<strong>{money(summary.revenue.grossAgorot)}</strong></p><p>החזרים<strong>{money(summary.revenue.refundedAgorot)}</strong></p><p>נטו<strong>{money(summary.revenue.netAgorot)}</strong></p></div><h3>לפי סמינר</h3>{summary.revenue.bySeminar.length ? summary.revenue.bySeminar.map(r => <p key={r.seminarId}>{seminarTitle(r.seminarId)} · {r.paidCount} שילמו · {money(r.totalAgorot)}</p>) : <p>אין הכנסות רשומות.</p>}<h3>לפי מועד</h3>{summary.revenue.byDate.map(r => <p key={r.dateId}>{dateName(r.dateId)} · {r.paidCount} שילמו · {money(r.totalAgorot)}</p>)}<p>הדוח מקומי ואינו דוח חשבונאי או התאמה ל־Morning/Grow.</p></section>}
-      {summary && tab === "outbox" && <section className="academy-admin-panel"><h2>תור אישורים, הכנה ותזכורות</h2><p>תור האירועים מאפשר לבדוק תוכן וסטטוס. ״ממתין״ אינו אישור מסירה. שליחה אמיתית דורשת חיבור ספק ותהליך עבודה פעיל.</p>{summary.outbox.length === 0 && <p>אין הודעות בתור.</p>}{summary.outbox.map(item => <article key={item.id} className="academy-admin-date"><h3>{item.payload.subject ?? item.kind}</h3><p>סוג: {item.kind} · מצב: {item.status === "pending" ? "ממתין" : item.status === "sent" ? "נשלח לפי דיווח השרת" : item.status === "failed" ? "נכשל" : item.status} · ניסיונות: {item.attempts}</p><p>נמען: <span dir="ltr">{item.payload.to ?? "לא צוין"}</span> · מועד ניסיון הבא: {timestamp(item.nextAttemptAt)}</p>{item.lastError && <p role="status">שגיאת ספק: {item.lastError}</p>}<details><summary>תוכן ההודעה</summary><p className="academy-admin-message">{item.payload.text ?? "אין תוכן טקסט זמין."}</p></details></article>)}</section>}
+      {summary && tab === "outbox" && <section className="academy-admin-panel"><h2>תור אישורים, הכנה ותזכורות</h2><p>תור האירועים מאפשר לבדוק תוכן וסטטוס. ״ממתין״ אינו אישור מסירה. שליחה אמיתית דורשת חיבור ספק ותהליך עבודה פעיל.</p><button type="button" disabled={busy || !deliveryReady} onClick={drainMessages}>שליחת הודעות שירות שהגיע מועדן</button>{summary.outbox.length === 0 && <p>אין הודעות בתור.</p>}{summary.outbox.map(item => <article key={item.id} className="academy-admin-date"><h3>{item.payload.subject ?? item.kind}</h3><p>סוג: {item.kind} · מצב: {item.status === "pending" ? "ממתין" : item.status === "sent" ? "התקבל אצל ספק הדיוור" : item.status === "failed" ? "נכשל" : item.status} · ניסיונות: {item.attempts}</p><p>נמען: <span dir="ltr">{item.payload.to ?? "לא צוין"}</span> · מועד ניסיון הבא: {timestamp(item.nextAttemptAt)}</p>{item.lastError && <p role="status">שגיאת ספק: {item.lastError}</p>}<details><summary>תוכן ההודעה</summary><p className="academy-admin-message">{item.payload.text ?? "אין תוכן טקסט זמין."}</p></details></article>)}</section>}
     </>}
   </section>;
 }

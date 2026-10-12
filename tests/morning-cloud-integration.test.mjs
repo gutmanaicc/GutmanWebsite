@@ -45,6 +45,12 @@ async function setup(t, extra = {}) {
     calls.push({ url, method: options.method, body });
     assert.equal(options.redirect, 'error');
     const response = data => new Response(JSON.stringify(data), { headers: { 'content-type': 'application/json' } });
+    if (url === 'https://api.resend.com/emails') {
+      assert.equal(options.headers.Authorization, 'Bearer mock-only-resend-secret');
+      assert.ok(options.headers['Idempotency-Key'].startsWith('academy-outbox-'));
+      assert.equal(body.from, 'academy@example.test'); assert.deepEqual(body.to, ['cloud-buyer@example.test']);
+      return response({ id: '11234567-89ab-4cde-8fab-0123456789ab' });
+    }
     if (url === 'https://api.morning.co/idp/v1/oauth/token') return response({ accessToken: 'mock-provider-bearer', tokenType: 'Bearer', expiresAt: Math.floor(now / 1000) + 3600 });
     assert.equal(options.headers.Authorization, 'Bearer mock-provider-bearer');
     if (url === 'https://api.greeninvoice.co.il/api/v1/payments/form') {
@@ -87,7 +93,7 @@ async function setup(t, extra = {}) {
   const orderBody = { dateId, termsAccepted: true, customer: { name: 'Mock cloud participant', email: 'cloud-buyer@example.test', phone: '0501234567' } };
   const create = () => request('/orders', { method: 'POST', data: orderBody, headers: { 'idempotency-key': 'mock-durable-cloud-order' } });
   return { request, create, runtime, backend, calls, forms, dateId, setPaid: value => { paid = value; }, setDocument: value => { returnedDocument = value; }, advance: ms => { now += ms; }, redirectProvider: () => { providerRedirect = true; }, restart: async () => {
-    const restarted = createCloudRuntime(ENV, { backend, fetchImpl: providerFetch, clock: () => now });
+    const restarted = createCloudRuntime({ ...ENV, ...extra }, { backend, fetchImpl: providerFetch, clock: () => now });
     return { runtime: restarted, request: await serve(restarted) };
   } };
 }
@@ -163,4 +169,33 @@ test('provider redirects suppress checkout and an idempotent HTTP retry cannot c
   assert.equal(first.value.checkoutState, 'unknown'); assert.equal(first.value.checkoutUrl, null);
   assert.equal((await context.create()).value.checkoutState, 'unknown'); assert.equal(context.forms.length, 1);
   assert.equal((await context.runtime.store.all('registrations')).length, 0);
+});
+
+
+test('owner-only delivery endpoints fail closed by default; explicit approved mock service delivery returns counts without private payloads', async t => {
+  const disabled = await setup(t);
+  assert.equal((await disabled.request('/admin/outbox/drain', { method: 'POST', data: {} })).status, 401);
+  assert.equal((await disabled.request('/admin/delivery-readiness')).status, 401);
+  const readiness = await disabled.request('/admin/delivery-readiness', { token: ADMIN });
+  assert.equal(readiness.status, 200); assert.equal(readiness.value.ready, false);
+  assert.equal((await disabled.request('/admin/outbox/drain', { method: 'POST', token: ADMIN, data: {} })).status, 503);
+  assert.equal(disabled.calls.filter(call => call.url.includes('api.resend.com')).length, 0);
+
+  const enabled = await setup(t, { RESEND_API_KEY: 'mock-only-resend-secret', ACADEMY_EMAIL_FROM: 'academy@example.test', ACADEMY_EMAIL_DELIVERY_ENABLED: '1', ACADEMY_EMAIL_SENDER_VERIFIED: '1', ACADEMY_EMAIL_APPROVED_KINDS: 'confirmation' });
+  const order = (await enabled.create()).value; enabled.setPaid(true);
+  assert.equal((await enabled.request(`/orders/${order.orderId}/reconcile`, { method: 'POST', token: order.orderAccessToken, data: {} })).value.status, 'paid');
+  assert.equal((await enabled.request('/admin/outbox/drain', { method: 'POST', data: {} })).status, 401);
+  assert.equal(enabled.calls.filter(call => call.url.includes('api.resend.com')).length, 0);
+  assert.equal((await enabled.request('/admin/outbox/drain', { method: 'POST', token: ADMIN, data: { limit: 21 } })).status, 400);
+  const drained = await enabled.request('/admin/outbox/drain', { method: 'POST', token: ADMIN, data: { limit: 10 } });
+  assert.equal(drained.status, 200); assert.equal(drained.value.sent, 1); assert.equal(drained.value.claimed, 1);
+  assert.equal(enabled.calls.filter(call => call.url.includes('api.resend.com')).length, 1);
+  const report = JSON.stringify(drained.value);
+  assert.ok(!report.includes('cloud-buyer')); assert.ok(!report.includes('Mock cloud participant')); assert.ok(!report.includes('mock-only-resend-secret')); assert.ok(!report.includes(order.orderId));
+  const messages = await enabled.runtime.store.all('outbox');
+  assert.equal(messages.find(item => item.kind === 'confirmation').deliveryStatus, 'accepted');
+  assert.equal(messages.find(item => item.kind === 'crm_registration').status, 'pending');
+  assert.equal(messages.find(item => item.kind === 'preparation').status, 'pending');
+  assert.equal((await enabled.request('/admin/outbox/drain', { method: 'POST', token: ADMIN, data: {} })).value.claimed, 0);
+  assert.equal(enabled.calls.filter(call => call.url.includes('api.resend.com')).length, 1);
 });

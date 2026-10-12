@@ -6,6 +6,8 @@ import { MorningCheckoutAdapter } from './morning-checkout-adapter.mjs';
 import { DurableCommerceRepository } from './durable-commerce.mjs';
 import { BlobCommerceBackend } from './blob-commerce-backend.mjs';
 import { PersistentCommerceService } from './persistent-commerce-service.mjs';
+import { createResendDeliveryAdapter } from './resend-delivery-adapter.mjs';
+import { DurableOutboxWorker } from './durable-outbox-worker.mjs';
 
 /** Lazy runtime: missing credentials/storage cannot open purchases or persist orders on temporary disk. */
 export function createCloudRuntime(env = process.env, { backend, fetchImpl = globalThis.fetch, clock = Date.now } = {}) {
@@ -33,6 +35,8 @@ export function createCloudRuntime(env = process.env, { backend, fetchImpl = glo
     store = new CommerceStore({ mode: 'disabled', clock });
   }
   const checkout = new HostedCheckout({ store, adapter, publicOrigin });
-  const handler = createAcademyHandler({ store, checkout, adminToken: storageConfigured ? env.ACADEMY_ADMIN_TOKEN : undefined, allowedOrigins: origins });
-  return { handler, store, checkout, client, storageConfigured };
+  const deliveryAdapter = createResendDeliveryAdapter(env, { fetchImpl });
+  const deliveryWorker = storageConfigured ? new DurableOutboxWorker({ repository: store.repository, adapter: deliveryAdapter, clock }) : null;
+  const handler = createAcademyHandler({ store, checkout, deliveryWorker, adminToken: storageConfigured ? env.ACADEMY_ADMIN_TOKEN : undefined, allowedOrigins: origins });
+  return { handler, store, checkout, client, storageConfigured, deliveryWorker };
 }
