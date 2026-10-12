@@ -1,0 +1,41 @@
+# Hostinger Docker Manager pulls service images before deployment and cannot
+# build an unpublished service image directly. This dedicated one-shot project
+# builds ONLY the reviewed, commit-pinned academy image via the existing daemon.
+# Run separately for runtime and media-tools; never pass media source URLs here.
+services:
+  image-build:
+    image: docker:27.5.1-cli
+    restart: 'no'
+    init: true
+    user: '0:0'
+    read_only: true
+    environment:
+      DOCKER_HOST: unix:///var/run/docker.sock
+      BUILDX_CONFIG: /tmp/academy-buildx
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    command:
+      - docker
+      - build
+      - --target
+      - ${GUTMAN_BUILD_TARGET:-runtime}
+      - --build-arg
+      - GUTMAN_SOURCE_REVISION=${GUTMAN_SOURCE_REVISION:?Set the full reviewed commit SHA}
+      - --build-arg
+      - VITE_ACADEMY_TESTIMONIAL_ENABLED=${VITE_ACADEMY_TESTIMONIAL_ENABLED:-0}
+      - --file
+      - deploy/hostinger/Dockerfile
+      - --tag
+      - ${GUTMAN_BUILD_IMAGE:-gutman-academy-preview}:${GUTMAN_IMAGE_TAG:?Set the reviewed image tag}
+      - ${GUTMAN_BUILD_CONTEXT:?Set the authorized HTTPS Git context pinned to full commit SHA}
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 256m
+    cpus: 0.25
+    pids_limit: 100
+    labels:
+      - traefik.enable=false

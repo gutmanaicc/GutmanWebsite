@@ -22,3 +22,6 @@ playwright-report/
 # Standalone server build output and private deployment environment
 .self-hosted-api/
 deploy/hostinger/.env.preview
+
+# Owner-requested first-cohort testimonial media: own VPS volume only, never Git.
+public/videos/first-cohort/

@@ -5,6 +5,7 @@ import { ACADEMY_CONFIG } from '../lib/academy';
 import IntroVideo from '../components/academy/IntroVideo';
 import ClientLogos from '../components/academy/ClientLogos';
 import ClientWorkPortfolio from '../components/academy/ClientWorkPortfolio';
+import AcademyTestimonialVideo from '../components/academy/AcademyTestimonialVideo';
 import { Closing, Examples, FAQ, Founder, Proof, SectionHeading, SeminarCards } from '../components/academy/Content';
 
 import { useEffect } from 'react';
@@ -21,6 +22,7 @@ export default function HomeSections() {
     <ClientWorkPortfolio />
     <section className="academy-section academy-day"><div className="academy-container"><div className="academy-heading-row"><SectionHeading eyebrow="יום באקדמיה" title={"זמן ללמוד.\nובעיקר, זמן לעשות."} /><p className="academy-source-note">מסגרת היום, לדוגמה. התוכנית המפורטת וההפסקה מופיעות בעמוד כל סמינר.</p></div><ol className="academy-timeline">{ACADEMY_CONTENT.timeline.map(item => <li key={item.time}><time dir="ltr">{item.time}</time><div><h3>{item.title}</h3><p>{item.text}</p></div></li>)}</ol></div></section>
     <Proof />
+    {import.meta.env.VITE_ACADEMY_TESTIMONIAL_ENABLED === '1' && <AcademyTestimonialVideo />}
     <section className="academy-section academy-faq-section"><div className="academy-container academy-faq-layout"><SectionHeading eyebrow="לפני שמגיעים" title={"שאלות טובות.\nתשובות ברורות."} description="כל מה שכדאי לדעת לפני שבוחרים סמינר." /><FAQ /></div></section>
     <ClientLogos />
     <Founder />

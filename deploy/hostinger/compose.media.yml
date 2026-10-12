@@ -1,0 +1,44 @@
+# OPTIONAL overlay: direct original Drive download to this project's own media
+# volume, then local transcoding. No media files enter Git or any artifact store.
+services:
+  academy:
+    build:
+      args:
+        VITE_ACADEMY_TESTIMONIAL_ENABLED: '1'
+    depends_on:
+      media-seed:
+        condition: service_completed_successfully
+    volumes:
+      - academy_preview_media:/app/dist/videos/first-cohort:ro
+  media-seed:
+    image: gutman-academy-preview-media:${GUTMAN_IMAGE_TAG:-node24}
+    build:
+      context: ${GUTMAN_BUILD_CONTEXT:-../..}
+      dockerfile: deploy/hostinger/Dockerfile
+      target: media-tools
+      args:
+        GUTMAN_SOURCE_REVISION: ${GUTMAN_SOURCE_REVISION:-uncommitted-local}
+    command: ['node', '/app/scripts/self-hosted-media-seed.mjs']
+    restart: 'no'
+    init: true
+    healthcheck:
+      disable: true
+    environment:
+      ACADEMY_TESTIMONIAL_SOURCE: ${ACADEMY_TESTIMONIAL_SOURCE:-}
+      ACADEMY_TESTIMONIAL_SOURCE_SHA256: ${ACADEMY_TESTIMONIAL_SOURCE_SHA256:-}
+    volumes:
+      - academy_preview_media:/media
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 768m
+    cpus: 0.75
+    pids_limit: 100
+    labels:
+      - traefik.enable=false
+volumes:
+  academy_preview_media:

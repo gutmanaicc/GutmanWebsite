@@ -21,3 +21,6 @@ attachments
 docs
 tests
 legacy
+
+# First-cohort source/derived files are seeded directly into the VPS volume.
+public/videos/first-cohort

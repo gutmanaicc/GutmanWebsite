@@ -5,6 +5,7 @@ services:
       # Local checkout: ../..; Hostinger API: authorized Git URL#full40hexcommit.
       context: ${GUTMAN_BUILD_CONTEXT:-../..}
       dockerfile: deploy/hostinger/Dockerfile
+      target: runtime
       args:
         GUTMAN_SOURCE_REVISION: ${GUTMAN_SOURCE_REVISION:-uncommitted-local}
     image: gutman-academy-preview:${GUTMAN_IMAGE_TAG:-node24}
