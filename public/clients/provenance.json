@@ -1,0 +1,176 @@
+{
+  "relationshipSource": "Client relationships confirmed by Ron Gutman in the project conversation; logos sourced from the identified brands' own sites.",
+  "assets": [
+    {
+      "name": "alfa",
+      "page": "https://alfasport.co.il/",
+      "asset": "https://alfasport.co.il/wp-content/themes/nr-custom-theme/assets/svg/logo.svg",
+      "file": "alfa.svg",
+      "bytes": 8818,
+      "evidence": {
+        "viewBox": "0 0 148.116 53.735",
+        "fills": [
+          "",
+          "#2C2B2C"
+        ]
+      }
+    },
+    {
+      "name": "hedia",
+      "page": "https://hedia.co.il/",
+      "asset": "https://hedia.co.il/wp-content/uploads/2026/04/logo-hedia-2-1024x370.png",
+      "file": "hedia.png",
+      "bytes": 60565,
+      "evidence": {
+        "size": [
+          1024,
+          370
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ]
+      }
+    },
+    {
+      "name": "foundera",
+      "page": "https://www.foundera.co/",
+      "asset": "https://cdn.prod.website-files.com/67697994ecf082b10bc8ba38/676c2a5f5e0e0e8e110309d8_site-logo.svg",
+      "file": "foundera.svg",
+      "bytes": 4190,
+      "evidence": {
+        "viewBox": "0 0 174 20",
+        "fills": [
+          "#FFD400",
+          "none",
+          "white"
+        ]
+      }
+    },
+    {
+      "name": "cognyte",
+      "page": "https://www.cognyte.com/",
+      "asset": "https://www.cognyte.com/wp-content/uploads/2022/02/Cognyte_Logo.svg",
+      "file": "cognyte.svg",
+      "bytes": 2094,
+      "evidence": {
+        "viewBox": "0 0 140 36",
+        "fills": [
+          ""
+        ]
+      }
+    },
+    {
+      "name": "jwpei",
+      "page": "https://www.jwpei.com/",
+      "asset": "https://www.jwpei.com/cdn/shop/files/logo__1_8b863ed0-33a7-4d01-9c67-dcb65d2a2900.png?v=1752053961&width=220",
+      "file": "jwpei.png",
+      "bytes": 6346,
+      "evidence": {
+        "size": [
+          220,
+          87
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ]
+      }
+    },
+    {
+      "name": "reco",
+      "page": "https://www.reco.ai/",
+      "asset": "https://cdn.prod.website-files.com/6ab3638e06712682cead53d2/6ab366cafa75fdb5a73d7e5b_reco-portable-logo.svg",
+      "file": "reco.svg",
+      "bytes": 3551,
+      "evidence": {
+        "viewBox": "0 0 103 37",
+        "fills": [
+          "",
+          "#B5E600",
+          "none",
+          "white"
+        ]
+      }
+    },
+    {
+      "name": "lasso",
+      "page": "https://www.lasso.security/",
+      "asset": "inline official header SVG",
+      "file": "lasso.svg",
+      "bytes": 6056,
+      "evidence": {
+        "viewBox": "0 0 153 28",
+        "fills": [
+          "#540A08",
+          "none"
+        ]
+      }
+    },
+    {
+      "name": "sodastream",
+      "page": "https://sodastream.com/",
+      "asset": "inline official header SVG",
+      "file": "sodastream.svg",
+      "bytes": 5464,
+      "evidence": {
+        "viewBox": "0 0 133 17",
+        "fills": [
+          "",
+          "#002349",
+          "none",
+          "white"
+        ]
+      },
+      "normalization": "Normalized HTML-extracted clippath tag to SVG clipPath; original paths and dimensions unchanged."
+    },
+    {
+      "name": "maelys",
+      "page": "https://www.maelyscosmetics.com/",
+      "asset": "inline official header SVG",
+      "file": "maelys.svg",
+      "bytes": 22289,
+      "evidence": {
+        "viewBox": "0 0 114 28",
+        "fills": [
+          "#120D0E",
+          "none"
+        ]
+      }
+    },
+    {
+      "name": "baladi",
+      "page": "https://baladi.co.il/",
+      "asset": "https://framerusercontent.com/images/BUOha0D0yyzayLdmj7thWRBcYB8.svg?width=120&height=118",
+      "file": "baladi.svg",
+      "bytes": 2738
+    },
+    {
+      "name": "qodo",
+      "page": "https://www.qodo.ai/media-downloads/",
+      "asset": "https://www.qodo.ai/wp-content/uploads/2025/05/main_logo.zip",
+      "file": "qodo.svg",
+      "bytes": 7315
+    },
+    {
+      "name": "nalla",
+      "page": "https://www.nalla.co.il/",
+      "asset": "https://admin.nalla.co.il/wp-content/uploads/2025/09/logo-19.png",
+      "file": "nalla.png",
+      "bytes": 4440,
+      "evidence": {
+        "mode": "RGBA",
+        "size": [
+          223,
+          64
+        ],
+        "alpha": [
+          0,
+          255
+        ]
+      }
+    }
+  ]
+}

@@ -18,3 +18,7 @@ assets-raw/
 artifacts/
 test-results/
 playwright-report/
+
+# Standalone server build output and private deployment environment
+.self-hosted-api/
+deploy/hostinger/.env.preview

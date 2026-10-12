@@ -1,0 +1,72 @@
+name: gutman-academy-preview
+services:
+  academy:
+    build:
+      # Local checkout: ../..; Hostinger API: authorized Git URL#full40hexcommit.
+      context: ${GUTMAN_BUILD_CONTEXT:-../..}
+      dockerfile: deploy/hostinger/Dockerfile
+      args:
+        GUTMAN_SOURCE_REVISION: ${GUTMAN_SOURCE_REVISION:-uncommitted-local}
+    image: gutman-academy-preview:${GUTMAN_IMAGE_TAG:-node24}
+    restart: unless-stopped
+    init: true
+    # Hostinger's environment string provides Compose interpolation. Explicit
+    # forwarding works without an env_file on the remote Docker manager.
+    environment:
+      NODE_ENV: production
+      PORT: '3000'
+      ACADEMY_DB_PATH: /data/academy.sqlite
+      ACADEMY_PREVIEW: '1'
+      ACADEMY_PUBLIC_ORIGIN: ${ACADEMY_PUBLIC_ORIGIN:-https://academy-preview.srv1942778.hstgr.cloud}
+      ACADEMY_ALLOWED_ORIGINS: ${ACADEMY_ALLOWED_ORIGINS:-https://academy-preview.srv1942778.hstgr.cloud}
+      ACADEMY_ADMIN_TOKEN: ${ACADEMY_ADMIN_TOKEN:-}
+      ACADEMY_ORDER_SECRET: ${ACADEMY_ORDER_SECRET:-}
+      ACADEMY_PAYMENT_MODE: ${ACADEMY_PAYMENT_MODE:-disabled}
+      ACADEMY_BOOKING_TERMS_APPROVED: ${ACADEMY_BOOKING_TERMS_APPROVED:-0}
+      MORNING_API_ID: ${MORNING_API_ID:-}
+      MORNING_API_SECRET: ${MORNING_API_SECRET:-}
+      MORNING_WEBHOOK_SECRET: ${MORNING_WEBHOOK_SECRET:-}
+      MORNING_ENVIRONMENT: ${MORNING_ENVIRONMENT:-production}
+      MORNING_BUSINESS_TAX_ID: ${MORNING_BUSINESS_TAX_ID:-}
+      MORNING_CHECKOUT_ORIGINS: ${MORNING_CHECKOUT_ORIGINS:-}
+      MORNING_MERCHANT_VERIFIED: ${MORNING_MERCHANT_VERIFIED:-0}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      ACADEMY_EMAIL_FROM: ${ACADEMY_EMAIL_FROM:-}
+      ACADEMY_EMAIL_DELIVERY_ENABLED: ${ACADEMY_EMAIL_DELIVERY_ENABLED:-0}
+      ACADEMY_EMAIL_SENDER_VERIFIED: ${ACADEMY_EMAIL_SENDER_VERIFIED:-0}
+      ACADEMY_EMAIL_APPROVED_KINDS: ${ACADEMY_EMAIL_APPROVED_KINDS:-}
+      FIREBERRY_TOKEN: ${FIREBERRY_TOKEN:-}
+      FIREBERRY_OBJECT_TYPE: ${FIREBERRY_OBJECT_TYPE:-1}
+      FIREBERRY_FIELD_MAP: ${FIREBERRY_FIELD_MAP:-}
+      LEAD_DIAG_KEY: ${LEAD_DIAG_KEY:-}
+      ALLOW_UNCONFIGURED_LEADS: ${ALLOW_UNCONFIGURED_LEADS:-0}
+      LEAD_TIMEOUT_MS: ${LEAD_TIMEOUT_MS:-10000}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-hostinger-preview}
+      ALERT_EMAIL_FROM: ${ALERT_EMAIL_FROM:-}
+      ALERT_EMAIL_TO: ${ALERT_EMAIL_TO:-}
+    volumes:
+      - academy_preview_data:/data
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 768m
+    cpus: 0.75
+    pids_limit: 100
+    stop_grace_period: 20s
+    # The existing Traefik uses network_mode: host. It reaches this project's
+    # ordinary bridge address via Docker discovery; no shared external network
+    # or host-published app port is required.
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.gutman-academy-preview.rule=Host(`${GUTMAN_PREVIEW_HOST:-academy-preview.srv1942778.hstgr.cloud}`)
+      - traefik.http.routers.gutman-academy-preview.entrypoints=${TRAEFIK_HTTPS_ENTRYPOINT:-websecure}
+      - traefik.http.routers.gutman-academy-preview.tls=true
+      - traefik.http.routers.gutman-academy-preview.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-letsencrypt}
+      - traefik.http.services.gutman-academy-preview.loadbalancer.server.port=3000
+volumes:
+  academy_preview_data:

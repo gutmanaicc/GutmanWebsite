@@ -13,6 +13,12 @@ export function SeminarVisual({ seminar }: { seminar: Seminar }) {
     <div className="academy-film-timeline" aria-hidden="true"><span>רעיון</span><span>תמונה</span><span>תנועה</span><span>עריכה</span><i /><b>מרעיון לעריכה · המחשת תהליך</b></div>
     <figcaption>פריימים מתוצרים אמיתיים של מסלולי וידאו קודמים. אינם הבטחה לתוצר זהה בחמש שעות.</figcaption>
   </figure>;
+  if (seminar.slug === 'ai-business-owners') return <figure className="academy-stage-visual academy-stage-visual--whatsapp">
+    <div className="academy-whatsapp-phone"><div className="academy-whatsapp-top"><span className="academy-whatsapp-avatar"><Sparkles size={21} aria-hidden="true" /></span><div><strong>סוכן ה-AI של העסק שלי</strong><span dir="ltr">WhatsApp</span></div><MessageSquare size={20} aria-hidden="true" /></div>
+      <div className="academy-whatsapp-chat"><p className="academy-whatsapp-context">מכיר את העסק. זמין להתייעצות.</p><div className="academy-whatsapp-bubble academy-whatsapp-bubble--me"><p>עזור לי לתכנן את שלוש המשימות החשובות למחר.</p><span dir="ltr">09:41</span></div><div className="academy-whatsapp-bubble"><p>נתחיל בהצעות המחיר הפתוחות, נכין את התוכן השבועי ונתכנן את שיחות הלקוחות.</p><p>מה הכי דחוף לך כרגע?</p><span dir="ltr">09:41</span></div></div>
+      <div className="academy-whatsapp-compose"><span>מתייעצים. מתכננים. מתקדמים.</span><ArrowUpLeft size={18} aria-hidden="true" /></div>
+    </div><div className="academy-workspace-note"><Check size={17} aria-hidden="true" /><span>עוד יד בעסק. בוואטסאפ שלכם.</span></div><figcaption>המחשה של שיחה ותהליך עבודה; לא צילום של מערכת לקוח.</figcaption>
+  </figure>;
   return <figure className={`academy-stage-visual academy-stage-visual--${seminar.slug === 'social-media-ai' ? 'social' : 'business'}`}>
     <div className="academy-workspace-window"><div className="academy-workspace-bar"><span aria-hidden="true"><i /><i /><i /></span><p>{seminar.slug === 'social-media-ai' ? 'סביבת עבודה · לקוח אחד' : 'סביבת העבודה של העסק'}</p><Layers size={16} aria-hidden="true" /></div>
       <div className="academy-workspace-main"><aside><span className="academy-workspace-brand"><Sparkles size={17} aria-hidden="true" /> הידע שלי</span>{['הקשר ומטרות', 'שפה והוראות', 'משימות חוזרות'].map((label, index) => <span key={label} className={index === 0 ? 'is-active' : ''}><FileText size={14} aria-hidden="true" />{label}</span>)}</aside>

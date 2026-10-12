@@ -43,9 +43,10 @@ export default function CinematicHero() {
     <div className="academy-cinematic-portal" aria-hidden="true" /><div className="academy-cinematic-shade" aria-hidden="true" />
     <motion.div className="academy-cinematic-content" style={animate && !coarse ? { y: titleY } : undefined} initial={reduced ? false : { y: 24 }} animate={{ y: 0 }} transition={{ duration: 1.1, ease: EASE }}>
       <p className="academy-eyebrow"><span className="academy-dot" />{ACADEMY_CONTENT.hero.eyebrow}</p>
-      <h1 className="hero-title">מגיעים עם רעיון.<br />יוצאים עם משהו <span className="hero-title-accent">אמיתי.</span></h1>
+      <h1 className="hero-title">לא רק לדעת AI.<br />לדעת להפעיל אותו<br /><span className="hero-title-accent">בשבילכם.</span></h1>
       <p className="academy-cinematic-promise"><strong>חמש שעות. קבוצה קטנה.</strong> משהו שבניתם בעצמכם.</p>
-      <p className="academy-cinematic-description">סמינרים פרונטליים עם רון גוטמן. עובדים על הלקוח, העסק או הפרויקט שלכם, ומקבלים הכוונה אישית בדרך לתוצר.</p>
+      <p className="academy-cinematic-description">{ACADEMY_CONTENT.hero.description}</p>
+      <p className="academy-hero-credentials">בהנחיית רון גוטמן · ניסיון עם מותגים מובילים וחברות Enterprise AI</p>
       <div className="academy-cinematic-actions"><Link to="/courses" className="academy-button">לבחירת הסמינר שלי <ArrowUpLeft size={20} aria-hidden="true" /></Link><a href="#how-it-works" className="academy-button academy-button--outline">איך זה עובד? <ArrowDown size={17} aria-hidden="true" /></a></div>
       <div className="academy-hero-pathfinder">
         <div className="academy-pathfinder-top"><span>מה תרצו לבנות?</span><div>{ACADEMY_CONTENT.heroPaths.map((item,index) => <button key={item.slug} type="button" aria-pressed={index === pathIndex} onClick={() => setPathIndex(index)}>{item.label}</button>)}</div></div>

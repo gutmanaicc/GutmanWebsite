@@ -10,7 +10,9 @@
     "academy:server": "node scripts/academy-server.mjs",
     "academy:keychain": "node scripts/academy-keychain.mjs",
     "test": "node --test tests/*.test.mjs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "self-hosted:build-api": "node scripts/self-hosted-build-api.mjs",
+    "self-hosted:start": "node scripts/self-hosted-start.mjs"
   },
   "dependencies": {
     "@vercel/blob": "2.7.0",
