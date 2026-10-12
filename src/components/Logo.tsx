@@ -10,7 +10,7 @@ const Logo = ({ className = "", variant = "default", height = 32 }: Props) => {
   const sources =
     variant === "white"
       ? ["/brand/logo-white.png", "/brand/logo-cutout.svg"]
-      : ["/brand/logo-cutout.png", "/brand/logo-cutout.svg"];
+      : ["/brand/logo-cutout-sm.png", "/brand/logo-cutout.png", "/brand/logo-cutout.svg"];
   const [srcIndex, setSrcIndex] = useState(0);
 
   if (srcIndex >= sources.length) {

@@ -12,3 +12,9 @@ docs/learn/
 
 # נכסי מקור באיכות מלאה. מה שנשלח לדפדפן יושב ב-public/ אחרי המרה.
 assets-raw/
+
+# Local academy development database, reports and browser test output
+.local/
+artifacts/
+test-results/
+playwright-report/

@@ -1,0 +1,26 @@
+import { fileURLToPath } from 'node:url';
+import { CommerceStore } from '../server/commerce.mjs';
+import { createAcademyServer } from '../server/http.mjs';
+import { MorningGrowAdapter } from '../server/payment-adapters.mjs';
+import { HostedCheckout } from '../server/hosted-checkout.mjs';
+
+const host=process.env.ACADEMY_HOST??'127.0.0.1';
+const port=Number(process.env.ACADEMY_PORT??5174);
+const development=process.env.NODE_ENV==='development';
+const mode=process.env.ACADEMY_PAYMENT_MODE??'disabled';
+if(!Number.isInteger(port)||port<1||port>65535)throw new Error('Invalid ACADEMY_PORT.');
+const loopback=['127.0.0.1','localhost','::1'].includes(host);
+const extraOrigins=String(process.env.ACADEMY_ALLOWED_ORIGINS??'').split(',').map(value=>value.trim()).filter(Boolean);
+if(extraOrigins.some(value=>{try{const url=new URL(value);return url.origin!==value||(!['localhost','127.0.0.1','[::1]'].includes(url.hostname)&&url.protocol!=='https:');}catch{return true;}}))throw new Error('Allowed origins must be exact HTTPS origins (HTTP is permitted only on loopback).');
+if(!loopback&&(!process.env.ACADEMY_ADMIN_TOKEN||process.env.ACADEMY_ADMIN_TOKEN.length<32||!extraOrigins.length))throw new Error('Non-loopback binding requires an explicit strong admin token and exact allowed origins behind TLS.');
+if(mode==='simulation'&&!development)throw new Error('Simulation is restricted to explicit NODE_ENV=development.');
+const adapter=mode==='morning'?new MorningGrowAdapter():undefined;
+const store=new CommerceStore({path:process.env.ACADEMY_DB_PATH??fileURLToPath(new URL('../.local/academy.sqlite',import.meta.url)),clock:Date.now,mode,adapter,orderSecret:process.env.ACADEMY_ORDER_SECRET,development,simulationSecret:process.env.ACADEMY_SIMULATION_SECRET,bookingTermsApproved:process.env.ACADEMY_BOOKING_TERMS_APPROVED==='1'});
+const checkout=new HostedCheckout({store,adapter,publicOrigin:process.env.ACADEMY_PUBLIC_ORIGIN});
+store.seedDrafts();
+const server=createAcademyServer({store,checkout,adminToken:process.env.ACADEMY_ADMIN_TOKEN,allowedOrigins:['http://localhost:5173','http://127.0.0.1:5173','http://localhost:5174','http://127.0.0.1:5174','http://localhost:4173','http://127.0.0.1:4173',...extraOrigins]});
+server.listen(port,host,()=>console.log(`Academy API http://${host}:${port} — payment mode ${mode}; provider ready: ${checkout.ready}; dates remain drafts until approved. Outbound delivery is disabled.`));
+const expiry=setInterval(()=>store.expireHolds(),60_000);expiry.unref();
+let reconciling=false;
+const reconciliation=setInterval(async()=>{if(reconciling)return;reconciling=true;try{await checkout.refreshPending();}finally{reconciling=false;}},60_000);reconciliation.unref();
+for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>{clearInterval(expiry);clearInterval(reconciliation);server.close(()=>{store.close();process.exit(0);});});

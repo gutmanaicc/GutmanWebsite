@@ -1,0 +1,22 @@
+{
+  "currency": "ILS",
+  "launchPriceAgorot": 119000,
+  "regularPriceAgorot": 149000,
+  "activePrice": "launch",
+  "minimumParticipants": 8,
+  "maximumParticipants": 12,
+  "timezone": "Asia/Jerusalem",
+  "startTime": "15:00",
+  "endTime": "20:00",
+  "holdMinutes": 15,
+  "tax": {
+    "status": "exempt",
+    "calculationMode": "none",
+    "rate": 0,
+    "priceType": "final",
+    "documentType": "receipt",
+    "effectiveDate": "2026-10-12",
+    "productionVerificationRequired": true
+  },
+  "durationHours": 5
+}

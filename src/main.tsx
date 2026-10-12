@@ -7,6 +7,8 @@ import "./index.css";
 // חוקי ההיפוך הכהה חיים בקובץ נפרד כדי ש-@apply של Tailwind לא ישאב אותם
 import "./styles/fonts.css";
 import "./styles/dark-overrides.css";
+import "./styles/academy.css";
+import "./styles/academy-chrome.css";
 
 // VITE_HASH_ROUTER=1 builds a self-contained preview that runs from any path.
 const Router = import.meta.env.VITE_HASH_ROUTER === "1" ? HashRouter : BrowserRouter;

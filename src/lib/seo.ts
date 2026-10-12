@@ -6,7 +6,22 @@ type SeoProps = {
   description: string;
   path: string;
   schema?: object[];
+  noindex?: boolean;
 };
+
+// Approval alone must never make a preview hostname indexable.
+const PUBLIC_PATHS = new Set([
+  "/", "/courses", "/courses/social-media-ai", "/courses/ai-video-content",
+  "/courses/ai-business-owners", "/about", "/reviews", "/privacy", "/accessibility",
+]);
+
+export function isIndexablePath(path: string, origin: string, noindex = false) {
+  return import.meta.env.PROD
+    && import.meta.env.VITE_ACADEMY_PRODUCTION_APPROVED === "1"
+    && origin === SITE.domain
+    && PUBLIC_PATHS.has(path)
+    && !noindex;
+}
 
 const ensureMeta = (attr: "name" | "property", key: string): HTMLMetaElement => {
   let el = document.head.querySelector<HTMLMetaElement>(`meta[${attr}="${key}"]`);
@@ -30,20 +45,23 @@ const ensureCanonical = (): HTMLLinkElement => {
 
 const SCHEMA_ID = "page-schema";
 
-export function useSeo({ title, description, path, schema }: SeoProps) {
+export function useSeo({ title, description, path, schema, noindex = false }: SeoProps) {
   useEffect(() => {
+    const indexable = isIndexablePath(path, window.location.origin, noindex);
     document.title = title;
     ensureMeta("name", "description").content = description;
     ensureMeta("property", "og:title").content = title;
     ensureMeta("property", "og:description").content = description;
-    ensureMeta("property", "og:url").content = SITE.domain + path;
+    ensureMeta("property", "og:url").content = new URL(path, SITE.domain).href;
     ensureMeta("property", "og:type").content = "website";
     ensureMeta("name", "twitter:title").content = title;
     ensureMeta("name", "twitter:description").content = description;
-    ensureCanonical().href = SITE.domain + path;
+    ensureMeta("name", "robots").content = indexable ? "index, follow" : "noindex, nofollow";
+    if (indexable) ensureCanonical().href = new URL(path, SITE.domain).href;
+    else document.head.querySelector('link[rel="canonical"]')?.remove();
 
     document.getElementById(SCHEMA_ID)?.remove();
-    if (schema?.length) {
+    if (indexable && schema?.length) {
       const s = document.createElement("script");
       s.type = "application/ld+json";
       s.id = SCHEMA_ID;
@@ -53,7 +71,7 @@ export function useSeo({ title, description, path, schema }: SeoProps) {
     return () => {
       document.getElementById(SCHEMA_ID)?.remove();
     };
-  }, [title, description, path, schema]);
+  }, [title, description, path, schema, noindex]);
 }
 
 export const orgSchema = () => ({

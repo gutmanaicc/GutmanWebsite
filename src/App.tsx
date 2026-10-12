@@ -1,67 +1,40 @@
-import { lazy } from "react";
-import { Route, Routes } from "react-router-dom";
-import Layout from "./components/Layout";
-import { RegisterModalProvider } from "./context/RegisterModalContext";
-import { WaitlistModalProvider } from "./context/WaitlistModalContext";
-import Home from "./pages/Home";
-
-/*
- * עמוד הבית נטען ישירות, כל השאר בעצלתיים.
- *
- * קודם כל אחד עשר העמודים ישבו בחבילה אחת של 631KB, כך שמי שנחת בעמוד
- * הבית הוריד גם את עמוד הנגישות, את הסילבוסים ואת מדיניות הפרטיות לפני
- * שראה משהו. עמוד הבית עצמו לא מפוצל בכוונה: הוא הנחיתה הנפוצה ביותר,
- * ופיצול שלו רק היה מוסיף הלוך ושוב לרשת לפני הצביעה הראשונה.
- */
-const About = lazy(() => import("./pages/About"));
-const Courses = lazy(() => import("./pages/Courses"));
-const CourseDetail = lazy(() => import("./pages/CourseDetail"));
-const FashionLanding = lazy(() => import("./pages/FashionLanding"));
-const Reviews = lazy(() => import("./pages/Reviews"));
-const Privacy = lazy(() => import("./pages/Privacy"));
-const Accessibility = lazy(() => import("./pages/Accessibility"));
-const Syllabus = lazy(() => import("./pages/Syllabus"));
-const Register = lazy(() => import("./pages/Register"));
-const ThankYou = lazy(() => import("./pages/ThankYou"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-
-/*
- * גבול ה-Suspense לא יושב כאן אלא בתוך Layout, סביב ה-Outlet.
- *
- * כשהוא עטף את Routes כולו, כל ניווט ראשון לעמוד עצל השהה גם את
- * ה-Layout עצמו: ההדר, הפוטר ושכבות הרקע נעלמו יחד עם גוף העמוד,
- * והמסך נשאר קנבס ריק עד שהצ'אנק הגיע. בחיבור איטי זה נקרא כמו ניווט
- * שבור. כשהגבול בפנים, הכרום נשאר על המסך והתוכן לבדו ממתין.
- */
-const App = () => (
-  <RegisterModalProvider>
-    <WaitlistModalProvider>
-      <Routes>
-        <Route element={<Layout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/courses" element={<Courses />} />
-          <Route path="/courses/:slug" element={<CourseDetail />} />
-          {/*
-            * דף נחיתה לקמפיין הממומן של סדנת האופנה.
-            *
-            * נתיב נפרד מ-/courses/ai-fashion בכוונה: הקמפיין כבר רץ לעמוד
-            * המסלול, וכאוס מעבירים אליו תנועה רק אחרי השוואת ביצועים.
-            * שינוי בעמוד המסלול היה מפיל את הקמפיין באמצע במקום להעמיד
-            * מולו חלופה.
-            */}
-          <Route path="/lp/ai-fashion" element={<FashionLanding />} />
-          <Route path="/reviews" element={<Reviews />} />
-          <Route path="/thank-you" element={<ThankYou />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/accessibility" element={<Accessibility />} />
-          <Route path="/syllabus/:slug" element={<Syllabus />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="*" element={<NotFound />} />
-        </Route>
-      </Routes>
-    </WaitlistModalProvider>
-  </RegisterModalProvider>
-);
-
-export default App;
+import { lazy } from 'react';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import AcademyLayout from './components/AcademyLayout';
+import Home from './pages/Home';
+const Courses = lazy(() => import('./pages/Courses'));
+const SeminarDetail = lazy(() => import('./pages/SeminarDetail'));
+const About = lazy(() => import('./pages/About'));
+const Reviews = lazy(() => import('./pages/Reviews'));
+const Privacy = lazy(() => import('./pages/Privacy'));
+const Accessibility = lazy(() => import('./pages/Accessibility'));
+const Checkout = lazy(() => import('./pages/Checkout'));
+const OrderConfirmation = lazy(() => import('./pages/OrderConfirmation'));
+const AcademyAdmin = lazy(() => import('./pages/AcademyAdmin'));
+const RetiredCourse = lazy(() => import('./pages/RetiredCourse'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+export default function App() {
+  return <Routes><Route element={<AcademyLayout />}>
+    <Route path="/" element={<Home />} />
+    <Route path="/courses" element={<Courses />} />
+    <Route path="/courses/ai-fashion" element={<RetiredCourse slug="ai-fashion" />} />
+    <Route path="/courses/ai-for-therapists" element={<RetiredCourse slug="ai-for-therapists" />} />
+    <Route path="/courses/ai-for-students" element={<RetiredCourse slug="ai-for-students" />} />
+    <Route path="/courses/:slug" element={<SeminarDetail />} />
+    <Route path="/lp/ai-fashion" element={<RetiredCourse slug="ai-fashion" />} />
+    <Route path="/syllabus/ai-fashion" element={<RetiredCourse slug="ai-fashion" />} />
+    <Route path="/syllabus/ai-for-therapists" element={<RetiredCourse slug="ai-for-therapists" />} />
+    <Route path="/syllabus/ai-for-students" element={<RetiredCourse slug="ai-for-students" />} />
+    <Route path="/syllabus/:slug" element={<SeminarDetail />} />
+    <Route path="/about" element={<About />} />
+    <Route path="/reviews" element={<Reviews />} />
+    <Route path="/privacy" element={<Privacy />} />
+    <Route path="/accessibility" element={<Accessibility />} />
+    <Route path="/register" element={<Checkout />} />
+    <Route path="/orders/:orderId" element={<OrderConfirmation />} />
+    <Route path="/thank-you" element={<OrderConfirmation />} />
+    <Route path="/admin/academy" element={<AcademyAdmin />} />
+    <Route path="/seminars" element={<Navigate to="/courses" replace />} />
+    <Route path="*" element={<NotFound />} />
+  </Route></Routes>;
+}
