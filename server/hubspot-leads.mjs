@@ -21,6 +21,32 @@ export function normalizeAcademyLead(input) {
   return { fullName, email, phone, seminarId: input.seminarId, requestedDate, note: input.note === undefined ? '' : text(input.note, 1000), marketingConsent: input.marketingConsent === true };
 }
 
+function contactProperties(lead) {
+  const [firstname, ...rest] = lead.fullName.split(' ');
+  return { firstname, lastname: rest.join(' '), email: lead.email, phone: lead.phone, gutman_seminar: lead.seminarId, gutman_requested_date: lead.requestedDate, gutman_lead_stage: 'new', gutman_lead_source: 'website', gutman_marketing_consent: lead.marketingConsent ? 'yes' : 'no', gutman_note: lead.note };
+}
+
+/** Server-only Make relay. Its responder runs after HubSpot saves the contact. */
+export class HubSpotWebhookAdapter {
+  constructor({ webhookUrl, portalId, fetchImpl = globalThis.fetch, timeoutMs = 15000 } = {}) {
+    const url = new URL(webhookUrl);
+    if (url.protocol !== 'https:' || !/^hook\.(us[12]|eu[12])\.make\.com$/.test(url.hostname) || url.port || url.username || url.password || url.search || url.hash || !/^\/[a-z0-9]{16,128}$/.test(url.pathname)) throw new Error('A private Make HTTPS webhook is required.');
+    if (!/^\d{1,15}$/.test(portalId || '') || !Number.isSafeInteger(timeoutMs) || timeoutMs < 1) throw new Error('A verified HubSpot portal and bounded timeout are required.');
+    this.url = url.href; this.portalId = portalId; this.fetch = fetchImpl; this.timeoutMs = timeoutMs;
+  }
+  async submit(lead, createdAt, leadId) {
+    if (!/^[0-9a-f-]{36}$/i.test(leadId || '')) throw new Error('A persistent enquiry reference is required.');
+    const controller = new AbortController(); const timer = setTimeout(() => controller.abort(), this.timeoutMs);
+    try {
+      const response = await this.fetch(this.url, { method: 'POST', redirect: 'error', signal: controller.signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId, submittedAt: createdAt, ...contactProperties(lead) }) });
+      if (response.redirected) throw new Error('Uncertain relay response');
+      if (!response.ok) { const error = new Error('Relay rejected submission'); error.knownFailure = [400, 401, 403, 404, 413, 429].includes(response.status); throw error; }
+      const result = await response.json();
+      if (result?.received !== true || result.leadId !== leadId || String(result.portalId) !== this.portalId || !/^[1-9]\d{0,24}$/.test(String(result.contactId ?? ''))) throw new Error('Unconfirmed CRM save');
+    } finally { clearTimeout(timer); }
+  }
+}
+
 /** Public HubSpot form submission, not access to the CRM API or its OAuth token. */
 export class HubSpotFormAdapter {
   constructor({ portalId, formId, publicOrigin, fetchImpl = globalThis.fetch, timeoutMs = 10000 } = {}) {
@@ -32,8 +58,7 @@ export class HubSpotFormAdapter {
     this.publicOrigin = publicOrigin; this.fetch = fetchImpl; this.timeoutMs = timeoutMs;
   }
   async submit(lead, createdAt) {
-    const [firstname, ...rest] = lead.fullName.split(' ');
-    const values = { firstname, lastname: rest.join(' '), email: lead.email, phone: lead.phone, gutman_seminar: lead.seminarId, gutman_requested_date: lead.requestedDate, gutman_lead_stage: 'new', gutman_lead_source: 'website', gutman_marketing_consent: lead.marketingConsent ? 'yes' : 'no', gutman_note: lead.note };
+    const values = contactProperties(lead);
     const payload = { fields: Object.entries(values).map(([name, value]) => ({ objectTypeId: '0-1', name, value })), submittedAt: String(Date.parse(createdAt)), context: { pageUri: `${this.publicOrigin}/courses/${lead.seminarId}`, pageName: 'פנייה למכללת גוטמן' } };
     const controller = new AbortController(); const timer = setTimeout(() => controller.abort(), this.timeoutMs);
     try {
@@ -74,7 +99,7 @@ export class AcademyLeadIntake {
     // Existing pending/unknown/failed rows never trigger another provider call.
     const claim = this.db.prepare("UPDATE leads SET state='claimed' WHERE id=? AND state='sending'").run(row.id);
     if (claim.changes !== 1) fail('LEAD_PENDING', 'לא הצלחנו לאשר שהפנייה נקלטה. אפשר ליצור קשר באימייל.', 503);
-    try { await this.adapter.submit(data, row.created_at); }
+    try { await this.adapter.submit(data, row.created_at, row.id); }
     catch (error) { this.db.prepare('UPDATE leads SET state=?,updated_at=? WHERE id=?').run(error?.knownFailure ? 'failed' : 'unknown', new Date(this.clock()).toISOString(), row.id); fail('LEAD_UNCONFIRMED', 'לא הצלחנו לאשר שהפנייה נקלטה. אפשר ליצור קשר באימייל.', 503); }
     this.db.prepare("UPDATE leads SET state='accepted',updated_at=? WHERE id=?").run(new Date(this.clock()).toISOString(), row.id);
     return { ok: true, received: true, leadId: row.id };

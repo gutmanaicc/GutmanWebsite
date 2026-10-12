@@ -27,14 +27,26 @@ The contact-property listing tool with `custom_only=true` omitted these properti
 
 The Hebrew enquiry form appears on seminar detail pages only when the catalog reports intake configured. Marketing is optional and unchecked. The visitor receives a success message only after provider acceptance; an enquiry does not reserve a seat. Privacy copy identifies HubSpot and the site's server as enquiry storage.
 
-## Actual remaining account requirement
+## Make relay selected after owner feedback
+
+The owner asked the agent to build everything and declined manual form creation. The form route remains available, but it is no longer the requested setup path. The agent found the existing Make organization `GutmanAI` (6526374), team 1861372, in `us2.make.com`. Both listed Make connections reach this same organization and team; the first connection is used for this work.
+
+Inactive scenario 6607462, `מכללת גוטמן | פניות מהאתר ל־HubSpot`, has an auto-created private webhook. Its structure was learned using one synthetic example.invalid request from an isolated academy VPS job, without running CRM modules or creating a contact. The learned fields are the ten contact properties plus `leadId` and `submittedAt`. The webhook URL is a server credential; never include it in the repository, client bundle, public catalog or logs.
+
+The intended flow is webhook → HubSpot `upsertAContact` → synchronous JSON responder. It updates or creates a contact by email, does not swap the primary email, and does not create an order, deal or email subscription. The responder must return `received:true`, the same persistent `leadId`, the verified portal ID and the saved contact's numeric ID. The server rejects Make's default queue acknowledgment, incomplete results, wrong portal/reference, redirects and timeouts. Uncertain sends are retained privately and never automatically replayed.
+
+Make has no existing HubSpot connection for this module. A credential request restricted to `upsertAContact` was created; the owner only needs to authorize that app in Make, not build a form or scenario. An earlier broader, unused credential request included a developer connection and was superseded before its link was sent to the owner. Do not use it.
+
+`HUBSPOT_LEAD_TRANSPORT=make`, `HUBSPOT_MAKE_WEBHOOK_URL`, `HUBSPOT_PORTAL_ID` and `HUBSPOT_LEADS_ENABLED=1` select the relay. No Composio OAuth credential is exported. Intake stays disabled until the Make HubSpot connection, mapped CRM module and real saved-contact response are verified. Privacy copy identifies Make as the transfer service.
+
+## Original Forms scope limitation
 
 The authorized Composio app can work with CRM objects but `GET https://api.hubapi.com/marketing/v3/forms` returned HTTP 403 for missing Forms scopes. No alternate endpoint was used to bypass that restriction. The owner was asked to create a public HubSpot form and supply its public share link/embed code. No HubSpot API key is requested through chat.
 
-The form must declare `firstname`, `lastname`, `email`, `phone` and the six academy fields above. The backend supplies `gutman_lead_stage=new` and `gutman_lead_source=website`; those can be hidden fields. Only email, phone and the visitor's name need be mandatory. Other fields may be blank. No automatic marketing subscription is configured.
+If the form transport is used, the form must declare `firstname`, `lastname`, `email`, `phone` and the six academy fields above. The backend supplies `gutman_lead_stage=new` and `gutman_lead_source=website`; those can be hidden fields. Only email, phone and the visitor's name need be mandatory. Other fields may be blank. No automatic marketing subscription is configured.
 
 Hostinger server variables: `HUBSPOT_PORTAL_ID`, `HUBSPOT_FORM_ID`, `HUBSPOT_LEADS_ENABLED=1`, and the existing `ACADEMY_PUBLIC_ORIGIN`. Portal/form IDs are public identifiers. SQLite stays in the academy's existing private data volume. The Composio OAuth connection is not exported to the VPS. The normal deployment keeps intake disabled until the target form is provided and verified. No real form submission has been verified yet.
 
-Tests cover the mocked form contract, optional marketing consent, concurrent retries, persistent acceptance, uncertain failure, invalid data, origin/body limits, and a browser → actual HTTP API → private SQLite → mocked provider flow. These are not tests of the owner's live HubSpot form.
+Tests cover the mocked form and Make contracts, bounded abort, wrong portal/reference, queue acknowledgments, optional marketing consent, concurrent retries, persistent acceptance, uncertain failure, invalid data, origin/body limits, standalone Make transport selection, and a browser → actual HTTP API → private SQLite → mocked provider flow. These are not tests of a live HubSpot contact creation.
 
 Morning credentials and merchant verification remain unavailable; HubSpot access does not authenticate Morning. No live checkout links, charges or CRM migration from Fireberry were performed.

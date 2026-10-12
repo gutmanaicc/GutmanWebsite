@@ -1,5 +1,5 @@
 import { dirname, isAbsolute, join } from 'node:path';
-import { AcademyLeadIntake, HubSpotFormAdapter } from './hubspot-leads.mjs';
+import { AcademyLeadIntake, HubSpotFormAdapter, HubSpotWebhookAdapter } from './hubspot-leads.mjs';
 import { CommerceStore } from './commerce.mjs';
 import { createAcademyHandler } from './http.mjs';
 import { MorningClient } from './morning-client.mjs';
@@ -39,7 +39,12 @@ export function createSelfHostedRuntime(env = process.env, { fetchImpl = globalT
   store = new CommerceStore({ path, clock, mode, adapter, orderSecret: env.ACADEMY_ORDER_SECRET, bookingTermsApproved: env.ACADEMY_BOOKING_TERMS_APPROVED === '1' });
   try {
     store.seedDrafts();
-    if (env.HUBSPOT_LEADS_ENABLED === '1') leadIntake = new AcademyLeadIntake({ path: env.ACADEMY_LEADS_DB_PATH || join(dirname(path), 'academy-leads.sqlite'), adapter: new HubSpotFormAdapter({ portalId: env.HUBSPOT_PORTAL_ID, formId: env.HUBSPOT_FORM_ID, publicOrigin, fetchImpl }), clock });
+    if (env.HUBSPOT_LEADS_ENABLED === '1') {
+      const leadAdapter = env.HUBSPOT_LEAD_TRANSPORT === 'make'
+        ? new HubSpotWebhookAdapter({ portalId: env.HUBSPOT_PORTAL_ID, webhookUrl: env.HUBSPOT_MAKE_WEBHOOK_URL, fetchImpl })
+        : new HubSpotFormAdapter({ portalId: env.HUBSPOT_PORTAL_ID, formId: env.HUBSPOT_FORM_ID, publicOrigin, fetchImpl });
+      leadIntake = new AcademyLeadIntake({ path: env.ACADEMY_LEADS_DB_PATH || join(dirname(path), 'academy-leads.sqlite'), adapter: leadAdapter, clock });
+    }
     const repository = new SelfHostedRepository(store);
     const checkout = new HostedCheckout({ store, adapter, publicOrigin });
     const deliveryAdapter = createResendDeliveryAdapter(env, { fetchImpl });
