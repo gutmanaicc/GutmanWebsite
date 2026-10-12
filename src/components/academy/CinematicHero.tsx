@@ -36,7 +36,7 @@ export default function CinematicHero() {
   }, [animate, paused]);
 
   return <section ref={section} className="academy-cinematic-hero">
-    <motion.div className="academy-cinematic-scene" style={animate && !coarse ? { y: backgroundY } : undefined} aria-hidden="true">
+    <motion.div className={`academy-cinematic-scene${animate ? ' is-animated' : ''}${paused ? ' is-paused' : ''}`} style={animate && !paused && !coarse ? { y: backgroundY } : undefined} aria-hidden="true">
       <img src={ACADEMY_CONTENT.heroScene.image} srcSet={`${ACADEMY_CONTENT.heroScene.smallImage} 1024w, ${ACADEMY_CONTENT.heroScene.image} 1672w`} sizes="100vw" alt="" width={ACADEMY_CONTENT.heroScene.width} height={ACADEMY_CONTENT.heroScene.height} {...({ fetchpriority: 'high' } as Record<string, string>)} />
       {animate && ACADEMY_CONTENT.heroScene.motionVideo && <video ref={element => { video.current = element; if (element) { element.muted = true; element.setAttribute('muted', ''); } }} className="hero-loop" poster="/images/hero-night.jpg" muted loop autoPlay={!paused} playsInline preload="metadata" tabIndex={-1} style={{ opacity: ready ? 1 : 0 }} onLoadedData={() => { setReady(true); if (paused) video.current?.pause(); }}><source src="/videos/hero-night-loop.webm" type="video/webm" /><source src="/videos/hero-night-loop.mp4" type="video/mp4" /></video>}
     </motion.div>
@@ -46,7 +46,7 @@ export default function CinematicHero() {
       <h1 className="hero-title">לא רק לדעת AI.<br />לדעת להפעיל אותו<br /><span className="hero-title-accent">בשבילכם.</span></h1>
       <p className="academy-cinematic-promise"><strong>חמש שעות. קבוצה קטנה.</strong> משהו שבניתם בעצמכם.</p>
       <p className="academy-cinematic-description">{ACADEMY_CONTENT.hero.description}</p>
-      <p className="academy-hero-credentials">בהנחיית רון גוטמן · ניסיון עם מותגים מובילים וחברות Enterprise AI</p>
+      <p className="academy-hero-credentials">בהנחיית רון גוטמן · ניסיון עם מותגים וחברות מובילות</p>
       <div className="academy-cinematic-actions"><Link to="/courses" className="academy-button">לבחירת הסמינר שלי <ArrowUpLeft size={20} aria-hidden="true" /></Link><a href="#how-it-works" className="academy-button academy-button--outline">איך זה עובד? <ArrowDown size={17} aria-hidden="true" /></a></div>
       <div className="academy-hero-pathfinder">
         <div className="academy-pathfinder-top"><span>מה תרצו לבנות?</span><div>{ACADEMY_CONTENT.heroPaths.map((item,index) => <button key={item.slug} type="button" aria-pressed={index === pathIndex} onClick={() => setPathIndex(index)}>{item.label}</button>)}</div></div>
@@ -54,7 +54,7 @@ export default function CinematicHero() {
         <div className="academy-pathfinder-trace" aria-hidden="true"><span>רעיון</span><i /><span>תרגול</span><i /><span>תוצר משלכם</span></div>
       </div>
     </motion.div>
-    <div className="academy-cinematic-bottom"><span>{ACADEMY_CONFIG.durationHours} שעות של עבודה</span><span>{ACADEMY_CONFIG.minimumParticipants}–{ACADEMY_CONFIG.maximumParticipants} משתתפים</span><span><bdi>{ACADEMY_CONFIG.startTime}–{ACADEMY_CONFIG.endTime}</bdi></span><a href="#seminars">שלושה סמינרים. התחלה אחת. <ArrowDown size={16} aria-hidden="true" /></a></div>
-    {animate && ACADEMY_CONTENT.heroScene.motionVideo && <button className="academy-background-control" type="button" aria-label={paused ? 'הפעלת תנועת הרקע' : 'עצירת תנועת הרקע'} onClick={() => setPaused(value => !value)}>{paused ? <Play size={16} aria-hidden="true" /> : <Pause size={16} aria-hidden="true" />}</button>}
+    <div className="academy-cinematic-bottom"><span>{ACADEMY_CONFIG.durationHours} שעות של עבודה</span><span>{ACADEMY_CONFIG.minimumParticipants}-{ACADEMY_CONFIG.maximumParticipants} משתתפים</span><span><bdi>{ACADEMY_CONFIG.startTime}-{ACADEMY_CONFIG.endTime}</bdi></span><a href="#seminars">שלושה סמינרים. התחלה אחת. <ArrowDown size={16} aria-hidden="true" /></a></div>
+    {animate && <button className="academy-background-control" type="button" aria-label={paused ? 'הפעלת תנועת הרקע' : 'עצירת תנועת הרקע'} onClick={() => setPaused(value => !value)}>{paused ? <Play size={16} aria-hidden="true" /> : <Pause size={16} aria-hidden="true" />}</button>}
   </section>;
 }

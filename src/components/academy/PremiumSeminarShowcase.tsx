@@ -3,6 +3,7 @@ import { ArrowUpLeft, Check, FileText, Layers, MessageSquare, Sparkles } from 'l
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useMotionCapability } from '../../lib/motion/useMotionCapability';
 import { Link } from 'react-router-dom';
+import SeminarPrice from './SeminarPrice';
 import { SEMINARS, type Seminar } from '../../data/seminars';
 import { ACADEMY_CONFIG, academyRequest, formatSeminarDate, type Catalog, type SeminarDate } from '../../lib/academy';
 
@@ -35,7 +36,7 @@ function SeminarStage({ seminar, index, date }: { seminar: Seminar; index: numbe
   const visualY = useTransform(scrollYProgress, [0, 1], [35, 0]);
   return <article ref={ref} className={`academy-premium-stage academy-premium-stage--${index + 1}`} style={{ top: `${118 + index * 12}px` }}>
     <div className="academy-stage-meta"><span className="academy-stage-number">0{index + 1}</span><span>{seminar.accentLabel}</span><span>{ACADEMY_CONFIG.durationHours} שעות · פרונטלי · קבוצה קטנה</span><ArrowUpLeft size={23} aria-hidden="true" /></div>
-    <div className="academy-stage-layout"><div className="academy-stage-copy"><h3><Link to={`/courses/${seminar.slug}`}>{seminar.title}</Link></h3><p className="academy-stage-tagline">{seminar.tagline}</p><p className="academy-stage-description">{seminar.description}</p><div className="academy-stage-tags">{seminar.example.steps.slice(0, 3).map(step => <span key={step}>{step}</span>)}</div><p className="academy-stage-date">{date ? `המועד הקרוב: ${formatSeminarDate(date.date)}` : 'מועדים חדשים יפורסמו לאחר אישורם'}</p><div className="academy-stage-actions"><Link to={`/courses/${seminar.slug}`} className="academy-button">לפרטים ולהרשמה <ArrowUpLeft size={20} aria-hidden="true" /></Link><div className="academy-stage-price"><strong><bdi>{ACADEMY_CONFIG.currentPriceILS.toLocaleString('he-IL')} ₪</bdi></strong><span>{ACADEMY_CONFIG.priceLabel} למשתתף</span></div></div></div><motion.div className="academy-stage-media" style={reduced ? undefined : { y: visualY }}><SeminarVisual seminar={seminar} /></motion.div></div>
+    <div className="academy-stage-layout"><div className="academy-stage-copy"><h3><Link to={`/courses/${seminar.slug}`}>{seminar.title}</Link></h3><p className="academy-stage-tagline">{seminar.tagline}</p><p className="academy-stage-description">{seminar.description}</p><div className="academy-stage-tags">{seminar.example.steps.slice(0, 3).map(step => <span key={step}>{step}</span>)}</div><p className="academy-stage-date">{date ? `המועד הקרוב: ${formatSeminarDate(date.date)}` : 'מועדים חדשים יפורסמו לאחר אישורם'}</p><div className="academy-stage-actions"><Link to={`/courses/${seminar.slug}`} className="academy-button">לפרטים ולהרשמה <ArrowUpLeft size={20} aria-hidden="true" /></Link><SeminarPrice compact /></div></div><motion.div className="academy-stage-media" style={reduced ? undefined : { y: visualY }}><SeminarVisual seminar={seminar} /></motion.div></div>
   </article>;
 }
 

@@ -2,6 +2,7 @@ import config from '../../shared/commerce-config.json';
 import { hasDeclined } from '../consent';
 
 export const ACADEMY_CONFIG = {
+  activePrice: config.activePrice,
   launchPriceILS: config.launchPriceAgorot / 100,
   plannedPriceILS: config.regularPriceAgorot / 100,
   currentPriceILS: (config.activePrice === "regular" ? config.regularPriceAgorot : config.launchPriceAgorot) / 100,

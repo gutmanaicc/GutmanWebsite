@@ -194,3 +194,33 @@ test('homepage lazy sections retain working anchor navigation and real video con
  results.push({story:'deferred content + native anchor + genuine local video',passed:true});
  await context.close();
 });
+
+test('client ribbon loops, pauses, supports dragging and remains usable with reduced motion',async()=>{
+  for(const reducedMotion of ['no-preference','reduce']){
+    const context=await browser.newContext({viewport:{width:375,height:812},reducedMotion});
+    const page=await context.newPage();
+    await page.goto(base);await page.locator('[data-academy-sections]').scrollIntoViewIfNeeded();
+    const ribbon=page.getByRole('region',{name:/לוגואים של לקוחות/});
+    await ribbon.scrollIntoViewIfNeeded();
+    const transform=()=>page.locator('.academy-client-belt').evaluate(node=>getComputedStyle(node).transform);
+    await page.mouse.move(2,2);
+    const initial=await transform();await page.waitForTimeout(180);
+    if(reducedMotion==='no-preference'){
+      assert.notEqual(await transform(),initial,'automatic ribbon movement');
+      await page.getByRole('button',{name:'עצירת תנועת הלוגואים',exact:true}).click();
+      const frozen=await transform();await page.waitForTimeout(180);assert.equal(await transform(),frozen,'explicit pause stops automatic movement');
+    }else{
+      assert.equal(await transform(),initial,'reduced motion has no automatic movement');
+      assert.equal(await page.getByRole('button',{name:'עצירת תנועת הלוגואים',exact:true}).count(),0);
+    }
+    const before=await transform();
+    const box=await ribbon.boundingBox();await page.mouse.move(box.x+180,box.y+40);await page.mouse.down();await page.mouse.move(box.x+65,box.y+40,{steps:8});await page.mouse.up();
+    assert.notEqual(await transform(),before,'manual pointer dragging works');
+    await ribbon.focus();const dragged=await transform();await page.keyboard.press('ArrowRight');assert.notEqual(await transform(),dragged,'manual keyboard control works');
+    const names=await page.locator('.academy-client-logos:not([aria-hidden]) img').evaluateAll(images=>images.map(image=>image.alt));
+    assert.equal(names.length,14);assert.equal(new Set(names).size,14);
+    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+    await page.getByRole('link',{name:'לכל ההמלצות',exact:false}).click();await page.waitForURL(base+'/reviews');await page.locator('h1').waitFor();
+    await context.close();
+  }
+});

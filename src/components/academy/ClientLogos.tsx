@@ -1,11 +1,53 @@
+import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react';
+import { motion, useAnimationFrame, useMotionValue } from 'framer-motion';
+import { ArrowLeft, ArrowRight, Pause, Play } from 'lucide-react';
 import { CLIENT_BRANDS } from '../../data/clientBrands';
+import { useMotionCapability } from '../../lib/motion/useMotionCapability';
 
 export default function ClientLogos() {
-  if (!CLIENT_BRANDS.length) return null;
+  const still = useMotionCapability() === 'static';
+  const [paused, setPaused] = useState(false);
+  const [engaged, setEngaged] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const group = useRef<HTMLUListElement>(null);
+  const viewport = useRef<HTMLDivElement>(null);
+  const width = useRef(0);
+  const pointer = useRef<{ id: number; x: number } | null>(null);
+  const x = useMotionValue(0);
+  const move = useCallback((delta: number) => {
+    if (!width.current) return;
+    const next = x.get() + delta;
+    x.set(((next % width.current) + width.current) % width.current - width.current);
+  }, [x]);
+  useEffect(() => {
+    if (!group.current || !viewport.current) return;
+    const resize = new ResizeObserver(() => { width.current = group.current?.getBoundingClientRect().width || 0; move(0); });
+    resize.observe(group.current);
+    const intersection = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting));
+    intersection.observe(viewport.current);
+    return () => { resize.disconnect(); intersection.disconnect(); };
+  }, [move]);
+  useAnimationFrame((_time, delta) => {
+    if (visible && !still && !paused && !engaged && !pointer.current && !document.hidden) move(-Math.min(delta, 64) * .025);
+  });
+  const release = (event: PointerEvent<HTMLDivElement>) => {
+    if (pointer.current?.id !== event.pointerId) return;
+    pointer.current = null;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    event.currentTarget.classList.remove('is-dragging');
+  };
   return <section className="academy-client-banner" aria-labelledby="academy-client-title">
-    <div className="academy-container">
-      <div className="academy-client-heading"><p className="academy-eyebrow">מותגים וחברות שרון עבד איתם</p><h2 id="academy-client-title">ניסיון שמגיע מהשטח.</h2><p>ממותגים מוכרים ועד חברות טכנולוגיה וגופים אקדמיים — את הניסיון מהפרויקטים האלה רון מביא לעבודה איתכם.</p></div>
-      <ul className="academy-client-logos" aria-label="לקוחות ופרויקטים"><li className="sr-only">המותגים מוצגים מתוך ניסיון העבודה של רון.</li>{CLIENT_BRANDS.map(brand => <li key={brand.name} className={brand.light ? 'academy-client-logo-dark-tile' : undefined}><img src={brand.logo} alt={brand.name} loading="lazy" decoding="async" width="180" height="70" /></li>)}</ul>
+    <div className="academy-container academy-client-heading"><p className="academy-eyebrow">ניסיון שמגיע מהשטח</p><h2 id="academy-client-title">מותגים שעבדתי איתם.</h2><p>ממותגים מובילים ועד חברות טכנולוגיה וגופים אקדמיים. הניסיון מהפרויקטים האלה מגיע איתי לכל סמינר.</p></div>
+    <div ref={viewport} className="academy-client-viewport" dir="ltr" role="region" aria-label="לוגואים של לקוחות, אפשר לגרור או להזיז באמצעות מקשי החצים" tabIndex={0}
+      onMouseEnter={() => setEngaged(true)} onMouseLeave={() => setEngaged(false)} onFocus={() => setEngaged(true)} onBlur={() => setEngaged(false)}
+      onKeyDown={event => { if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); move(event.key === 'ArrowLeft' ? -220 : 220); } }}
+      onPointerDown={event => { if (event.button !== 0) return; pointer.current = { id: event.pointerId, x: event.clientX }; event.currentTarget.setPointerCapture(event.pointerId); event.currentTarget.classList.add('is-dragging'); }}
+      onPointerMove={event => { if (pointer.current?.id !== event.pointerId) return; move(event.clientX - pointer.current.x); pointer.current.x = event.clientX; }}
+      onPointerUp={release} onPointerCancel={release} onLostPointerCapture={() => { pointer.current = null; viewport.current?.classList.remove('is-dragging'); }}>
+      <motion.div className="academy-client-belt" style={{ x }}>
+        {[0, 1].map(copy => <ul key={copy} ref={copy === 0 ? group : undefined} className="academy-client-logos" aria-hidden={copy === 1 ? true : undefined} aria-label={copy === 0 ? 'לקוחות ופרויקטים' : undefined}>{CLIENT_BRANDS.map(brand => <li key={brand.name}><img src={brand.logo} alt={copy === 0 ? brand.name : ''} loading={copy === 0 ? 'eager' : 'lazy'} decoding="async" width="180" height="70" draggable={false} /></li>)}</ul>)}
+      </motion.div>
     </div>
+    <div className="academy-client-controls"><span>ניסיון אמיתי. רעיונות בלי גבולות.</span><div dir="ltr"><button type="button" aria-label="הזזת הלוגואים שמאלה" onClick={() => move(-220)}><ArrowLeft size={18} aria-hidden="true" /></button>{!still && <button type="button" aria-label={paused ? 'הפעלת תנועת הלוגואים' : 'עצירת תנועת הלוגואים'} aria-pressed={paused} onClick={() => setPaused(value => !value)}>{paused ? <Play size={16} aria-hidden="true" /> : <Pause size={16} aria-hidden="true" />}</button>}<button type="button" aria-label="הזזת הלוגואים ימינה" onClick={() => move(220)}><ArrowRight size={18} aria-hidden="true" /></button></div><span>גררו כדי לגלות עוד</span></div>
   </section>;
 }

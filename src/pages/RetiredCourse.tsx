@@ -14,7 +14,7 @@ export default function RetiredCourse({ slug: providedSlug }: { slug?: string })
   const slug = providedSlug ?? params.slug ?? pathname.split("/").filter(Boolean).pop() ?? "";
   const name = RETIRED_NAMES[slug] ?? "המסלול הקודם";
   useSeo({
-    title: `${name} — עמוד ארכיון | ${SITE.name}`,
+    title: `${name}, עמוד ארכיון | ${SITE.name}`,
     description: "המסלול אינו מוצע להרשמה חדשה. משתתפים קיימים מוזמנים לפנות לאקדמיה לבירור ההתחייבויות והמידע הנוגע להרשמתם.",
     path: pathname,
     noindex: true,
