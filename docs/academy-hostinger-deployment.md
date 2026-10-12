@@ -1,6 +1,10 @@
-# פריסה עצמאית ל־Hostinger VPS — חבילת Preview מוכנה
+# אתר Gutman ב־Hostinger — מצב Preview וחבילת פריסה
 
-היעד: שרת ה־KVM2 הקיים, Ubuntu 24 ו־Docker/Traefik. קובצי הפריסה אינם משנים DNS, אינם מחליפים את האתר ב־Vercel ואינם נוגעים בקונטיינרים/נפחים קיימים. גישה מאומתת ל־Docker Manager דרך Hostinger `proxy_execute` נמצאה. נבדקו הגדרות Traefik הקיימות: `network_mode: host`, כניסת `websecure` ו־resolver בשם `letsencrypt`. שם ה־Preview המתוכנן `academy-preview.srv1942778.hstgr.cloud` פותר ל־VPS ב־76.13.37.15. גילוי הגישה וה־DNS אינו הוכחה שהאפליקציה כבר נפרסה או שהתעודה שלה הונפקה.
+האתר הבסיסי כבר רץ ב־VPS הקיים של Hostinger, image `1f06ce7ed426`, ומדווח healthy. `/healthz` מחזיר `status: ok`; קטלוג ה־API במצב disabled וללא מועדים מאושרים. בדיקת דפדפן של המפעיל אימתה את סדר 12 לוגואי הלקוחות, הסרטונים הקיימים וסמינר WhatsApp. **ה־Preview נגיש ב־HTTPS תקין; סרטון העדויות וחיבור מסחר אמיתי עדיין ממתינים להשלמה**; אין טענה שהמעבר לייצור הושלם.
+
+גישה מאומתת ל־Docker Manager דרך Hostinger `proxy_execute` נמצאה. Traefik הקיים פועל ב־`network_mode: host`, עם כניסת `websecure` ו־resolver בשם `letsencrypt`. `academy-preview.srv1942778.hstgr.cloud` פותר ל־VPS ב־76.13.37.15. בקשת התעודה הראשונה חזרה עם ״Certificate not found״/404 ב־CA; המפעיל שינה רק את שם router של פרויקט ה־Preview ל־`tls2`. הניסיון הבא הצליח, ונבדק HTTPS עם אימות תעודה רגיל (ללא עקיפה): דף הבית 200, health 200, קטלוג 200, מנהל ללא אסימון 401 וקובץ וידאו קיים 200 עם MIME מתאים ו־noindex. אין restart או שינוי לשירותי Traefik/פרויקטים קיימים. בפריסת העדכון יש לשמר את router ה־Preview התקין והנפחים.
+
+Morning, Fireberry ו־Resend עדיין אינם מחוברים ל־Preview: כלי Vercel הציגו מטא־דאטה של משתנים בלבד ולא סודות, ולכן לא הועתקו credentials. לידים ללא CRM מחזירים כשל מפורש, הודעות כבויות ותשלום כבוי. דומיין הייצור הקיים ב־Vercel לא הוחלף.
 
 ## מה החבילה מריצה
 
@@ -16,7 +20,11 @@
 ## קבצים
 
 - `deploy/hostinger/Dockerfile`: בנייה בשני שלבים עם Node24, ללא תלויות npm בזמן הריצה. API TypeScript עובר קומפילציה בזמן הבנייה; אין הסתמכות על stripping של TypeScript או שינוי סיומות בשרת.
-- `deploy/hostinger/compose.preview.yml`: נפח נתונים חדש ונפרד, רשת bridge פרטית של הפרויקט (Traefik הקיים פועל ב־host mode), בלי פורט חשוף ישירות למארח, משתמש non-root, מערכת קבצים לקריאה בלבד פרט לנתונים ו־tmpfs, עד 768MB ו־0.75 CPU.
+- `deploy/hostinger/compose.preview.yml`: ריצה מתוך checkout עם build מקומי.
+- `deploy/hostinger/compose.builder.yml`: פרויקט builder חד־פעמי עם Docker CLI, מקור Git שנבדק ו־commit מלא. mounts כוללים רק socket Docker הנדרש לבניית התמונות של האקדמיה; אין פקודות shell חופשיות, פורטים או restart.
+- `deploy/hostinger/compose.manager.yml`: manifest של האפליקציה ל־Docker Manager, image שכבר נבנה ב־VPS ו־`pull_policy: never`, ללא שדה build. נפח SQLite נפרד, bridge פרטי, בלי פורט מארח, משתמש non-root, filesystem לקריאה בלבד פרט לנתונים, עד 768MB ו־0.75 CPU.
+- `deploy/hostinger/compose.media.yml`: overlay אופציונלי ל־Compose מקומי עם build של כלי המדיה.
+- `deploy/hostinger/compose.manager.media.yml`: overlay המדיה ל־Docker Manager, לאחר בניית שתי התמונות; אין build ב־manifest זה.
 - `deploy/hostinger/.env.preview.example`: תבנית ללא סודות. לריצה מ־checkout יוצרים עותק פרטי `.env.preview` עם הרשאות 600; ב־Docker API מספקים מחרוזת environment פרטית. קובץ env אינו נדרש בשרת Docker Manager ואינו בתוך Git או התמונה.
 - `scripts/self-hosted-build-api.mjs`, `scripts/self-hosted-start.mjs`: קומפילציה והפעלת האתר העצמאי.
 - `server/self-hosted-runtime.mjs`, `server/self-hosted-http.mjs`: runtime, נפח SQLite ושרת HTTP.
@@ -60,9 +68,34 @@ docker compose --env-file deploy/hostinger/.env.preview -f deploy/hostinger/comp
 
 גוף יצירת הפרויקט הוא `{project_name, content, environment?}`: `content` מכיל את ה־Compose במלואו ו־`environment` הוא מחרוזת משתנים פרטית. מזהה ה־VM נמצא בנתיב. יש לבחור פרויקט Preview חדש וייחודי: לפי החוזה הרשמי, **שם פרויקט שכבר קיים מוחלף**. אין לשלוח create בשם פרויקט קיים של Traefik או שירות אחר.
 
-`content` יכול להיות גם URL, אך ה־API מתאר URL של repository שממופה לקובץ ב־master. כדי לשמור את הגרסה המדויקת, שולחים תוכן Compose מפורש ומציבים את URL ה־Git עם commit ב־`GUTMAN_BUILD_CONTEXT`. אין להניח גישת Git לחשבון פרטי בלי לבדוק הרשאה. סודות נמצאים ב־`environment` בלבד, אינם build args ואינם שייכים לתמונה או ל־Git. אין להדפיס את גוף הבקשה או את שדות הסביבה בתשובות ניהול.
+`content` יכול להיות גם URL, אך ה־API מתאר URL של repository שממופה לקובץ ב־master. שולחים תוכן Compose מפורש כדי לשמור את הגרסה. **ב־Docker Manager נמצאה מגבלה מעשית:** הוא מנסה למשוך תמונות לפני הפריסה, ולכן app עם image מקומי שטרם נבנה ו־build בתוך אותו manifest לא יצר קונטיינרים. ה־builder החד־פעמי כבר הוכח בפועל: סיים exit 0; האפליקציה רצה מתמונתו עם manifest של runtime בלבד ו־`pull_policy: never`.
+
+ה־builder מקבל `GUTMAN_BUILD_CONTEXT` כ־URL Git מורשה עם commit מלא, `GUTMAN_SOURCE_REVISION` זהה, `GUTMAN_IMAGE_TAG` ייחודי, `GUTMAN_BUILD_TARGET=runtime` ו־`GUTMAN_BUILD_IMAGE=gutman-academy-preview`. הבנייה היא argv ישיר של `docker build`, ללא פקודת shell שמקבלת קלט. לאחר הצלחה מפרסים `compose.manager.yml`; לעדכון מדיה בונים בנפרד גם `media-tools` בשם `gutman-academy-preview-media` עם אותו tag ו־commit. אין להניח גישת Git לחשבון פרטי בלי לבדוק הרשאה. סודות נמצאים ב־`environment` בלבד, אינם build args ואינם שייכים לתמונה או ל־Git. אין להדפיס את גוף הבקשה או את שדות הסביבה בתשובות ניהול.
 
 לאחר POST יש לקרוא מצב/קונטיינרים ולוגים באופן מסונן ואז לבדוק `/healthz`, דף עברי, `/api/lead`, `/api/academy/catalog` וכניסה מוגנת למנהל דרך כתובת HTTPS. קבלת job או project מה־API אינה בפני עצמה הוכחת הצלחת build, בריאות השרת או TLS.
+
+## סרטון המחזור הראשון — באתר בלבד, ללא GitHub ציבורי או אחסון ביניים
+
+הבעלים בחרו במפורש לא לפרסם את הקובץ ב־GitHub. `public/videos/first-cohort/` מוחרג גם מ־Git וגם מ־Docker build context. אין source video או poster בינארי חדש במאגר, בתמונה, ב־Composio artifacts או ב־S3. מקור הקובץ הוא קובץ Drive המקורי; ה־Drive connector נותן כתובת הורדה חתומה זמנית ב־`sdmntprnortheu.oaiusercontent.com`, שהיא stream של המקור ולא יעד upload חדש.
+
+המסלול: מקור Drive/stream מאושר → named volume פרטי של פרויקט Hostinger → transcode מקומי → שני קבצים באתר. `scripts/self-hosted-media-seed.mjs` מקבל רק `ACADEMY_TESTIMONIAL_SOURCE` ו־`ACADEMY_TESTIMONIAL_SOURCE_SHA256`. יש לקבל URL טרי **אחרי בניית שתי התמונות**, ממש לפני ה־seed, משום שהוא פג לאחר כחמש דקות. אין להעביר URL מדיה ל־builder או ל־build args, ואין להדפיס אותו בלוגים או בקשות תמיכה.
+
+SHA256 של המקור שנמסר למפעיל: `e90cc52c3d394a65e5fcbac9048adf1fa2a12c17aa3e15dee7227e1d30b6b4bf`. ה־seed מאמת אותו לפני ffmpeg. הוא מוריד רק מהמקור המאושר, תומך בהפניות HTTPS מוגבלות, אינו מבצע uploads ואינו משתמש ב־fallback של שירות אחסון אחר.
+
+כדי להציג את הסרטון, בונים **גם runtime וגם media-tools** עם `VITE_ACADEMY_TESTIMONIAL_ENABLED=1`. ברירת המחדל של build רגיל היא 0, כך ש־Vercel/אתר ללא נפח מדיה אינו מציג קישור שבור. ffmpeg מותקן רק ב־stage האופציונלי `media-tools`; תמונת האפליקציה נשארת קטנה.
+
+ב־overlay, `media-seed` משתמש ב־`gutman-academy-preview-media` וכותב לנפח `academy_preview_media` ב־`/media`. Node UID 1000 הוא בעל התיקייה. האפליקציה ממתינה ל־`service_completed_successfully` ומקבלת את אותו נפח **לקריאה בלבד** ב־`/app/dist/videos/first-cohort`. יתר `dist/videos` אינם מוחלפים או מוסתרים.
+
+התוצרים המפורסמים היחידים:
+
+- `/videos/first-cohort/testimonials.mp4`: H264, עד 720 גובה, CRF 26, AAC 96k, faststart.
+- `/videos/first-cohort/poster.jpg`: frame בשנייה 15.
+
+הקבצים נכתבים תחילה לשמות זמניים ומוחלפים ב־atomic rename אחרי בדיקת תוצר ו־SHA256. manifest מוסתר מתעד את hash המקור ושני התוצרים בלי URL; קבצים 644 ותיקיות 755. המקור נשמר זמנית בשם מוסתר בהרשאות 600, ומוסר רק אחרי פרסום מלא וסנכרון. שרת האתר חוסם נתיבים שמתחילים בנקודה, ולכן המקור וה־manifest אינם קבצים ציבוריים.
+
+ב־restart, אם manifest ו־hash של שני הקבצים תקינים, אין הורדה או encode מחדש גם כשכתובת המקור פגה. אם encode נקטע, מקור שכבר אומת נשמר וניתן להשלים ממנו בלי רשת. במקרה checksum שגוי אין החלפת תוצר קיים; במקרה תקלה overlay אינו מפעיל אפליקציה עם מדיה חסרה. אין צורך למחוק נפח מדיה כדי לעדכן כתובת פגה.
+
+בדיקות seed משתמשות במדיה סינתטית מקומית ובתחבורת download מדומה; הן אינן מורידות או מפרסמות את הסרטון הפרטי. הוכחו SHA שגוי/הפניה אסורה ללא overwrite, manifest והרשאות, restart ללא URL, recovery ממקור מוסתר, ו־ffmpeg אמיתי שמייצר H264/AAC 720 עם faststart ו־JPEG. גם stage כלי המדיה נבנה בהצלחה עם CA זמני של סביבת הבנייה; ה־CA אינו נשמר בתמונה. ה־seed של הסרטון המקורי ב־VPS עדיין נדרש בנפרד.
 
 ## תשלום והודעות אמיתיים
 
@@ -84,4 +117,4 @@ docker compose --env-file deploy/hostinger/.env.preview -f deploy/hostinger/comp
 
 בדיקות Node משתמשות ב־SQLite בקובץ זמני ובתחבורה מדומה ל־Morning ו־Fireberry: API lead אמיתי שעבר קומפילציה, גבולות JSON/origin, מניעת נתיב פרטי/קישור סמלי, SPA ומדיה, שימור הזמנה אחרי סגירה ופתיחה, ואישור קבלה מדויק פעם אחת. אין חיובים, הודעות או רשומות CRM אמיתיים בבדיקות.
 
-גישה מאומתת ל־Docker Manager והגדרות Traefik/DNS אותרו. פריסה בפועל, שירות Preview תקין, תעודת TLS, אימות סוחר/שולח וגיבוי שחזור עדיין אינם מוכחים עד ביצוע ובדיקה מול השרת. אין כאן טענה שהאתר כבר הועבר. דומיין הייצור נשאר בתשתית הקיימת עד החלטת מעבר נפרדת לאחר בדיקת Preview.
+האתר הבסיסי רץ ומדווח healthy ב־Hostinger; מקור image והתשתית נבדקו כמתואר בתחילת המסמך. TLS תקין נבדק בפועל. סרטון המחזור הראשון ב־named volume, סודות/אימות סוחר ושולח וגיבוי שחזור עדיין דורשים השלמה ובדיקה בפועל. אין טענה שמסחר, CRM או מסירת דוא״ל אמיתיים פעילים. דומיין הייצור נשאר בתשתית הקיימת עד החלטת מעבר נפרדת לאחר בדיקת Preview.

@@ -5,7 +5,8 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { spawn } from 'node:child_process';
 
-const STREAM_HOST = 'sdmntprnortheu.oaiusercontent.com'; // Original Drive connector download stream, not an upload destination.
+// Original Drive connector download streams rotate between provider regions.
+const isDriveStream = hostname => /^sdmnt[a-z0-9-]+\.oaiusercontent\.com$/.test(hostname);
 const isGoogle = hostname => ['drive.google.com', 'drive.usercontent.google.com', 'www.googleapis.com', 'drive.googleapis.com'].includes(hostname) || hostname === 'googleusercontent.com' || hostname.endsWith('.googleusercontent.com');
 const sha = value => typeof value === 'string' && /^[a-f0-9]{64}$/i.test(value);
 const MAX_SOURCE_BYTES = 256 * 1024 * 1024;
@@ -14,7 +15,7 @@ export class MediaSeedError extends Error {
   constructor(code) { super(`Approved testimonial media preparation failed (${code}).`); this.name = 'MediaSeedError'; this.code = code; }
 }
 function sourceUrl(value) {
-  try { const url = new URL(value); if (url.protocol === 'https:' && !url.username && !url.password && (url.hostname === STREAM_HOST || isGoogle(url.hostname))) return url; } catch { /* Do not include a signed URL in any error. */ }
+  try { const url = new URL(value); if (url.protocol === 'https:' && !url.username && !url.password && (isDriveStream(url.hostname) || isGoogle(url.hostname))) return url; } catch { /* Do not include a signed URL in any error. */ }
   throw new MediaSeedError('SOURCE_NOT_ALLOWED');
 }
 async function fileHash(path, maxBytes = MAX_SOURCE_BYTES) {
@@ -38,7 +39,7 @@ async function downloadOriginal({ directory, url, expectedSha, fetchImpl, timeou
   const temporary = resolve(directory, `.download-${randomUUID()}.mp4`);
   const original = resolve(directory, `.original-${expectedSha}.mp4`);
   if (await validFile(original, expectedSha)) return { path: original, downloaded: false };
-  const first = sourceUrl(url); let current = first; const streamSource = first.hostname === STREAM_HOST;
+  const first = sourceUrl(url); let current = first; const streamSource = isDriveStream(first.hostname);
   const controller = new AbortController(); const timer = setTimeout(() => controller.abort(), timeoutMs);
   let handle;
   try {

@@ -11,6 +11,7 @@ services:
     read_only: true
     environment:
       DOCKER_HOST: unix:///var/run/docker.sock
+      DOCKER_CONFIG: /tmp/academy-docker
       BUILDX_CONFIG: /tmp/academy-buildx
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock

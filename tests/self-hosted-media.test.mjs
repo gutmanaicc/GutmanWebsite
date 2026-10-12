@@ -23,11 +23,13 @@ test('wrong source hash and unapproved redirect never publish or overwrite exist
   let redirects = 0;
   await assert.rejects(seedTestimonialMedia({ directory, source, sourceSha256: hash(original), fetchImpl: async () => { redirects++; return new Response(null, { status: 302, headers: { location: 'https://unapproved-artifact.example.test/original' } }); }, runProcess: encodeMock }), error => error.code === 'SOURCE_NOT_ALLOWED' || error.code === 'REDIRECT_NOT_ALLOWED');
   assert.equal(redirects, 1); assert.equal(await readFile(join(directory, 'testimonials.mp4'), 'utf8'), 'existing video');
+  await assert.rejects(seedTestimonialMedia({ directory, source, sourceSha256: hash(original), fetchImpl: async () => new Response(null, { status: 302, headers: { location: 'https://sdmntprukwest.oaiusercontent.com/original' } }), runProcess: encodeMock }), error => error.code === 'REDIRECT_NOT_ALLOWED');
 });
 
 test('successful preparation publishes only two files with manifest checksums/permissions; restart needs neither expired URL nor network', async t => {
   const directory = await folder(t); let downloads = 0;
-  const result = await seedTestimonialMedia({ directory, source, sourceSha256: hash(original), fetchImpl: async (_url, options) => { downloads++; assert.equal(options.redirect, 'manual'); return new Response(original); }, runProcess: encodeMock });
+  const regionalSource = source.replace('northeu', 'ukwest');
+  const result = await seedTestimonialMedia({ directory, source: regionalSource, sourceSha256: hash(original), fetchImpl: async (_url, options) => { downloads++; assert.equal(_url, regionalSource); assert.equal(options.redirect, 'manual'); return new Response(original); }, runProcess: encodeMock });
   assert.deepEqual(result, { status: 'ready', downloaded: true, transcoded: true });
   const manifest = JSON.parse(await readFile(join(directory, '.testimonial-manifest.json'), 'utf8'));
   assert.equal(manifest.sourceSha256, hash(original)); assert.equal(manifest.video.sha256, hash(await readFile(join(directory, 'testimonials.mp4')))); assert.equal(manifest.poster.sha256, hash(await readFile(join(directory, 'poster.jpg'))));
