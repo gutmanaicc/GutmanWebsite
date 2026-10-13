@@ -6,14 +6,22 @@
   "rewrites": [
     {
       "source": "/api/academy/:path*",
-      "destination": "/api/academy?academyPath=:path*"
+      "destination": "https://academy-preview.srv1942778.hstgr.cloud/api/academy/:path*"
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "https://academy-preview.srv1942778.hstgr.cloud/api/:path*"
+    },
+    {
+      "source": "/videos/first-cohort/:path*",
+      "destination": "https://academy-preview.srv1942778.hstgr.cloud/videos/first-cohort/:path*"
     },
     {
       "source": "/payment-thanks",
       "destination": "/payment-thanks.html"
     },
     {
-      "source": "/((?!api/|assets/).*)",
+      "source": "/((?!api/|assets/|videos/|fonts/|client-logos/).*)",
       "destination": "/index.html"
     }
   ],
@@ -30,6 +38,14 @@
           "value": "strict-origin-when-cross-origin"
         }
       ]
+    },
+    {
+      "source": "/cancel",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
+      "source": "/privacy-requests",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
     },
     {
       "source": "/register",
