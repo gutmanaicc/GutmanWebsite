@@ -1,7 +1,7 @@
 import { useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Check } from 'lucide-react';
-import { academyRequest } from '../../lib/academy';
+import { academyRequest, trackAcademy } from '../../lib/academy';
 import { SITE } from '../../data/site';
 
 export default function LeadInterestForm({ seminarSlug, requestedDate }: { seminarSlug: string; requestedDate?: string }) {
@@ -25,6 +25,7 @@ export default function LeadInterestForm({ seminarSlug, requestedDate }: { semin
       const response = await academyRequest<{ ok: boolean; received: boolean }>('/leads', { method: 'POST', headers: { 'Idempotency-Key': lastRequest.current!.key }, body });
       if (!response.ok || !response.received) throw new Error('לא הצלחנו לאשר שהפנייה נקלטה.');
       setReceived(true);
+      trackAcademy('lead_received', { seminar_id: seminarSlug });
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'הפנייה לא הושלמה. אפשר ליצור קשר באימייל.'); }
     finally { submitting.current = false; setBusy(false); }
   }

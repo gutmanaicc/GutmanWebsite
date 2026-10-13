@@ -10,7 +10,8 @@ import { Consent } from './Consent';
 import { SITE } from '../data/site';
 import { trackAcademy } from '../lib/academy';
 import { useSectionFade } from '../lib/motion/useSectionFade';
-import { analyticsPathAllowed, COOKIE_PREFERENCES_EVENT } from '../consent';
+import { analyticsPathAllowed, canUseAnalytics, COOKIE_PREFERENCES_EVENT, MEASUREMENT_READY_EVENT, measurementEnvironmentEnabled } from '../consent';
+import { trackPixelPage } from '../pixel';
 
 const navigation = [
   { to: '/', label: 'ראשי' }, { to: '/courses', label: 'הסמינרים' },
@@ -32,6 +33,16 @@ export default function AcademyLayout() {
   const menuButton = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLElement>(null);
   const production = import.meta.env.VITE_ACADEMY_PRODUCTION_APPROVED === '1' && /^(www\.)?gutmanai\.com$/.test(window.location.hostname);
+  useEffect(() => {
+    let viewed = false;
+    const measure = () => {
+      trackPixelPage();
+      const slug = location.pathname.match(/^\/(?:courses|syllabus)\/(social-media-ai|ai-video-content|ai-business-owners)$/)?.[1];
+      if (!viewed && slug && window.gtag && canUseAnalytics()) { trackAcademy('seminar_view', { seminar_id: slug }); viewed = true; }
+    };
+    window.addEventListener(MEASUREMENT_READY_EVENT, measure); measure();
+    return () => window.removeEventListener(MEASUREMENT_READY_EVENT, measure);
+  }, [location.pathname]);
   useEffect(() => { setOpen(false); }, [location.pathname, location.hash]);
   useEffect(() => {
     if (open) menuRef.current?.querySelector<HTMLAnchorElement>('a')?.focus();
@@ -66,7 +77,7 @@ export default function AcademyLayout() {
       <nav aria-label="קישורים בתחתית העמוד"><Link to="/courses">הסמינרים</Link><Link to="/about">על האקדמיה</Link><Link to="/reviews">המלצות</Link><Link reloadDocument to="/booking-terms">תנאי הרשמה וביטול</Link><Link reloadDocument to="/terms">תקנון האתר</Link><Link reloadDocument to="/privacy">מדיניות פרטיות</Link><Link reloadDocument to="/privacy-requests">פניות פרטיות</Link><Link to="/accessibility">הצהרת נגישות</Link><button type="button" onClick={()=>window.dispatchEvent(new Event(COOKIE_PREFERENCES_EVENT))}>העדפות עוגיות</button></nav>
       <div className="academy-footer-contact"><a href={`mailto:${SITE.contact.email}`}><Mail size={18} aria-hidden /><bdi>{SITE.contact.email}</bdi></a><a href={SITE.social.instagram} target="_blank" rel="noreferrer"><Instagram size={18} aria-hidden /> GutmanAI</a><span>© {new Date().getFullYear()} Gutman Academy</span></div>
     </div><div className="academy-container academy-cancellation-access"><Link reloadDocument to="/cancel">ביטול עסקה</Link><p>אפשר למסור הודעה בטופס המקוון, באימייל <a href={`mailto:${SITE.contact.email}`} dir="ltr">{SITE.contact.email}</a> או בטלפון <a href={`tel:${SITE.contact.phone.replace(/\D/g, '')}`} dir="ltr">{SITE.contact.phone}</a>. בהודעת ביטול יש לציין שם ומספר זהות בהתאם לדין; מספר הזמנה יסייע בזיהוי העסקה.</p></div></footer>
-    <Consent enabled={production && analyticsPathAllowed(location.pathname)} />
+    <Consent enabled={measurementEnvironmentEnabled() && analyticsPathAllowed(location.pathname)} />
     <AccessibilityMenu />
   </div>;
 }

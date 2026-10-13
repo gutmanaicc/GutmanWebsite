@@ -1,5 +1,6 @@
 import config from '../../shared/commerce-config.json';
 import { canUseAnalytics } from '../consent';
+import { trackStandard, track } from '../pixel';
 
 export const ACADEMY_CONFIG = {
   activePrice: config.activePrice,
@@ -67,6 +68,17 @@ export const formatSeminarDate = (date: string) => new Intl.DateTimeFormat('he-I
 
 /* רק מזהי תוכן מגיעים למדידה; כתובות אימייל וקודי קופון נשארים בשרת. */
 export function trackAcademy(event: string, values: Record<string, string | number> = {}) {
-  if (import.meta.env.VITE_ACADEMY_PRODUCTION_APPROVED !== '1' || !canUseAnalytics()) return;
-  window.gtag?.('event', event, values);
+  if (!canUseAnalytics()) return;
+  const allowed = ['seminar_id', 'date_id', 'placement', 'discount', 'value'];
+  const clean = Object.fromEntries(Object.entries(values).filter(([key, value]) => allowed.includes(key) && (typeof value === 'number' ? Number.isFinite(value) : /^[a-zA-Z0-9_-]{1,100}$/.test(value))));
+  const seminar = typeof clean.seminar_id === 'string' && ['social-media-ai','ai-video-content','ai-business-owners'].includes(clean.seminar_id) ? clean.seminar_id : undefined;
+  const ecommerce = seminar ? { currency: 'ILS', items: [{ item_id: seminar, item_category: 'seminar', quantity: 1 }], ...(typeof clean.value === 'number' ? { value: clean.value } : {}) } : {};
+  const name = event === 'seminar_view' ? 'view_item' : event === 'lead_received' ? 'generate_lead' : event;
+  if (!['seminar_view','lead_received','begin_checkout','homepage_cta_click','select_seminar_date','apply_coupon'].includes(event)) return;
+  window.gtag?.('event', name, { ...clean, ...ecommerce });
+  const meta = seminar ? { content_ids: [seminar], content_type: 'product', currency: 'ILS', ...(typeof clean.value === 'number' ? { value: clean.value } : {}) } : clean;
+  if (event === 'seminar_view') trackStandard('ViewContent', meta);
+  else if (event === 'lead_received') trackStandard('Lead', meta);
+  else if (event === 'begin_checkout') trackStandard('InitiateCheckout', meta);
+  else track(event, clean);
 }

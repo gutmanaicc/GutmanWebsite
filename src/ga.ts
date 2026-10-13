@@ -41,7 +41,19 @@ export function loadGa() {
   document.head.appendChild(s);
 
   window.gtag("js", new Date());
-  window.gtag("config", GA_ID);
+  const query = new URLSearchParams(window.location.search);
+  const campaign: Record<string, string> = {};
+  for (const [param, key] of Object.entries({ utm_source: 'campaign_source', utm_medium: 'campaign_medium', utm_campaign: 'campaign_name', utm_id: 'campaign_id', utm_term: 'campaign_term', utm_content: 'campaign_content' })) {
+    const value = query.get(param);
+    if (value && /^[\p{L}\p{N} _.-]{1,100}$/u.test(value)) campaign[key] = value;
+  }
+  window.gtag("config", GA_ID, {
+    page_location: window.location.origin + window.location.pathname,
+    page_referrer: document.referrer ? new URL(document.referrer).origin : '',
+    allow_google_signals: false,
+    allow_ad_personalization_signals: false,
+    ...campaign,
+  });
 }
 
 /**
@@ -70,8 +82,8 @@ export function grantGa() {
   window.gtag?.("consent", "update", {
     ad_storage: "granted",
     analytics_storage: "granted",
-    ad_user_data: "granted",
-    ad_personalization: "granted",
+    ad_user_data: "denied",
+    ad_personalization: "denied",
   });
 }
 

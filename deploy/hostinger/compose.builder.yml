@@ -26,6 +26,10 @@ services:
       - GUTMAN_SOURCE_REVISION=${GUTMAN_SOURCE_REVISION:?Set the full reviewed commit SHA}
       - --build-arg
       - VITE_ACADEMY_TESTIMONIAL_ENABLED=${VITE_ACADEMY_TESTIMONIAL_ENABLED:-0}
+      - --build-arg
+      - VITE_ACADEMY_MEASUREMENT_ENABLED=${VITE_ACADEMY_MEASUREMENT_ENABLED:-0}
+      - --build-arg
+      - VITE_ACADEMY_MEASUREMENT_ORIGIN=${VITE_ACADEMY_MEASUREMENT_ORIGIN:-}
       - --file
       - deploy/hostinger/Dockerfile
       - --tag

@@ -1,6 +1,12 @@
 import { canUseAnalytics } from "./consent";
 
 const PIXEL_ID = "1392343815914070";
+let lastPage = '';
+export function trackPixelPage() {
+  if (!canUseAnalytics() || !window.fbq || lastPage === window.location.pathname) return;
+  lastPage = window.location.pathname;
+  window.fbq('track', 'PageView');
+}
 
 declare global {
   interface Window {
@@ -26,8 +32,9 @@ export function loadPixel() {
   s.src = "https://connect.facebook.net/en_US/fbevents.js";
   document.head.appendChild(s);
 
+  window.fbq('set', 'autoConfig', false, PIXEL_ID);
   window.fbq("init", PIXEL_ID);
-  window.fbq("track", "PageView");
+  trackPixelPage();
 }
 
 /**

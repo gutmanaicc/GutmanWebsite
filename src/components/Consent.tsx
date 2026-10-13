@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { grantClarity, loadClarity, revokeClarity } from '../clarity';
-import { CONSENT_KEY, COOKIE_PREFERENCES_EVENT, cookieChoice, hasAnalyticsConsent } from '../consent';
+import { CONSENT_KEY, COOKIE_PREFERENCES_EVENT, MEASUREMENT_READY_EVENT, cookieChoice, hasAnalyticsConsent } from '../consent';
 import { grantGa, loadGa, revokeGa } from '../ga';
 import { grantTracking, loadPixel, revokeTracking } from '../pixel';
 import { captureUtm } from '../lib/leads';
@@ -17,7 +17,7 @@ export const Consent = ({ enabled = true }: { enabled?: boolean }) => {
   }, []);
   useEffect(() => {
     if (!enabled) { revokeTracking(); revokeClarity(); revokeGa(); return; }
-    if (hasAnalyticsConsent()) { loadPixel(); loadClarity(); loadGa(); grantTracking(); grantClarity(); grantGa(); captureUtm(); return; }
+    if (hasAnalyticsConsent()) { loadPixel(); loadClarity(); loadGa(); grantTracking(); grantClarity(); grantGa(); captureUtm(); window.dispatchEvent(new Event(MEASUREMENT_READY_EVENT)); return; }
     if (!cookieChoice()) {
       const timer = setTimeout(() => setVisible(true), 1200);
       return () => clearTimeout(timer);
@@ -29,6 +29,7 @@ export const Consent = ({ enabled = true }: { enabled?: boolean }) => {
     setVisible(false);
     if (choice === 'accepted' && enabled && hasAnalyticsConsent()) {
       loadPixel(); loadClarity(); loadGa(); grantTracking(); grantClarity(); grantGa(); captureUtm();
+      window.dispatchEvent(new Event(MEASUREMENT_READY_EVENT));
     } else {
       const scriptsLoaded = Boolean(window.fbq || window.clarity || window.gtag);
       revokeTracking(); revokeClarity(); revokeGa();
