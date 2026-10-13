@@ -22,4 +22,6 @@ Checkout links separately to booking/cancellation terms and privacy. Until appro
 
 Automated checks cover selected plugin forwarding, private identity binding, permissions, staleness, origin validation, callback/redirect forgery, checkout idempotency, verified receipt matching and HubSpot intake regression. Browser checks cover hosted checkout, the separate draft/approved terms view, responsive pages and accessibility.
 
-Live account and form probes passed; an actual card charge has not been tested. Customer registrations are never fabricated from a link, a page load or a redirect. HubSpot enquiries remain a separate active integration.
+Live account and form probes passed. The deployed runtime was then tested through its real HTTP checkout API in an isolated private fixture, using temporary future test dates rather than the owner's live database. All three seminar types returned HTTP201, real payment pages returned HTTP200, duplicate requests reused one order and link, and exactly three supplier form requests were made. Forged paid notifications triggered real authenticated document searches, left orders pending and created no registrations. Test emails were removed from supplier requests. No card was supplied, no charge occurred and the owner's live dates were not modified.
+
+An actual card charge has not been tested. Customer registrations are never fabricated from a link, a page load or a redirect. HubSpot enquiries remain a separate active integration.
