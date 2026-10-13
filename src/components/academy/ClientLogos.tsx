@@ -15,8 +15,15 @@ export default function ClientLogos() {
   const controls = useRef({ still, paused });
   controls.current.still = still; controls.current.paused = paused;
   const syncPlayback = useCallback(() => {
-    if (controls.current.still || controls.current.paused || pointer.current) animation.current?.pause();
-    else animation.current?.play();
+    const loop = animation.current;
+    if (!loop) return;
+    if (controls.current.still || controls.current.paused || pointer.current) {
+      const time = loop.currentTime;
+      loop.pause();
+      // Setting hold time makes pause effective immediately, without the
+      // extra compositor frame that a pending pause task can otherwise show.
+      if (typeof time === 'number') loop.currentTime = time;
+    } else loop.play();
   }, []);
   const position = useCallback(() => {
     const time = animation.current?.currentTime;
@@ -62,7 +69,7 @@ export default function ClientLogos() {
   return <section className="academy-client-banner" aria-labelledby="academy-client-title">
     <div className="academy-container academy-client-heading"><p className="academy-eyebrow">ניסיון שמגיע מהשטח</p><h2 id="academy-client-title">מותגים שעבדתי איתם.</h2><p>הניסיון מהמותגים האלה מגיע איתי לכל סמינר.</p></div>
     <div ref={viewport} className="academy-client-viewport" dir="ltr" role="region" aria-label="לוגואים של לקוחות. אפשר לגרור, להזיז במקשי החצים, ולהשהות או להפעיל במקש רווח" aria-keyshortcuts="ArrowLeft ArrowRight Space" tabIndex={0} data-motion-mode={still ? 'reduced' : paused ? 'paused' : 'automatic'}
-      onKeyDown={event => { if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); move(event.key === 'ArrowLeft' ? -220 : 220); } else if (event.key === ' ' && !still) { event.preventDefault(); setPaused(value => !value); } }}
+      onKeyDown={event => { if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); move(event.key === 'ArrowLeft' ? -220 : 220); } else if (event.key === ' ' && !still) { event.preventDefault(); if (event.repeat) return; const next = !controls.current.paused; controls.current.paused = next; syncPlayback(); setPaused(next); } }}
       onPointerDown={event => { if (event.button !== 0) return; pointer.current = { id: event.pointerId, x: event.clientX }; event.currentTarget.setPointerCapture(event.pointerId); event.currentTarget.classList.add('is-dragging'); syncPlayback(); }}
       onPointerMove={event => { if (pointer.current?.id !== event.pointerId) return; move(event.clientX - pointer.current.x); pointer.current.x = event.clientX; }}
       onPointerUp={release} onPointerCancel={release} onLostPointerCapture={() => { pointer.current = null; viewport.current?.classList.remove('is-dragging'); syncPlayback(); }}>

@@ -8,7 +8,7 @@ const runtime = createSelfHostedRuntime();
 let server;
 try {
   const apiHandlers = await loadSelfHostedApiHandlers(fileURLToPath(new URL('../.self-hosted-api/', import.meta.url)));
-  server = await createSelfHostedServer({ runtime, apiHandlers, staticDirectory: fileURLToPath(new URL('../dist/', import.meta.url)), preview: process.env.ACADEMY_PREVIEW !== '0' });
+  server = await createSelfHostedServer({ runtime, apiHandlers, staticDirectory: fileURLToPath(new URL('../dist/', import.meta.url)), preview: process.env.ACADEMY_PREVIEW !== '0', productionOrigin: process.env.ACADEMY_PUBLIC_ORIGIN });
 } catch (error) { runtime.close(); throw error; }
 server.listen(port, process.env.ACADEMY_HOST || '0.0.0.0', () => console.log(`Gutman standalone Node24 website on port ${port}; payment mode ${runtime.store.mode}, provider ready ${runtime.checkout.ready}; preview ${process.env.ACADEMY_PREVIEW !== '0'}.`));
 // Email automation is opt-in and selects only the configured service kinds.

@@ -1,6 +1,6 @@
 import { createServer } from 'node:http';
 import { createReadStream } from 'node:fs';
-import { readdir, realpath, stat } from 'node:fs/promises';
+import { readFile, readdir, realpath, stat } from 'node:fs/promises';
 import { extname, relative, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -19,6 +19,7 @@ async function jsonBody(req) {
   catch { return { error: 400 }; }
 }
 const inside = (root, path) => path === root || (!relative(root, path).startsWith(`..${sep}`) && relative(root, path) !== '..' && !relative(root, path).startsWith(sep));
+const PUBLIC_PAGES = new Set(['/', '/courses', '/courses/social-media-ai', '/courses/ai-video-content', '/courses/ai-business-owners', '/about', '/reviews', '/privacy', '/accessibility', '/terms', '/booking-terms']);
 
 export async function loadSelfHostedApiHandlers(directory) {
   const handlers = new Map();
@@ -33,10 +34,15 @@ export async function loadSelfHostedApiHandlers(directory) {
 }
 
 /** Serves only built public assets; native API paths can never fall back to HTML. */
-export async function createSelfHostedServer({ runtime, staticDirectory, apiHandlers, preview = true } = {}) {
+export async function createSelfHostedServer({ runtime, staticDirectory, apiHandlers, preview = true, productionOrigin } = {}) {
   const root = await realpath(staticDirectory);
   if (!(await stat(root)).isDirectory() || !apiHandlers?.has('/api/lead')) throw new Error('A built public directory and compiled lead handler are required.');
-  const serveStatic = async (req, res, pathname) => {
+  let canonical;
+  if (!preview) {
+    canonical = new URL(productionOrigin);
+    if (canonical.protocol !== 'https:' || canonical.origin !== productionOrigin || canonical.username || canonical.password) throw new Error('Production hosting requires an exact canonical HTTPS origin.');
+  }
+  const serveStatic = async (req, res, pathname, indexable) => {
     let decoded;
     try { decoded = decodeURIComponent(pathname); } catch { send(res, 400, { error: 'invalid_path' }); return; }
     if (decoded.includes('\0') || decoded.includes('\\') || decoded.split('/').some(part => part.startsWith('.') || part === '..')) { send(res, 404, { error: 'not_found' }); return; }
@@ -51,6 +57,13 @@ export async function createSelfHostedServer({ runtime, staticDirectory, apiHand
       metadata = await stat(file); if (!metadata.isFile()) { send(res, 404, { error: 'not_found' }); return; }
     }
     const headers = { 'Content-Type': TYPES[extname(file).toLowerCase()] || 'application/octet-stream', 'Cache-Control': relative(root, file).startsWith(`assets${sep}`) ? 'public, max-age=31536000, immutable' : extname(file) === '.html' ? 'no-cache' : 'public, max-age=3600', 'Accept-Ranges': 'bytes' };
+    // One app serves production and its preview; previews and private routes
+    // must remain noindex even when the image contains production HTML.
+    if (extname(file) === '.html') {
+      const body = (await readFile(file, 'utf8')).replace(/(<meta name="robots" content=")[^"]*("\s*\/?>)/, `$1${indexable ? 'index, follow' : 'noindex, nofollow'}$2`);
+      res.writeHead(200, { ...headers, 'Content-Length': Buffer.byteLength(body) });
+      res.end(req.method === 'HEAD' ? undefined : body); return;
+    }
     // Browsers seek video files. A single byte range is served without loading the file into memory.
     let start = 0; let end = metadata.size - 1; let status = 200;
     if (req.headers.range) {
@@ -71,7 +84,17 @@ export async function createSelfHostedServer({ runtime, staticDirectory, apiHand
     res.setHeader('X-Content-Type-Options', 'nosniff'); res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     try {
       const url = new URL(req.url, 'http://localhost'); const path = url.pathname;
-      if (preview || path.startsWith('/api/') || path.startsWith('/admin/') || path.startsWith('/orders/')) res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+      const host = String(req.headers.host ?? '').toLowerCase();
+      const productionHost = !preview && host === canonical.host;
+      if (!preview && host === `www.${canonical.hostname}`) {
+        res.writeHead(308, { Location: `${canonical.origin}${url.pathname}${url.search}`, 'Cache-Control': 'no-store' }); res.end(); return;
+      }
+      const indexable = productionHost && PUBLIC_PAGES.has(path);
+      if (!indexable) res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+      if (path === '/robots.txt' && ['GET', 'HEAD'].includes(req.method)) {
+        const body = productionHost ? `User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\nSitemap: ${canonical.origin}/sitemap.xml\n` : 'User-agent: *\nDisallow: /\n';
+        res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-cache', 'Content-Length': Buffer.byteLength(body) }); res.end(req.method === 'HEAD' ? undefined : body); return;
+      }
       if (path === '/healthz' && ['GET', 'HEAD'].includes(req.method)) { send(res, 200, { status: 'ok' }); return; }
       if (path === '/api/academy' || path.startsWith('/api/academy/')) { await runtime.handler(req, res); return; }
       if (path.startsWith('/api/')) {
@@ -84,7 +107,7 @@ export async function createSelfHostedServer({ runtime, staticDirectory, apiHand
         await handler(req, responseShim(res)); return;
       }
       if (!['GET', 'HEAD'].includes(req.method)) { res.setHeader('Allow', 'GET, HEAD'); send(res, 405, { error: 'method_not_allowed' }); return; }
-      await serveStatic(req, res, path === '/payment-thanks' ? '/payment-thanks.html' : path);
+      await serveStatic(req, res, path === '/payment-thanks' ? '/payment-thanks.html' : path, indexable);
     } catch { if (!res.headersSent) send(res, 503, { error: 'service_unavailable' }); else res.destroy(); }
   });
 }

@@ -126,6 +126,7 @@ test('tracking requires explicit v2 consent and safe paths; preview never sends 
 
 test('browser hosted checkout redirects and returns pending until authenticated provider lookup confirms it', async () => {
   let settled = false;
+  let delayStatusRead = false;
   let linkInput;
   const adapter = {
     ready: true, checkoutOrigins: ['https://checkout.example.test'],
@@ -151,7 +152,9 @@ test('browser hosted checkout redirects and returns pending until authenticated 
       const request = route.request();
       const path = new URL(request.url()).pathname;
       const response = await fetch(apiOrigin + path, { method: request.method(), headers: { ...request.headers(), host: new URL(apiOrigin).host }, ...(request.postData() ? { body: request.postData() } : {}) });
-      await route.fulfill({ status: response.status, headers: { 'content-type': 'application/json' }, body: await response.text() });
+      const responseBody = await response.text();
+      if (delayStatusRead && request.method() === 'GET' && /\/orders\/[^/]+$/.test(path)) { delayStatusRead = false; await new Promise(resolve => setTimeout(resolve, 500)); }
+      await route.fulfill({ status: response.status, headers: { 'content-type': 'application/json' }, body: responseBody });
     });
     await page.route('https://checkout.example.test/pay/**', async route => {
       const id = new URL(route.request().url()).pathname.split('/').at(-1);
@@ -171,8 +174,23 @@ test('browser hosted checkout redirects and returns pending until authenticated 
     await page.getByRole('link', { name: 'להמשך התשלום המאובטח' }).waitFor();
     assert.equal(providerStore.all('registrations').length, 0);
     settled = true;
+    delayStatusRead = true;
+    await page.evaluate(() => {
+      let confirmed = false;
+      window.__mockPaymentRegressed = false;
+      new MutationObserver(() => {
+        const title = document.querySelector('.academy-confirmation h1')?.textContent;
+        if (title === 'ההרשמה אושרה') confirmed = true;
+        if (confirmed && title === 'ההזמנה ממתינה לאישור') window.__mockPaymentRegressed = true;
+      }).observe(document.body, { childList: true, subtree: true, characterData: true });
+    });
     await page.getByRole('button', { name: 'רענון מצב ההזמנה' }).click();
-    await page.getByRole('heading', { level: 1, name: 'ההרשמה אושרה', exact: true }).waitFor();
+    await page.getByRole('heading', { level: 1, name: 'ההרשמה אושרה', exact: true }).waitFor().catch(async error => {
+      console.error('Mock checkout diagnostics', { orders: providerStore.all('orders').map(o => ({ status: o.status, holdExpiresAt: o.holdExpiresAt })), events: providerStore.all('payment_events').length, page: await page.locator('.academy-confirmation').innerText() });
+      throw error;
+    });
+    await page.waitForTimeout(650);
+    assert.equal(await page.evaluate(() => window.__mockPaymentRegressed), false, 'late pending response must not overwrite verified payment');
     const violations = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
     assert.equal(violations.violations.length, 0);
     await page.reload();

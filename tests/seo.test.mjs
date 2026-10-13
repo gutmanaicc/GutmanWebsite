@@ -20,3 +20,20 @@ test('indexing requires approved production build; all previews fail closed',asy
   }
  }finally{if(previous===undefined)delete process.env.VERCEL_ENV;else process.env.VERCEL_ENV=previous;}
 });
+
+test('Hostinger production indexing requires both explicit approval and its production target',async()=>{
+ const previous={vercel:process.env.VERCEL_ENV,target:process.env.ACADEMY_DEPLOYMENT_TARGET};
+ try {
+  delete process.env.VERCEL_ENV;
+  for(const [target,flag,indexable] of [['hostinger-preview','1',false],['hostinger-production',undefined,false],['hostinger-production','1',true]]){
+   process.env.ACADEMY_DEPLOYMENT_TARGET=target;
+   const root=await mkdtemp(join(tmpdir(),'gutman-hostinger-seo-'));
+   try {
+    const plugin=academySeoBuild();plugin.configResolved({command:'build',mode:'production',env:{VITE_ACADEMY_PRODUCTION_APPROVED:flag},root,build:{outDir:'.'}});
+    const html=plugin.transformIndexHtml('<meta name="robots" content="noindex, nofollow" />');
+    assert.match(html,indexable?/content="index, follow"/:/content="noindex, nofollow"/);
+    await plugin.closeBundle();assert.equal((await readFile(join(root,'robots.txt'),'utf8')).includes('Disallow: /\n'),!indexable);
+   }finally{await rm(root,{recursive:true,force:true});}
+  }
+ }finally{for(const [key,value] of [['VERCEL_ENV',previous.vercel],['ACADEMY_DEPLOYMENT_TARGET',previous.target]])if(value===undefined)delete process.env[key];else process.env[key]=value;}
+});

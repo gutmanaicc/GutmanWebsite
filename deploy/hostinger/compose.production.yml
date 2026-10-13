@@ -1,0 +1,16 @@
+# Overlay for the same existing academy container and persistent volumes.
+# Apply only after building the explicitly approved hostinger-production image.
+services:
+  academy:
+    environment:
+      ACADEMY_PREVIEW: '0'
+      ACADEMY_PUBLIC_ORIGIN: https://gutmanai.com
+      ACADEMY_ALLOWED_ORIGINS: https://gutmanai.com,https://www.gutmanai.com,https://academy-preview.srv1942778.hstgr.cloud
+    labels:
+      - traefik.http.routers.gutman-academy-production.rule=Host(`gutmanai.com`) || Host(`www.gutmanai.com`)
+      - traefik.http.routers.gutman-academy-production.entrypoints=${TRAEFIK_HTTPS_ENTRYPOINT:-websecure}
+      - traefik.http.routers.gutman-academy-production.service=gutman-academy-preview
+      - traefik.http.routers.gutman-academy-production.tls=true
+      - traefik.http.routers.gutman-academy-production.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-letsencrypt}
+      - traefik.http.routers.gutman-academy-production.middlewares=gutman-academy-compress
+      - traefik.http.middlewares.gutman-academy-compress.compress=true

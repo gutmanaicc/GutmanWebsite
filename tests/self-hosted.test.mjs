@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile, symlink, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { request as httpRequest } from 'node:http';
 import { buildSelfHostedApis } from '../scripts/self-hosted-build-api.mjs';
 import { createSelfHostedRuntime } from '../server/self-hosted-runtime.mjs';
 import { createSelfHostedServer, loadSelfHostedApiHandlers } from '../server/self-hosted-http.mjs';
@@ -53,6 +54,27 @@ test('standalone server serves built SPA, ranged media and cached bundles; priva
   assert.equal((await context.request('/api/academy/admin/dates')).status, 401);
   const drafts = await (await context.request('/api/academy/admin/dates', { token: ADMIN })).json(); assert.equal(drafts.dates.length, 10); assert.ok(drafts.dates.every(date => date.status === 'draft' && !date.published));
   assert.throws(() => createSelfHostedRuntime({ ...baseEnv, ACADEMY_DB_PATH: files.databasePath, ACADEMY_PAYMENT_MODE: 'simulation' }), /Only disabled or Morning/);
+});
+
+test('production hosting keeps preview and private pages noindex and redirects www without losing query or path', async t => {
+  const files=await fixture(t);
+  await writeFile(join(files.publicDirectory,'index.html'),'<html><head><meta name="robots" content="index, follow" /></head><body>Production academy</body></html>');
+  const runtime=createSelfHostedRuntime({...baseEnv,ACADEMY_DB_PATH:files.databasePath,ACADEMY_PUBLIC_ORIGIN:'https://gutmanai.com'});
+  const server=await createSelfHostedServer({runtime,staticDirectory:files.publicDirectory,apiHandlers:files.apiHandlers,preview:false,productionOrigin:'https://gutmanai.com'});
+  await new Promise(r=>server.listen(0,'127.0.0.1',r));
+  t.after(async()=>{await new Promise(r=>server.close(r));runtime.close();});
+  const request=(path,host='gutmanai.com')=>new Promise((resolve,reject)=>{
+    const req=httpRequest({hostname:'127.0.0.1',port:server.address().port,path,headers:{Host:host}},res=>{
+      const chunks=[];res.on('data',chunk=>chunks.push(chunk));res.on('end',()=>resolve({status:res.statusCode,headers:{get:key=>res.headers[key.toLowerCase()]??null},text:async()=>Buffer.concat(chunks).toString('utf8')}));
+    });req.on('error',reject);req.end();
+  });
+  const home=await request('/');assert.equal(home.status,200);assert.equal(home.headers.get('x-robots-tag'),null);assert.match(await home.text(),/index, follow/);
+  const preview=await request('/','academy-preview.srv1942778.hstgr.cloud');assert.match(preview.headers.get('x-robots-tag'),/noindex/);assert.match(await preview.text(),/content="noindex, nofollow"/);
+  const www=await request('/courses/social-media-ai?ref=owner','www.gutmanai.com');assert.equal(www.status,308);assert.equal(www.headers.get('location'),'https://gutmanai.com/courses/social-media-ai?ref=owner');
+  for(const path of ['/register','/thank-you','/cancel','/privacy-requests','/courses/ai-fashion','/syllabus/social-media-ai','/unknown']){const r=await request(path);assert.match(r.headers.get('x-robots-tag'),/noindex/);assert.match(await r.text(),/content="noindex, nofollow"/);}
+  assert.ok((await(await request('/robots.txt')).text()).includes('Sitemap: https://gutmanai.com/sitemap.xml'));
+  assert.equal(await(await request('/robots.txt','academy-preview.srv1942778.hstgr.cloud')).text(),'User-agent: *\nDisallow: /\n');
+  assert.equal((await request('/api/academy/admin/dates')).status,401);
 });
 
 test('compiled existing lead handler runs on Node without TS hooks: query/status shims, JSON limits and actual Fireberry contract with mocked transport', async t => {

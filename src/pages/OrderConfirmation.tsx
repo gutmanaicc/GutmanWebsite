@@ -20,14 +20,10 @@ export default function OrderConfirmation() {
   useEffect(() => {
     if (!orderId || !token) return;
     let active = true;
-    academyRequest<Order>(`/orders/${encodeURIComponent(orderId)}`, { headers: { Authorization: `Bearer ${token}` } }).then(value => { if (active) { setOrder(value); setError(''); } }).catch(err => { if (active) setError(err.message); });
-    return () => { active = false; };
-  }, [orderId, token, attempt]);
-  useEffect(() => {
-    if (!orderId || !token || !order || order.simulation || order.status !== 'pending' || !order.checkoutUrl) return;
-    let active = true;
     let timer: ReturnType<typeof setTimeout>;
     let tries = 0;
+    // Load first, then reconcile. Parallel status reads can otherwise return
+    // an older pending snapshot after payment has already been confirmed.
     const reconcile = async () => {
       try {
         const value = await academyRequest<Order>(`/orders/${encodeURIComponent(orderId)}/reconcile`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: '{}' });
@@ -40,9 +36,13 @@ export default function OrderConfirmation() {
       }
       if (active && ++tries < 20) timer = setTimeout(reconcile, 5000);
     };
-    void reconcile();
+    void academyRequest<Order>(`/orders/${encodeURIComponent(orderId)}`, { headers: { Authorization: `Bearer ${token}` } }).then(value => {
+      if (!active) return;
+      setOrder(value); setError(''); setReconcileError('');
+      if (!value.simulation && value.status === 'pending' && value.checkoutUrl) void reconcile();
+    }).catch(err => { if (active) setError(err.message); });
     return () => { active = false; clearTimeout(timer); };
-  }, [orderId, token, order?.simulation, order?.status, order?.checkoutUrl, attempt]);
+  }, [orderId, token, attempt]);
   useEffect(() => {
     if (!order || order.status !== 'pending') return;
     const remaining = Date.parse(order.checkoutExpiresAt || order.holdExpiresAt) - Date.now();

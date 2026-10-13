@@ -9,7 +9,7 @@ Disallow: /api/
 Sitemap: https://gutmanai.com/sitemap.xml
 `;
 
-/** Indexing is explicitly enabled only for an approved Vercel production build. */
+/** Only explicitly approved production builds may advertise indexing. */
 export function academySeoBuild() {
   let approvedProduction = false;
   let outputDirectory;
@@ -19,7 +19,7 @@ export function academySeoBuild() {
       approvedProduction = config.command === "build"
         && config.mode === "production"
         && config.env.VITE_ACADEMY_PRODUCTION_APPROVED === "1"
-        && process.env.VERCEL_ENV === "production";
+        && (process.env.VERCEL_ENV === "production" || process.env.ACADEMY_DEPLOYMENT_TARGET === "hostinger-production");
       if (config.command === "build") outputDirectory = resolve(config.root, config.build.outDir);
     },
     transformIndexHtml(html) {

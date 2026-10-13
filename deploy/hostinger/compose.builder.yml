@@ -30,6 +30,10 @@ services:
       - VITE_ACADEMY_MEASUREMENT_ENABLED=${VITE_ACADEMY_MEASUREMENT_ENABLED:-0}
       - --build-arg
       - VITE_ACADEMY_MEASUREMENT_ORIGIN=${VITE_ACADEMY_MEASUREMENT_ORIGIN:-}
+      - --build-arg
+      - VITE_ACADEMY_PRODUCTION_APPROVED=${VITE_ACADEMY_PRODUCTION_APPROVED:-0}
+      - --build-arg
+      - ACADEMY_DEPLOYMENT_TARGET=${ACADEMY_DEPLOYMENT_TARGET:-hostinger-preview}
       - --file
       - deploy/hostinger/Dockerfile
       - --tag
