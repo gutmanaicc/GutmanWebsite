@@ -216,7 +216,7 @@ test('homepage lazy sections retain working anchor navigation and real video con
  await context.close();
 });
 
-test('client ribbon loops, pauses, supports dragging and remains usable with reduced motion',async()=>{
+test('client ribbon moves automatically through hover, pauses by keyboard, supports dragging and reduced motion',async()=>{
   for(const reducedMotion of ['no-preference','reduce']){
     const context=await browser.newContext({viewport:{width:375,height:812},reducedMotion});
     const page=await context.newPage();
@@ -228,7 +228,8 @@ test('client ribbon loops, pauses, supports dragging and remains usable with red
     const initial=await transform();await page.waitForTimeout(180);
     if(reducedMotion==='no-preference'){
       assert.notEqual(await transform(),initial,'automatic ribbon movement');
-      await page.getByRole('button',{name:'עצירת תנועת הלוגואים',exact:true}).click();
+      const hoverBox=await ribbon.boundingBox();await page.mouse.move(hoverBox.x+100,hoverBox.y+40);const hovered=await transform();await page.waitForTimeout(180);assert.notEqual(await transform(),hovered,'hover does not stop automatic movement');
+      await ribbon.focus();await page.keyboard.press('Space');
       const frozen=await transform();await page.waitForTimeout(180);assert.equal(await transform(),frozen,'explicit pause stops automatic movement');
     }else{
       assert.equal(await transform(),initial,'reduced motion has no automatic movement');
@@ -242,6 +243,40 @@ test('client ribbon loops, pauses, supports dragging and remains usable with red
     assert.equal(names.length,14);assert.equal(new Set(names).size,14);
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
     await page.getByRole('link',{name:'לכל ההמלצות',exact:false}).click();await page.waitForURL(base+'/reviews');await page.locator('h1').waitFor();
+    await context.close();
+  }
+});
+
+test('mobile and desktop sections fade on scroll, keep brand text centered, and show the actual seminar venue without overflow', async () => {
+  for (const width of [320, 360, 375, 390, 393, 412, 430, 768, 1440]) {
+    const context = await browser.newContext({ viewport: { width, height: 900 }, isMobile: width < 600, hasTouch: width < 600 });
+    const page = await context.newPage(); const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.goto(base);
+    await page.locator('[data-academy-sections]').scrollIntoViewIfNeeded();
+    const banner = page.locator('.academy-client-banner');
+    await banner.waitFor();
+    await page.waitForFunction(() => document.querySelector('.academy-client-banner')?.classList.contains('academy-scroll-fade'));
+    await page.waitForFunction(() => getComputedStyle(document.querySelector('.academy-client-banner')).opacity === '0');
+    await banner.scrollIntoViewIfNeeded();
+    await page.waitForFunction(() => getComputedStyle(document.querySelector('.academy-client-banner')).opacity === '1');
+    assert.equal(await page.locator('.academy-client-heading .academy-eyebrow').evaluate(node => getComputedStyle(node).justifyContent), 'center');
+    assert.equal(await banner.locator('button').count(), 0);
+    assert.equal(await page.getByText('גררו כדי לגלות עוד', { exact: true }).count(), 0);
+    const line = await page.locator('.academy-client-heading>p:last-child').evaluate(node => ({ scroll: node.scrollWidth, width: node.clientWidth, height: node.clientHeight, line: parseFloat(getComputedStyle(node).lineHeight) }));
+    assert.ok(line.scroll <= line.width + 1 && line.height <= line.line + 1, `brand sentence fits one line at ${width}`);
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `home width ${width}`);
+    if ([390, 1440].includes(width)) await page.screenshot({ path: `artifacts/brand-ribbon-${width}.png` });
+    for (const slug of ['social-media-ai', 'ai-video-content', 'ai-business-owners']) {
+      await page.goto(`${base}/courses/${slug}`);
+      await page.locator('.academy-product-location').waitFor();
+      assert.match(await page.locator('.academy-product-location').innerText(), /הטרמינל לעיצוב, בת ים/);
+      assert.match(await page.locator('.academy-product-location').innerText(), /אהוד קינמון 32/);
+      await page.locator('#agenda').scrollIntoViewIfNeeded();
+      await page.waitForFunction(() => getComputedStyle(document.querySelector('#agenda')).opacity === '1');
+      assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${slug} width ${width}`);
+    }
+    assert.deepEqual(errors, []);
     await context.close();
   }
 });

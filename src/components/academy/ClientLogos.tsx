@@ -1,13 +1,11 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react';
 import { motion, useAnimationFrame, useMotionValue } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Pause, Play } from 'lucide-react';
 import { CLIENT_BRANDS } from '../../data/clientBrands';
 import { useMotionCapability } from '../../lib/motion/useMotionCapability';
 
 export default function ClientLogos() {
   const still = useMotionCapability() === 'static';
   const [paused, setPaused] = useState(false);
-  const [engaged, setEngaged] = useState(false);
   const [visible, setVisible] = useState(false);
   const group = useRef<HTMLUListElement>(null);
   const viewport = useRef<HTMLDivElement>(null);
@@ -28,7 +26,7 @@ export default function ClientLogos() {
     return () => { resize.disconnect(); intersection.disconnect(); };
   }, [move]);
   useAnimationFrame((_time, delta) => {
-    if (visible && !still && !paused && !engaged && !pointer.current && !document.hidden) move(-Math.min(delta, 64) * .025);
+    if (visible && !still && !paused && !pointer.current && !document.hidden) move(-Math.min(delta, 64) * .018);
   });
   const release = (event: PointerEvent<HTMLDivElement>) => {
     if (pointer.current?.id !== event.pointerId) return;
@@ -37,10 +35,9 @@ export default function ClientLogos() {
     event.currentTarget.classList.remove('is-dragging');
   };
   return <section className="academy-client-banner" aria-labelledby="academy-client-title">
-    <div className="academy-container academy-client-heading"><p className="academy-eyebrow">ניסיון שמגיע מהשטח</p><h2 id="academy-client-title">מותגים שעבדתי איתם.</h2><p>ממותגים מובילים ועד חברות טכנולוגיה וגופים אקדמיים. הניסיון מהפרויקטים האלה מגיע איתי לכל סמינר.</p></div>
-    <div ref={viewport} className="academy-client-viewport" dir="ltr" role="region" aria-label="לוגואים של לקוחות, אפשר לגרור או להזיז באמצעות מקשי החצים" tabIndex={0}
-      onMouseEnter={() => setEngaged(true)} onMouseLeave={() => setEngaged(false)} onFocus={() => setEngaged(true)} onBlur={() => setEngaged(false)}
-      onKeyDown={event => { if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); move(event.key === 'ArrowLeft' ? -220 : 220); } }}
+    <div className="academy-container academy-client-heading"><p className="academy-eyebrow">ניסיון שמגיע מהשטח</p><h2 id="academy-client-title">מותגים שעבדתי איתם.</h2><p>הניסיון מהמותגים האלה מגיע איתי לכל סמינר.</p></div>
+    <div ref={viewport} className="academy-client-viewport" dir="ltr" role="region" aria-label="לוגואים של לקוחות. אפשר לגרור, להזיז במקשי החצים, ולהשהות או להפעיל במקש רווח" aria-keyshortcuts="ArrowLeft ArrowRight Space" tabIndex={0}
+      onKeyDown={event => { if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); move(event.key === 'ArrowLeft' ? -220 : 220); } else if (event.key === ' ' && !still) { event.preventDefault(); setPaused(value => !value); } }}
       onPointerDown={event => { if (event.button !== 0) return; pointer.current = { id: event.pointerId, x: event.clientX }; event.currentTarget.setPointerCapture(event.pointerId); event.currentTarget.classList.add('is-dragging'); }}
       onPointerMove={event => { if (pointer.current?.id !== event.pointerId) return; move(event.clientX - pointer.current.x); pointer.current.x = event.clientX; }}
       onPointerUp={release} onPointerCancel={release} onLostPointerCapture={() => { pointer.current = null; viewport.current?.classList.remove('is-dragging'); }}>
@@ -48,6 +45,6 @@ export default function ClientLogos() {
         {[0, 1].map(copy => <ul key={copy} ref={copy === 0 ? group : undefined} className="academy-client-logos" aria-hidden={copy === 1 ? true : undefined} aria-label={copy === 0 ? 'לקוחות ופרויקטים' : undefined}>{CLIENT_BRANDS.map(brand => <li key={brand.name}><img src={brand.logo} alt={copy === 0 ? brand.name : ''} loading={copy === 0 ? 'eager' : 'lazy'} decoding="async" width="180" height="70" draggable={false} /></li>)}</ul>)}
       </motion.div>
     </div>
-    <div className="academy-client-controls"><span>ניסיון אמיתי. רעיונות בלי גבולות.</span><div dir="ltr"><button type="button" aria-label="הזזת הלוגואים שמאלה" onClick={() => move(-220)}><ArrowLeft size={18} aria-hidden="true" /></button>{!still && <button type="button" aria-label={paused ? 'הפעלת תנועת הלוגואים' : 'עצירת תנועת הלוגואים'} aria-pressed={paused} onClick={() => setPaused(value => !value)}>{paused ? <Play size={16} aria-hidden="true" /> : <Pause size={16} aria-hidden="true" />}</button>}<button type="button" aria-label="הזזת הלוגואים ימינה" onClick={() => move(220)}><ArrowRight size={18} aria-hidden="true" /></button></div><span>גררו כדי לגלות עוד</span></div>
+    <span className="sr-only" role="status">{paused ? 'תנועת הלוגואים מושהית' : ''}</span>
   </section>;
 }

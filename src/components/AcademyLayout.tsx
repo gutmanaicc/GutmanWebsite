@@ -9,6 +9,7 @@ import AccessibilityMenu from './AccessibilityMenu';
 import { Consent } from './Consent';
 import { SITE } from '../data/site';
 import { trackAcademy } from '../lib/academy';
+import { useSectionFade } from '../lib/motion/useSectionFade';
 
 const navigation = [
   { to: '/', label: 'ראשי' }, { to: '/courses', label: 'הסמינרים' },
@@ -17,6 +18,7 @@ const navigation = [
 ];
 
 export default function AcademyLayout() {
+  useSectionFade();
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -46,7 +48,7 @@ export default function AcademyLayout() {
     return () => window.clearTimeout(timer);
   }, [location.pathname, location.hash]);
   return <div className={`academy-shell ${location.pathname === "/" ? "academy-shell--home" : ""}`}><ParallaxGridCanvas />
-    {!production && <div className="academy-preview-bar">תצוגה מקדימה · אין חיובים אמיתיים · המועדים כפופים לאישור</div>}
+    {!production && <div className="academy-preview-bar">תצוגה מקדימה · רכישה זמינה רק במועדים המאושרים</div>}
     <a className="academy-skip" href="#main-content">דילוג לתוכן המרכזי</a>
     <header className={`academy-header ${scrolled ? "is-scrolled" : ""}`}>
       <div className="academy-header-inner">
