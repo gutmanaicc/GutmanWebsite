@@ -19,3 +19,15 @@ Browser checks cover scrolling, pointer/keyboard interaction, one-line brand tex
 ## Deployed verification
 
 Runtime source `08740f18879fac282dafd1b09ebcee6dd66a8510` is healthy on Hostinger. The public HTTPS assertion job passed: `commerce.ready=true`, approved terms, exactly six approved/open dates with correct seminar/venue/hours/capacity, six ILS1,190 quotes, CRM readiness, the new visual bundles and edited video source checksum, H264/AAC duration and ranged playback. The check created no order or charge. All87 server tests passed; temporary builder, approval and verification jobs were removed without affecting persistent volumes or other apps.
+
+## Legal disclosure release, 13 October 2026
+
+Runtime source `295cf2f2306faa4c662729a07b9c004b426c4458` supersedes the release above. Statutory seller details are stored privately on the VPS and match the Morning merchant. No sole-proprietor registration number was committed to public Git. Checkout requires the current disclosure version and a complete matching seller profile. The owner-confirmed AI subscriptions are monthly, required for video and optional for paid content expansion in social media.
+
+Public `/cancel` and `/privacy-requests` routes record timestamped notices without an account or mandatory reason. The encrypted private inbox is available through the existing authenticated academy admin. Receipt of a notice is not an executed refund. New orders retain an immutable transaction/consent copy with authenticated download, and Morning receives a transaction summary with cancellation channels. Optional tracking requires new explicit consent and remains off in this preview.
+
+The existing approved cancellation policy stays active. The new `/terms` page is a clearly marked draft, excluded from checkout agreements until separate owner/legal approval. See [the legal research and operational review](academy-israeli-legal-review.md) for sources, unresolved legal classification, supplier/privacy obligations and practical refund handling.
+
+Validation: 93 server tests passed. Focused Chromium browser checks passed for cancellation receipt, privacy-request type reset, opt-in tracking and hosted checkout. Sixteen public routes passed RTL, overflow and automatic accessibility checks at 375/768/1440px. A private VPS assertion verified purchasing readiness, all six dates, complete seller disclosure, five legal routes and three uncharged Morning forms using the new disclosure payload. Tests sent no buyer email and charged no card. Actual refund execution and service-email delivery remain separate operational work, not verified automation.
+
+The legal-profile setup job, build job and private assertion job were removed after replacement with inert containers. Only the three permanent VPS projects remain; the academy is healthy after cleanup. Persistent data/media and the other apps were preserved.
