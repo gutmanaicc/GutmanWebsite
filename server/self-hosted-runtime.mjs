@@ -63,7 +63,7 @@ export function createSelfHostedRuntime(env = process.env, { fetchImpl = globalT
     const repository = new SelfHostedRepository(store);
     const checkout = new HostedCheckout({ store, adapter, publicOrigin });
     const deliveryAdapter = env.ACADEMY_EMAIL_PROVIDER === 'gmail-make'
-      ? new GmailMakeDeliveryAdapter({ webhookUrl: env.ACADEMY_EMAIL_MAKE_WEBHOOK_URL, sender: env.ACADEMY_EMAIL_SENDER, enabled: env.ACADEMY_EMAIL_DELIVERY_ENABLED === '1', senderVerified: env.ACADEMY_EMAIL_SENDER_VERIFIED === '1', fetchImpl })
+      ? new GmailMakeDeliveryAdapter({ webhookUrl: env.ACADEMY_EMAIL_MAKE_WEBHOOK_URL, sender: env.ACADEMY_EMAIL_SENDER, enabled: env.ACADEMY_EMAIL_DELIVERY_ENABLED === '1', senderVerified: env.ACADEMY_EMAIL_SENDER_VERIFIED === '1', approvedKinds: String(env.ACADEMY_EMAIL_APPROVED_KINDS ?? 'preparation,reminder').split(',').map(kind => kind.trim()).filter(Boolean), fetchImpl })
       : createResendDeliveryAdapter(env, { fetchImpl });
     const deliveryWorker = new DurableOutboxWorker({ repository, adapter: deliveryAdapter, clock });
     const crmWorker = new HubSpotRegistrationWorker({ store, intake: registrationIntake });

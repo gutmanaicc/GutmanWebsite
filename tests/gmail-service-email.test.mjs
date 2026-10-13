@@ -19,12 +19,12 @@ test('service templates disclose original costs, date, venue and navigation; HTM
     const order={id:'test-order',customer:{name:'<script>unsafe</script>',email:'buyer@example.test'},totalAgorot:119000,currency:'ILS',holdExpiresAt:new Date(NOW).toISOString()};
     order.legalSnapshot=buildOrderLegalSnapshot(order,date,{businessName:'Test',registrationNumber:'123456789',postalAddress:'Test 1',taxStatus:'exempt',email:'support@example.test',phone:'0500000000'},new Date(NOW).toISOString());
     order.legalSnapshot.commercial.text='ORIGINAL_DISCLOSED_COSTS';
-    for(const kind of ['preparation','reminder']){
+    for(const kind of ['confirmation','preparation','reminder']){
       const m=buildMessage(kind,order,date,{publicOrigin:'https://academy.example.test'});
       assert.ok(m.text.includes('ORIGINAL_DISCLOSED_COSTS'));assert.ok(m.text.includes('15:00-20:00'));assert.ok(m.text.includes('waze.com'));
       assert.ok(m.html.includes('&lt;script&gt;unsafe&lt;/script&gt;'));assert.ok(!m.html.includes('<script>unsafe'));
-      assert.ok(!/<img|facebook|google-analytics|tracking/i.test(m.html));assert.ok(!m.text.includes('מחר'));
-      if(kind==='preparation')assert.ok(m.attachments[0].content.includes('מסמך פרטי העסקה'));else assert.equal(m.attachments,undefined);
+      assert.ok(m.html.includes('src="cid:gutman-logo"'));assert.equal(m.inlineImages[0].contentId,'gutman-logo');assert.ok(!/facebook|google-analytics|tracking|<img[^>]+https?:/i.test(m.html));assert.ok(!m.text.includes('מחר'));
+      if(['confirmation','preparation'].includes(kind))assert.ok(m.attachments[0].content.includes('מסמך פרטי העסקה'));else assert.equal(m.attachments,undefined);
     }
   }
 });
@@ -67,4 +67,19 @@ test('a plain webhook acknowledgment is not delivery proof; simulated, cancelled
     const order=noSend.store.get('orders',noSend.created.orderId);noSend.store.save('orders',{...order,...change});
     assert.equal((await noSend.worker.drain()).sent,0);assert.equal(noSend.item().status,'cancelled');
   }
+});
+
+
+test('verified payments send one approved confirmation with original amount, logo and contract; unverified payments cannot send',async t=>{
+  let calls=0;
+  const ctx=fixture(t,async(_url,options)=>{calls++;const body=JSON.parse(options.body);assert.equal(body.kind,'confirmation');const mime=Buffer.from(body.rawMessage,'base64url').toString();assert.ok(mime.includes('Content-ID: <gutman-logo>'));return accepted(body);});
+  const adapter=new GmailMakeDeliveryAdapter({...OPTIONS,approvedKinds:['confirmation'],fetchImpl:async(_url,options)=>{calls++;const body=JSON.parse(options.body);assert.equal(body.kind,'confirmation');return accepted(body);}});
+  const worker=new DurableOutboxWorker({repository:ctx.repo,adapter,clock:()=>NOW});
+  const messages=ctx.store.all('outbox').filter(x=>x.kind==='confirmation');assert.equal(messages.length,1);assert.match(messages[0].payload.text,/1,190/);assert.match(messages[0].payload.html,/התשלום אומת/);assert.ok(messages[0].payload.inlineImages.length===1);
+  await Promise.all([worker.drain(),worker.drain()]);assert.equal(calls,1);assert.equal(ctx.store.all('outbox').find(x=>x.kind==='confirmation').status,'sent');
+  const noSend=fixture(t,async()=>assert.fail('Unverified payment must not send confirmation'));
+  const order=noSend.store.get('orders',noSend.created.orderId);noSend.store.save('orders',{...order,status:'pending'});
+  const gated=new DurableOutboxWorker({repository:noSend.repo,adapter:new GmailMakeDeliveryAdapter({...OPTIONS,approvedKinds:['confirmation'],fetchImpl:async()=>assert.fail('Unverified payment') }),clock:()=>NOW});
+  assert.equal((await gated.drain()).sent,0);
+  const mime=Buffer.from(buildGmailMime(adapter.prepare(messages[0].payload,{kind:'confirmation'}),'academy-logo-confirmation-test'),'base64url').toString();assert.ok(mime.includes('multipart/related'));assert.ok(mime.includes('Content-ID: <gutman-logo>'));
 });

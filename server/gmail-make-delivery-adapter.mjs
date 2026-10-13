@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { EmailDeliveryError } from './resend-delivery-adapter.mjs';
 
-const kinds = new Set(['preparation', 'reminder']);
+const kinds = new Set(['confirmation', 'preparation', 'reminder', 'followup', 'cancellation']);
 const email = value => typeof value === 'string' && value.length <= 254 && /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,63}$/.test(value) && !/[\r\n,;]/.test(value);
 const encodeHeader = value => {
   const chunks = []; let part = '';
@@ -16,15 +16,20 @@ export function buildGmailMime(request, key) {
   if (!email(request?.from) || !email(to) || typeof request.subject !== 'string' || !request.subject.trim() || /[\r\n]/.test(request.subject) || typeof request.text !== 'string' || !request.text.trim() || typeof key !== 'string' || !/^[a-zA-Z0-9_-]{16,200}$/.test(key)) fail('INVALID_EMAIL_REQUEST');
   const boundary = `gutman_${createHash('sha256').update(key).digest('hex').slice(0,32)}`;
   const alternative = boundary + '_alt';
+  const related = boundary + '_related';
   const headers = [`From: ${encodeHeader('מכללת גוטמן')} <${request.from}>`, `To: <${to}>`, `Reply-To: <gutmanaicc@gmail.com>`, `Subject: ${encodeHeader(request.subject)}`, `Message-ID: <${key}@gutmanai.com>`, `Date: ${new Date(request.preparedAt ?? Date.now()).toUTCString()}`, 'MIME-Version: 1.0'];
   const attachmentList = request.attachments ?? [];
   if (!Array.isArray(attachmentList) || attachmentList.length > 1 || attachmentList.some(a => a.filename !== 'gutman-order.html' || a.contentType !== 'text/html; charset=utf-8' || typeof a.content !== 'string' || Buffer.byteLength(a.content) > 100000)) fail('INVALID_EMAIL_REQUEST');
-  const parts = [headers.join('\r\n'), `Content-Type: multipart/mixed; boundary="${boundary}"`, '', `--${boundary}`, `Content-Type: multipart/alternative; boundary="${alternative}"`, '', `--${alternative}`, 'Content-Type: text/plain; charset=utf-8', 'Content-Transfer-Encoding: base64', '', content64(request.text)];
+  const images = request.inlineImages ?? [];
+  if (!Array.isArray(images) || images.length > 1 || images.some(a => a.filename !== 'gutman-logo.png' || a.contentId !== 'gutman-logo' || a.contentType !== 'image/png' || typeof a.content !== 'string' || a.content.length > 60000 || !/^[A-Za-z0-9+/]+={0,2}$/.test(a.content) || Buffer.from(a.content, 'base64').subarray(0, 8).toString('hex') !== '89504e470d0a1a0a')) fail('INVALID_EMAIL_REQUEST');
+  const parts = [headers.join('\r\n'), `Content-Type: multipart/mixed; boundary="${boundary}"`, '', `--${boundary}`, `Content-Type: multipart/related; boundary="${related}"`, '', `--${related}`, `Content-Type: multipart/alternative; boundary="${alternative}"`, '', `--${alternative}`, 'Content-Type: text/plain; charset=utf-8', 'Content-Transfer-Encoding: base64', '', content64(request.text)];
   if (request.html) {
     if (typeof request.html !== 'string' || Buffer.byteLength(request.html) > 100000) fail('INVALID_EMAIL_REQUEST');
     parts.push(`--${alternative}`, 'Content-Type: text/html; charset=utf-8', 'Content-Transfer-Encoding: base64', '', content64(request.html));
   }
   parts.push(`--${alternative}--`);
+  for (const a of images) parts.push(`--${related}`, 'Content-Type: image/png', 'Content-Disposition: inline; filename="gutman-logo.png"', 'Content-ID: <gutman-logo>', 'Content-Transfer-Encoding: base64', '', a.content.match(/.{1,76}/g).join('\r\n'));
+  parts.push(`--${related}--`);
   for (const a of attachmentList) parts.push(`--${boundary}`, `Content-Type: ${a.contentType}`, 'Content-Disposition: attachment; filename="gutman-order.html"', 'Content-Transfer-Encoding: base64', '', content64(a.content));
   parts.push(`--${boundary}--`, '');
   return Buffer.from(parts.join('\r\n')).toString('base64url');
@@ -33,19 +38,20 @@ export function buildGmailMime(request, key) {
  * stop uncertain deliveries for review; never replay after timeout or crash.
  */
 export class GmailMakeDeliveryAdapter {
-  #url; #sender; #enabled; #verified; #fetch; #timeout;
+  #url; #sender; #enabled; #verified; #fetch; #timeout; #kinds;
   supportsIdempotentReplay = false;
-  constructor({ webhookUrl, sender, enabled = false, senderVerified = false, fetchImpl = globalThis.fetch, timeoutMs = 30000 } = {}) {
+  constructor({ webhookUrl, sender, enabled = false, senderVerified = false, approvedKinds = ['preparation', 'reminder'], fetchImpl = globalThis.fetch, timeoutMs = 30000 } = {}) {
+    if (!Array.isArray(approvedKinds) || approvedKinds.some(kind => !kinds.has(kind))) throw new Error('Only reviewed service email kinds may be configured.');
     try { const u = new URL(webhookUrl); if (u.protocol === 'https:' && /^hook\.(?:eu\d|us\d)\.make\.com$/.test(u.hostname) && !u.username && !u.password && !u.search && !u.hash && !u.port && /^\/[A-Za-z0-9]{20,100}$/.test(u.pathname)) this.#url = u.href; } catch { /* fail closed */ }
-    this.#sender = sender; this.#enabled = enabled === true; this.#verified = senderVerified === true; this.#fetch = fetchImpl; this.#timeout = timeoutMs;
+    this.#sender = sender; this.#enabled = enabled === true; this.#verified = senderVerified === true; this.#fetch = fetchImpl; this.#timeout = timeoutMs; this.#kinds = new Set(approvedKinds);
   }
-  get ready() { return Boolean(this.#url && email(this.#sender) && this.#enabled && this.#verified); }
-  getReadiness() { return { provider: 'gmail-make', enabled: this.#enabled, configured: !!this.#url && email(this.#sender), senderVerified: this.#verified, approvedKinds: ['preparation','reminder'], idempotentReplay: false, ready: this.ready }; }
-  canDeliver(kind) { return this.ready && kinds.has(kind); }
+  get ready() { return Boolean(this.#url && email(this.#sender) && this.#enabled && this.#verified && this.#kinds.size); }
+  getReadiness() { return { provider: 'gmail-make', enabled: this.#enabled, configured: !!this.#url && email(this.#sender), senderVerified: this.#verified, approvedKinds: [...this.#kinds], idempotentReplay: false, ready: this.ready }; }
+  canDeliver(kind) { return this.ready && this.#kinds.has(kind); }
   prepare(payload, { kind } = {}) {
     if (!this.canDeliver(kind)) fail('EMAIL_DELIVERY_DISABLED');
     if (!payload || payload.simulation !== false || !email(payload.to) || typeof payload.subject !== 'string' || /[\r\n]/.test(payload.subject) || typeof payload.text !== 'string' || !payload.text.trim()) fail('INVALID_EMAIL_REQUEST');
-    return { from: this.#sender, to: [payload.to], preparedAt: new Date().toISOString(), subject: payload.subject, text: payload.text, ...(payload.html ? { html: payload.html } : {}), ...(payload.attachments ? { attachments: structuredClone(payload.attachments) } : {}) };
+    return { from: this.#sender, to: [payload.to], preparedAt: new Date().toISOString(), subject: payload.subject, text: payload.text, ...(payload.html ? { html: payload.html } : {}), ...(payload.attachments ? { attachments: structuredClone(payload.attachments) } : {}), ...(payload.inlineImages ? { inlineImages: structuredClone(payload.inlineImages) } : {}) };
   }
   async sendRequest(request, { idempotencyKey, kind } = {}) {
     if (!this.canDeliver(kind)) fail('EMAIL_DELIVERY_DISABLED');
