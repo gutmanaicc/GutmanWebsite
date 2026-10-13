@@ -117,3 +117,30 @@ test('required disclosure fails closed on the standalone runtime before any prov
   writeFileSync(join(dir, 'merchant-legal-profile.json'), JSON.stringify({ ...seller, ownerConfirmed: true }), { mode: 0o600 });
   runtime = make(); assert.equal(runtime.checkout.ready, true); assert.equal(runtime.legalInbox.ready, true); runtime.close();
 });
+
+test('owner approval activates site terms only for new orders across restart and never rewrites an existing agreement', t => {
+  const dir = folder(t), clientId = 'test-approved-terms-client';
+  writeFileSync(join(dir, 'morning-merchant.json'), JSON.stringify({ businessTaxId: seller.registrationNumber, exemption: true, verifiedAt: new Date(NOW).toISOString(), apiIdDigest: createHash('sha256').update(clientId).digest('hex'), checkoutOrigins: ['https://checkout.example.test'] }), { mode: 0o600 });
+  writeFileSync(join(dir, 'merchant-legal-profile.json'), JSON.stringify({ ...seller, ownerConfirmed: true }), { mode: 0o600 });
+  const env = { ACADEMY_DB_PATH: join(dir, 'academy.sqlite'), ACADEMY_PUBLIC_ORIGIN: ORIGIN, ACADEMY_PAYMENT_MODE: 'morning', ACADEMY_ORDER_SECRET: SECRET, ACADEMY_BOOKING_TERMS_APPROVED: '1', ACADEMY_COMMERCIAL_DISCLOSURE_REQUIRED: '1', MORNING_API_ID: clientId, MORNING_API_SECRET: 'test-only-provider-secret' };
+  const make = approved => createSelfHostedRuntime({ ...env, ACADEMY_SITE_TERMS_APPROVED: approved ? '1' : '0' }, { clock: () => NOW, fetchImpl: () => assert.fail('No provider call is allowed') });
+  let runtime = make(false);
+  const date = runtime.store.approveDate(runtime.store.dates(true)[0].id, { checksConfirmed: true, publish: true, openRegistration: true });
+  const oldVersion = runtime.store.requiredDisclosureVersion;
+  const payload = { dateId: date.id, termsAccepted: true, disclosureVersion: oldVersion, customer: { name: 'Old agreement test', email: 'old@example.test', phone: '0500000000' } };
+  const oldOrder = runtime.store.createOrder(payload, 'old-owner-approval-order');
+  const original = structuredClone(runtime.store.get('orders', oldOrder.orderId).legalSnapshot);
+  assert.equal(original.siteTerms, null); runtime.close();
+  runtime = make(true);
+  try {
+    assert.equal(runtime.checkout.ready, true);
+    assert.notEqual(runtime.store.requiredDisclosureVersion, oldVersion);
+    assert.throws(() => runtime.store.createOrder({ ...payload, customer: { ...payload.customer, email: 'new@example.test' } }, 'new-stale-approved-order'), e => e.code === 'DISCLOSURE_CHANGED');
+    const created = runtime.store.createOrder({ ...payload, disclosureVersion: runtime.store.requiredDisclosureVersion, customer: { ...payload.customer, email: 'new@example.test' } }, 'new-approved-terms-order');
+    const snapshot = runtime.store.get('orders', created.orderId).legalSnapshot;
+    assert.equal(snapshot.siteTerms.version, 'gutman-site-terms-2026-10-13-v1');
+    assert.ok(renderOrderDocument(snapshot, { origin: ORIGIN }).includes('זכויות בתוכן וחומרי מקור'));
+    assert.deepEqual(runtime.store.get('orders', oldOrder.orderId).legalSnapshot, original);
+    assert.equal(runtime.store.createOrder({ ...payload, disclosureVersion: runtime.store.requiredDisclosureVersion }, 'old-owner-approval-order').orderId, oldOrder.orderId);
+  } finally { runtime.close(); }
+});
