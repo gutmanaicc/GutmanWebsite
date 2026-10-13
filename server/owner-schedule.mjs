@@ -38,7 +38,7 @@ export function applyOwnerSchedule(store, schedule, { apply = false } = {}) {
         const exact = before.seminarId === item.seminarId && before.venue === schedule.venue && before.ownerScheduleReference === schedule.reference;
         if (exact) { dates.push({ date: item.date, seminarId: item.seminarId, changed: false }); continue; }
         const view = store.dateView(before);
-        if (view.paidCount || view.pendingCount || before.approvalStatus === 'approved' || before.published) throw new Error('Published or reserved dates require individual review.');
+        if (view.confirmedCount || view.pendingCount || before.approvalStatus === 'approved' || before.published) throw new Error('Published or reserved dates require individual review.');
       }
       const record = store.validateDate({
         id: before?.id ?? randomUUID(), seminarId: item.seminarId, date: item.date,

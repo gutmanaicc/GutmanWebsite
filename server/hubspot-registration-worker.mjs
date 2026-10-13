@@ -1,4 +1,5 @@
-/** Consumes only registrations committed after authenticated Morning proof.
+import { hasConfirmedEnrollment } from './confirmed-enrollment.mjs';
+/** Consumes registrations committed after authenticated payment or a validated zero-cost coupon.
  * CRM delivery uses persistent intake keys and never automatically replays an
  * uncertain send. No email, payment or enrollment is created here.
  */
@@ -18,7 +19,7 @@ export class HubSpotRegistrationWorker {
           const registration = item?.payload?.registration && this.store.get('registrations', item.payload.registration.id);
           const date = order && this.store.get('dates', order.dateId);
           if (!item || !['pending', 'processing'].includes(item.status)) return null;
-          if (!order || order.status !== 'paid' || order.simulation || order.provider !== 'morning' || !registration || registration.orderId !== order.id || registration.status !== 'confirmed' || registration.simulation || registration.totalAgorot !== order.totalAgorot || !date || item.payload?.simulation !== false) {
+          if (!hasConfirmedEnrollment(this.store,order,registration) || !date || item.payload?.simulation !== false) {
             item.status = 'cancelled'; item.nextAttemptAt = null; this.store.save('outbox', item); return null;
           }
           item.status = 'processing'; item.attempts++; this.store.save('outbox', item);
@@ -28,7 +29,7 @@ export class HubSpotRegistrationWorker {
         const { item, order, date } = claim;
         let accepted;
         try {
-          accepted = await this.intake.submit({ fullName: order.customer.name, email: order.customer.email, phone: order.customer.phone, seminarId: date.seminarId, requestedDate: date.date, marketingConsent: order.marketingConsent === true, note: `התשלום אומת וההרשמה אושרה. סכום ששולם: ${order.totalAgorot / 100} ₪. מספר הזמנה: ${order.id}` }, `registration-${order.id}`);
+          accepted = await this.intake.submit({ fullName: order.customer.name, email: order.customer.email, phone: order.customer.phone, seminarId: date.seminarId, requestedDate: date.date, marketingConsent: order.marketingConsent === true, note: order.status === 'complimentary' ? `הרשמה ללא עלות באמצעות קופון מאושר. לא בוצע חיוב. מספר הזמנה: ${order.id}` : `התשלום אומת וההרשמה אושרה. סכום ששולם: ${order.totalAgorot / 100} ₪. מספר הזמנה: ${order.id}` }, `registration-${order.id}`);
         } catch {
           this.store.transaction(() => { const current = this.store.get('outbox', item.id); current.status = 'failed'; current.nextAttemptAt = null; current.lastError = 'CRM_REGISTRATION_REVIEW_REQUIRED'; this.store.save('outbox', current); }); report.reviewRequired++; continue;
         }

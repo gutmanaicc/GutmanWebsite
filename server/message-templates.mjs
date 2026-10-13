@@ -42,7 +42,7 @@ export function buildMessage(kind, order, date, { publicOrigin = 'https://gutman
   const serviceCosts = costs ? `${costs} המנויים והקרדיטים משולמים בנפרד לספקים ואינם כלולים במחיר הסמינר.` : '';
   const amount = Number.isSafeInteger(order.totalAgorot) && order.totalAgorot > 0 ? new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS', minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(order.totalAgorot / 100) : null;
   const templates = {
-    confirmation: ['אישור הרשמה | מכללת גוטמן', order.simulation ? `ההרשמה אומתה בסביבת ההדגמה. ${detail}. אסמכתא: ${order.id}. זהו אישור הדגמה ואינו קבלה או רכישה אמיתית.` : `התשלום אומת והרשמתכם התקבלה.${amount ? ` הסכום ששולם: ${amount}.` : ''} פרטי המפגש מופיעים בהמשך. אישור זה אינו קבלה.`],
+    confirmation: ['אישור הרשמה | מכללת גוטמן', order.simulation ? `ההרשמה אומתה בסביבת ההדגמה. ${detail}. אסמכתא: ${order.id}. זהו אישור הדגמה ואינו קבלה או רכישה אמיתית.` : order.status === 'complimentary' ? 'הרשמתכם אושרה ללא עלות באמצעות קופון. לא בוצע חיוב. פרטי המפגש מופיעים בהמשך. אישור זה אינו קבלה.' : `התשלום אומת והרשמתכם התקבלה.${amount ? ` הסכום ששולם: ${amount}.` : ''} פרטי המפגש מופיעים בהמשך. אישור זה אינו קבלה.`],
     preparation: [`מכינים אתכם לסמינר | ${label}`, `נפגשים לחמש שעות של עבודה מעשית. ${outcomes[date.seminarId] ?? ''}`],
     reminder: [`לקראת המפגש שלנו | ${label}`, 'לקראת המפגש שלנו, הנה פרטי היום ומה שכדאי להכין. נתרגל על העבודה שלכם ונבנה משהו שתוכלו להמשיך לעבוד איתו.'],
     followup: ['ממשיכים לתרגל', `תודה על ההשתתפות ב${label}. בחרו משימה אחת לתרגול, המשיכו לעבוד עם התוצר שבניתם ובדקו את התוצאה לפני שימוש או פרסום.`],
@@ -58,7 +58,7 @@ export function buildMessage(kind, order, date, { publicOrigin = 'https://gutman
   const documentAttached = ['confirmation','preparation'].includes(kind) && order.legalSnapshot?.sellerComplete;
   const result = { to: order.customer.email, subject, text: text + (documentAttached ? '\nמצורף עותק פרטי העסקה והתנאים כפי שנמסרו בזמן ההזמנה.' : ''), orderId: order.id, dateId: date.id, simulation: Boolean(order.simulation) };
   if (service) {
-    const titles = { confirmation: 'התשלום אומת. ההרשמה התקבלה.', preparation: 'מגיעים מוכנים. בונים בעצמכם.', reminder: 'לקראת יום העבודה שלכם.', followup: 'ממשיכים לבנות. גם אחרי הסמינר.', cancellation: 'עדכון על ההרשמה שלכם.' };
+    const titles = { confirmation: order.status === 'complimentary' ? 'ההרשמה אושרה. ללא חיוב.' : 'התשלום אומת. ההרשמה התקבלה.', preparation: 'מגיעים מוכנים. בונים בעצמכם.', reminder: 'לקראת יום העבודה שלכם.', followup: 'ממשיכים לבנות. גם אחרי הסמינר.', cancellation: 'עדכון על ההרשמה שלכם.' };
     result.html = emailHtml({ name: order.customer.name, title: titles[kind], intro, label, date, items: messageItems, costs: messageCosts, navigation: messageNavigation, origin: publicOrigin, orderId: order.id, amount: kind === 'confirmation' ? amount : null, kind });
     result.inlineImages = [structuredClone(EMAIL_BRAND_IMAGE)];
   }

@@ -1,3 +1,4 @@
+import { hasConfirmedEnrollment } from './confirmed-enrollment.mjs';
 import { randomUUID } from 'node:crypto';
 import { RESEND_REPLAY_WINDOW_MS } from './resend-delivery-adapter.mjs';
 import { jerusalemStart } from './commerce.mjs';
@@ -40,8 +41,8 @@ export class DurableOutboxWorker {
       const order = store.get('orders', item.orderId);
       const date = order && store.get('dates', order.dateId);
       // CRM and private review events are never selected by the adapter. Service
-      // emails require a real paid order and its actual customer recipient.
-      if (!order || order.simulation || order.provider !== 'morning' || order.status !== 'paid' || !date || date.approvalStatus !== 'approved' || date.status === 'cancelled' || item.payload?.simulation !== false || item.payload?.to !== order.customer.email || (item.kind !== 'followup' && jerusalemStart(date.date) + 5 * 3_600_000 <= now)) {
+      // emails require a committed enrollment and its actual customer recipient.
+      if (!hasConfirmedEnrollment(store,order) || !date || date.approvalStatus !== 'approved' || date.status === 'cancelled' || item.payload?.simulation !== false || item.payload?.to !== order.customer.email || (item.kind !== 'followup' && jerusalemStart(date.date) + 5 * 3_600_000 <= now)) {
         item.status = 'cancelled'; item.nextAttemptAt = null; item.lastError = 'EMAIL_SERVICE_NO_LONGER_ELIGIBLE'; delete item.deliveryLeaseId;
         store.save('outbox', item); return { stopped: true, reviewRequired: false };
       }

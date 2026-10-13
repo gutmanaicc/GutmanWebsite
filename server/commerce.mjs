@@ -100,7 +100,7 @@ export class CommerceStore {
     if (record.approvalStatus !== 'approved' && (record.published || record.status === 'open_for_registration')) fail('DATE_NOT_APPROVED', 'המועד ממתין לאישור מנהל.');
     const duplicate = this.all('dates').find(other => other.id !== record.id && other.date === record.date && !['cancelled', 'completed'].includes(other.status) && !['cancelled', 'completed'].includes(record.status));
     if (duplicate) fail('DATE_CONFLICT', 'קיים מועד נוסף באותו חלון זמן.');
-    if (previous.id && this.dateView(previous).paidCount + this.dateView(previous).pendingCount > record.capacity) fail('CAPACITY_CONFLICT', 'לא ניתן להפחית קיבולת מתחת להרשמות ולמושבים השמורים.');
+    if (previous.id && this.dateView(previous).confirmedCount + this.dateView(previous).pendingCount > record.capacity) fail('CAPACITY_CONFLICT', 'לא ניתן להפחית קיבולת מתחת להרשמות ולמושבים השמורים.');
     return record;
   }
   audit(action,entityId,detail={}) {const event={id:randomUUID(),action,entityId,detail,actor:action==='date.proposed'?'system-source-import':'authenticated-local-admin',createdAt:iso(this.clock())};this.db.prepare('INSERT INTO audit_events(id,data) VALUES(?,?)').run(event.id,JSON.stringify(event));}
@@ -112,9 +112,11 @@ export class CommerceStore {
     const orders = this.all('orders').filter(order => order.dateId === date.id);
     const paidCount = orders.filter(order => order.status === 'paid').length;
     const pendingCount = orders.filter(order => order.status === 'pending' && Date.parse(order.holdExpiresAt) > this.clock()).length;
-    const remainingCapacity = Math.max(0, date.capacity - paidCount - pendingCount);
+    const complimentaryCount = orders.filter(order => order.status === 'complimentary').length;
+    const confirmedCount = paidCount + complimentaryCount;
+    const remainingCapacity = Math.max(0, date.capacity - confirmedCount - pendingCount);
     const minimumEnrollmentReviewAt=iso(jerusalemStart(date.date)-48*3_600_000);
-    return { ...date, paidCount, pendingCount, remainingCapacity, minimumEnrollmentReviewAt,requiresMinimumEnrollmentDecision:date.approvalStatus==='approved'&&!['cancelled','completed'].includes(date.status)&&paidCount<config.minimumParticipants&&this.clock()>=Date.parse(minimumEnrollmentReviewAt),minimumEnrollmentMet: paidCount >= config.minimumParticipants, status: date.status === 'open_for_registration' && remainingCapacity === 0 ? 'fully_booked' : date.status };
+    return { ...date, paidCount, complimentaryCount, confirmedCount, pendingCount, remainingCapacity, minimumEnrollmentReviewAt,requiresMinimumEnrollmentDecision:date.approvalStatus==='approved'&&!['cancelled','completed'].includes(date.status)&&paidCount<config.minimumParticipants&&this.clock()>=Date.parse(minimumEnrollmentReviewAt),minimumEnrollmentMet: paidCount >= config.minimumParticipants, status: date.status === 'open_for_registration' && remainingCapacity === 0 ? 'fully_booked' : date.status };
   }
   createDate(body) {
     return this.transaction(() => {
@@ -129,9 +131,9 @@ export class CommerceStore {
       const allowed = Object.fromEntries(Object.entries(body).filter(([key]) => ['seminarId','date','venue','capacity','status','published'].includes(key)));
       const materialChange = ['seminarId','date','venue'].some(key => key in allowed && allowed[key] !== before[key]);
       const enrollment = this.dateView(before);
-      if (materialChange && enrollment.paidCount + enrollment.pendingCount > 0) fail('EXISTING_OBLIGATIONS', 'יש הרשמות או הזמנות פעילות. שינוי מהותי דורש טיפול פרטני והודעה למשתתפים.', 409);
+      if (materialChange && enrollment.confirmedCount + enrollment.pendingCount > 0) fail('EXISTING_OBLIGATIONS', 'יש הרשמות או הזמנות פעילות. שינוי מהותי דורש טיפול פרטני והודעה למשתתפים.', 409);
       const date = this.validateDate({...allowed, ...(materialChange ? {approvalStatus:'pending',published:false,status:'draft'} : {})}, before);
-      if (date.status==='cancelled' && enrollment.paidCount + enrollment.pendingCount > 0) fail('EXISTING_OBLIGATIONS', 'ביטול מועד עם הרשמות מחייב ביטולים והחזרים פרטניים.', 409);
+      if (date.status==='cancelled' && enrollment.confirmedCount + enrollment.pendingCount > 0) fail('EXISTING_OBLIGATIONS', 'ביטול מועד עם הרשמות מחייב ביטולים והחזרים פרטניים.', 409);
       if(date.status==='completed'&&(jerusalemStart(date.date)+config.durationHours*3_600_000>this.clock()||enrollment.pendingCount>0))fail('SEMINAR_NOT_ENDED','ניתן לסמן השלמה רק לאחר סיום הסמינר וללא הזמנות ממתינות.',409);
       this.save('dates', date);this.audit('date.updated',date.id,{status:date.status,published:date.published,approvalStatus:date.approvalStatus}); return this.dateView(date);
     });
@@ -148,7 +150,7 @@ export class CommerceStore {
     return this.transaction(() => {
       const before = this.get('dates', id); if (!before) fail('NOT_FOUND', 'המועד לא נמצא.', 404);
       const view = this.dateView(before);
-      if (view.paidCount + view.pendingCount > 0) fail('EXISTING_OBLIGATIONS', 'לא ניתן לדחות מועד עם הרשמות פעילות.', 409);
+      if (view.confirmedCount + view.pendingCount > 0) fail('EXISTING_OBLIGATIONS', 'לא ניתן לדחות מועד עם הרשמות פעילות.', 409);
       const date = {...before,approvalStatus:'rejected',published:false,status:'cancelled',rejectionReason:String(body.reason ?? '').slice(0,1000)};
       this.save('dates',date);this.audit('date.rejected',date.id);return this.dateView(date);
     });
@@ -197,7 +199,7 @@ export class CommerceStore {
       this.db.prepare('UPDATE coupons SET code=?,data=? WHERE id=?').run(coupon.code,JSON.stringify(coupon),id);this.audit('coupon.updated',coupon.id,{active:coupon.active});return coupon;
     });
   }
-  coupons() { return this.all('coupons').map(coupon => ({...coupon,totalRedemptions:this.all('orders').filter(order => order.couponId === coupon.id && ['paid','refunded'].includes(order.status)).length})); }
+  coupons() { return this.all('coupons').map(coupon => ({...coupon,totalRedemptions:this.all('orders').filter(order => order.couponId === coupon.id && ['paid','refunded','complimentary'].includes(order.status)).length})); }
   quote({dateId,couponCode,email,customer}, excludeOrderId) {
     const date = this.purchasableDate(dateId);
     const subtotalAgorot = config.activePrice === 'regular' ? config.regularPriceAgorot : config.launchPriceAgorot;
@@ -210,7 +212,7 @@ export class CommerceStore {
       const unavailable = !coupon || !coupon.active || (coupon.startsAt && Date.parse(coupon.startsAt) > now) || (coupon.expiresAt && Date.parse(coupon.expiresAt) <= now) || (coupon.seminarIds.length && !coupon.seminarIds.includes(date.seminarId)) || (coupon.dateIds.length && !coupon.dateIds.includes(date.id));
       if (unavailable) fail('COUPON_INVALID','הקופון אינו בתוקף או אינו מתאים למועד שנבחר.');
       // Hold coupon availability atomically with seats. Refunds never replenish usage automatically.
-      const uses = this.all('orders').filter(order => order.id !== excludeOrderId && order.couponId === coupon.id && (['paid','refunded'].includes(order.status) || (order.status === 'pending' && Date.parse(order.holdExpiresAt) > now)));
+      const uses = this.all('orders').filter(order => order.id !== excludeOrderId && order.couponId === coupon.id && (['paid','refunded','complimentary'].includes(order.status) || (order.status === 'pending' && Date.parse(order.holdExpiresAt) > now)));
       if (uses.length >= coupon.maxRedemptions) fail('COUPON_LIMIT','הקופון הגיע למגבלת המימושים.');
       const emailKey = String(email ?? customer?.email ?? '').trim().toLowerCase();
       if (coupon.perCustomerLimit && !emailKey) fail('COUPON_EMAIL_REQUIRED','יש להזין אימייל כדי לבדוק את הקופון.');
@@ -255,11 +257,19 @@ export class CommerceStore {
         order.termsVersion=order.legalSnapshot.policy.version;
       }
       this.db.prepare('INSERT INTO orders(id,idempotency_key,request_hash,access_hash,data) VALUES(?,?,?,?,?)').run(id,key,requestHash,digest(accessToken),JSON.stringify(order));
+      // The price and coupon were calculated under the same seat/usage transaction.
+      // Zero-cost enrollment never impersonates a provider payment.
+      if (price.totalAgorot === 0 && price.couponId) {
+        order.status='complimentary';order.paymentKind='complimentary';order.confirmedAt=iso(this.clock());order.checkoutState='not_required';
+        this.save('orders',order);
+        this.commitRegistration(order,date);
+        this.audit('order.complimentary',order.id,{couponId:price.couponId,totalAgorot:0,simulation:order.simulation});
+      }
       return this.orderResult(order,accessToken);
     });
   }
   accessToken(id,key) { return createHmac('sha256',this.orderSecret).update(`${id}:${key}`).digest('hex'); }
-  orderResult(order,accessToken) { return {orderId:order.id,status:order.status,totalAgorot:order.totalAgorot,currency:order.currency,holdExpiresAt:order.holdExpiresAt,simulation:order.simulation===true,provider:order.provider??'simulation',checkoutUrl:order.checkoutUrl??null,checkoutState:order.checkoutState??'not_required',checkoutExpiresAt:order.checkoutExpiresAt??null,transactionId:order.transactionId,...(accessToken ? {orderAccessToken:accessToken} : {})}; }
+  orderResult(order,accessToken) { return {orderId:order.id,status:order.status,totalAgorot:order.totalAgorot,currency:order.currency,holdExpiresAt:order.holdExpiresAt,simulation:order.simulation===true,provider:order.provider??'simulation',checkoutUrl:order.checkoutUrl??null,checkoutState:order.checkoutState??'not_required',checkoutExpiresAt:order.checkoutExpiresAt??null,transactionId:order.transactionId,paymentKind:order.paymentKind??'payment',...(accessToken ? {orderAccessToken:accessToken} : {})}; }
   authorizedOrder(id,token) {
     const row = this.db.prepare('SELECT * FROM orders WHERE id=?').get(id);
     if (!row || typeof token !== 'string' || !timingSafeEqual(Buffer.from(row.access_hash,'hex'),Buffer.from(digest(token),'hex'))) fail('UNAUTHORIZED','אין הרשאה לצפות בהזמנה.',401);
@@ -274,7 +284,7 @@ export class CommerceStore {
     if (this.mode!=='simulation'||!this.commerce.ready || !this.adapter) fail('PAYMENT_UNAVAILABLE','הדגמת תשלום אינה פעילה.',503);
     this.authorizedOrder(id,token);
     const order = this.get('orders',id);
-    if (order.status === 'paid') return this.orderResult(order);
+    if (['paid','complimentary'].includes(order.status)) return this.orderResult(order);
     if (!['succeeded','failed'].includes(outcome)) fail('INVALID_PAYMENT','תוצאת תשלום לא תקינה.');
     const event = {id:randomUUID(),orderId:id,type:outcome,transactionId:`sim-${randomUUID()}`,amountAgorot:order.totalAgorot,currency:'ILS'};
     const raw = JSON.stringify(event);const timestamp = String(this.clock());
@@ -371,6 +381,7 @@ export class CommerceStore {
         return {...this.orderResult(this.get('orders',event.orderId)),duplicate:true};
       }
       const order = this.get('orders',event.orderId);if (!order) fail('ORDER_NOT_FOUND','ההזמנה לא נמצאה.',404);
+      if(order.status==='complimentary')fail('PAYMENT_NOT_REQUIRED','ההרשמה אושרה ללא חיוב ולא ניתן לשייך לה תשלום.',409);
       if(event.provider!==(order.provider??'simulation'))fail('ORDER_PROVIDER_CONFLICT','ספק התשלום אינו תואם להזמנה.',409);
       if (event.currency !== order.currency || !Number.isSafeInteger(event.amountAgorot) || event.amountAgorot !== order.totalAgorot) fail('PAYMENT_AMOUNT_MISMATCH','סכום התשלום אינו תואם להזמנה.',409);
       const priorTransaction=this.db.prepare('SELECT data FROM payment_events WHERE transaction_id=?').get(event.transactionId);
@@ -388,19 +399,23 @@ export class CommerceStore {
         valid = valid && price.totalAgorot === order.totalAgorot && price.couponId === order.couponId;
       } catch { valid = false; }
       const date = this.get('dates',order.dateId);
-      if (!valid || this.dateView(date).paidCount >= date.capacity) {
+      if (!valid || this.dateView(date).confirmedCount >= date.capacity) {
         order.status='refund_required';order.transactionId=event.transactionId;this.save('orders',order);
         this.enqueue('payment_review',order,{reason:'Verified success arrived after hold expiry, state change, or coupon change; no seat or enrollment granted.'},this.clock());
         return this.orderResult(order);
       }
       order.status='paid';order.paidAt=iso(this.clock());order.transactionId=event.transactionId;this.save('orders',order);
-      const registration = {id:randomUUID(),orderId:order.id,dateId:date.id,seminarId:date.seminarId,customer:order.customer,status:'confirmed',totalAgorot:order.totalAgorot,couponCode:order.couponCode,transactionId:order.transactionId,createdAt:iso(this.clock()),simulation:order.simulation===true,provider:order.provider??'simulation'};
-      this.db.prepare('INSERT INTO registrations(id,order_id,data) VALUES(?,?,?)').run(registration.id,order.id,JSON.stringify(registration));
-      for (const [kind,time] of [['confirmation',this.clock()],['preparation',this.clock()],['reminder',Math.max(this.clock(),jerusalemStart(date.date)-86_400_000)],['followup',jerusalemStart(date.date)+5*3_600_000+86_400_000]]) this.enqueue(kind,order,buildMessage(kind,order,date,{publicOrigin:this.publicOrigin}),time);
+      this.commitRegistration(order,date);
       if(this.dateView(date).paidCount===config.minimumParticipants)this.enqueue('minimum_reached',order,{dateId:date.id,paidCount:config.minimumParticipants,simulation:order.simulation===true},this.clock(),`date:${date.id}:minimum-reached`);
-      this.enqueue('crm_registration',order,{externalId:order.id,registration,marketingConsent:order.marketingConsent,simulation:order.simulation===true},this.clock());
       return {...this.orderResult(order),transactionId:order.transactionId};
     });
+  }
+  /** Called only inside the atomic order/payment transaction. */
+  commitRegistration(order,date) {
+    const registration = {id:randomUUID(),orderId:order.id,dateId:date.id,seminarId:date.seminarId,customer:order.customer,status:'confirmed',totalAgorot:order.totalAgorot,couponCode:order.couponCode,transactionId:order.transactionId,createdAt:iso(this.clock()),simulation:order.simulation===true,provider:order.provider??'simulation',paymentKind:order.paymentKind??'payment',couponId:order.couponId,confirmedAt:order.confirmedAt??order.paidAt};
+    this.db.prepare('INSERT INTO registrations(id,order_id,data) VALUES(?,?,?)').run(registration.id,order.id,JSON.stringify(registration));
+    for (const [kind,time] of [['confirmation',this.clock()],['preparation',this.clock()],['reminder',Math.max(this.clock(),jerusalemStart(date.date)-86_400_000)],['followup',jerusalemStart(date.date)+5*3_600_000+86_400_000]]) this.enqueue(kind,order,buildMessage(kind,order,date,{publicOrigin:this.publicOrigin}),time);
+    this.enqueue('crm_registration',order,{externalId:order.id,registration,marketingConsent:order.marketingConsent,simulation:order.simulation===true},this.clock());
   }
   refundOrder(id) {
     if (this.mode !== 'simulation') fail('PAYMENT_UNAVAILABLE','החזר אמיתי אינו מוגדר.',503);

@@ -407,3 +407,21 @@ test('seminar enquiry uses durable lead API, keeps marketing optional and report
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
  }finally{await context.close();await new Promise(resolve=>apiServer.close(resolve));localStore.close();intake.close();rmSync(directory,{recursive:true,force:true});}
 });
+
+test('master discount checkout confirms without a payment redirect on mobile and retains confirmation on reload', async () => {
+  let calls=0;
+  const adapter={ready:true,checkoutOrigins:['https://checkout.example.test'],async createCheckout(){calls++;throw Error('No zero-amount provider call');}};
+  const freeStore=new CommerceStore({mode:'morning',adapter,orderSecret:randomBytes(32).toString('hex'),bookingTermsApproved:true});freeStore.seedDrafts();
+  const date=freeStore.approveDate(freeStore.dates(true)[0].id,{checksConfirmed:true,publish:true,openRegistration:true});freeStore.createCoupon({code:'BROWSERFREE100',type:'percentage',value:100,maxRedemptions:5,active:true});
+  const checkout=new HostedCheckout({store:freeStore,adapter,publicOrigin:'https://gutmanai.com'});
+  const freeServer=createAcademyServer({store:freeStore,checkout,allowedOrigins:[base]});await new Promise(resolve=>freeServer.listen(0,'127.0.0.1',resolve));
+  const origin=`http://127.0.0.1:${freeServer.address().port}`;const context=await browser.newContext({viewport:{width:390,height:844}});const page=await context.newPage();
+  try {
+    await page.route('**/api/academy/**',async route=>{const req=route.request();const response=await fetch(origin+new URL(req.url()).pathname,{method:req.method(),headers:{...req.headers(),host:new URL(origin).host},...(req.postData()?{body:req.postData()}:{})});await route.fulfill({status:response.status,contentType:'application/json',body:await response.text()});});
+    await page.goto(`${base}/register?date=${date.id}`);await page.getByLabel('שם מלא',{exact:true}).fill('בדיקת קופון');await page.getByLabel('אימייל',{exact:true}).fill('free-browser@example.invalid');await page.getByLabel('טלפון',{exact:true}).fill('0500000000');
+    await page.locator('summary').filter({hasText:'יש לכם קוד קופון?'}).click();await page.getByLabel('קוד קופון',{exact:true}).fill('browserfree100');await page.getByRole('button',{name:'החלת קופון',exact:true}).click();
+    await page.getByRole('button',{name:'אישור הרשמה ללא עלות',exact:false}).waitFor();await page.getByRole('checkbox').first().check();await page.getByRole('button',{name:'אישור הרשמה ללא עלות',exact:false}).click();await page.waitForURL(`${base}/orders/**`);
+    await page.getByRole('heading',{level:1,name:'ההרשמה אושרה',exact:true}).waitFor();await page.getByText('הרשמה מאושרת ללא חיוב',{exact:true}).waitFor();assert.equal(calls,0);assert.equal(freeStore.all('registrations').length,1);assert.equal(await page.getByRole('link',{name:'להמשך התשלום המאובטח'}).count(),0);
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth),0);await page.reload();await page.getByRole('heading',{level:1,name:'ההרשמה אושרה',exact:true}).waitFor();assert.equal(freeStore.all('registrations').length,1);
+  } finally {await context.close();await new Promise(resolve=>freeServer.close(resolve));freeStore.close();}
+});

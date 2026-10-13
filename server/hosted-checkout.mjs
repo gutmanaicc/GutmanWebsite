@@ -21,6 +21,8 @@ export class HostedCheckout {
   }
   async start(created) {
     if (!this.ready) unavailable();
+    const settled = await this.store.get('orders',created.orderId);
+    if (settled?.status === 'complimentary') return {...created,...this.store.orderResult(settled)};
     const { claimed, order } = await this.store.claimCheckout(created.orderId);
     if (!claimed) return { ...created, ...this.store.orderResult(order) };
     if (order.totalAgorot <= 0) return { ...created, ...await this.store.checkoutFailed(order.id, { unknown: false, reasonCode: 'ZERO_AMOUNT_UNSUPPORTED' }) };
