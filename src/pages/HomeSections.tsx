@@ -4,6 +4,7 @@ import { ACADEMY_CONTENT } from '../data/seminars';
 import IntroVideo from '../components/academy/IntroVideo';
 import ClientLogos from '../components/academy/ClientLogos';
 import AcademyTestimonialVideo from '../components/academy/AcademyTestimonialVideo';
+import VenueExperience from '../components/academy/VenueExperience';
 import { Closing, Examples, FAQ, Founder, Proof, SectionHeading, SeminarCards } from '../components/academy/Content';
 
 import { useEffect } from 'react';
@@ -17,6 +18,7 @@ export default function HomeSections() {
     <section className="academy-section academy-catalog" id="seminars"><div className="academy-container"><div className="academy-heading-row"><SectionHeading eyebrow="שלושה סמינרים. מטרה ברורה." title="מה תרצו לבנות?" description="בחרו לפי העבודה שאתם עושים והתוצר שאתם רוצים להתחיל ממנו. בכל סמינר: יום אחד, קבוצה קטנה ותרגול על המקרה שלכם." /><Link to="/courses" className="academy-text-link">לכל הסמינרים <ArrowLeft size={20} aria-hidden="true" /></Link></div><SeminarCards /></div></section>
     <Examples videoOnly />
     <section className="academy-section academy-day"><div className="academy-container"><div className="academy-heading-row"><SectionHeading eyebrow="יום באקדמיה" title={"זמן ללמוד.\nובעיקר, זמן לעשות."} /><p className="academy-source-note">מסגרת היום, לדוגמה. התוכנית המפורטת וההפסקה מופיעות בעמוד כל סמינר.</p></div><ol className="academy-timeline">{ACADEMY_CONTENT.timeline.map(item => <li key={item.time}><time dir="ltr">{item.time}</time><div><h3>{item.title}</h3><p>{item.text}</p></div></li>)}</ol></div></section>
+    <VenueExperience />
     <Proof />
     {import.meta.env.VITE_ACADEMY_TESTIMONIAL_ENABLED === '1' && <AcademyTestimonialVideo />}
     <section className="academy-section academy-faq-section"><div className="academy-container academy-faq-layout"><SectionHeading eyebrow="לפני שמגיעים" title={"שאלות טובות.\nתשובות ברורות."} description="כל מה שכדאי לדעת לפני שבוחרים סמינר." /><FAQ /></div></section>

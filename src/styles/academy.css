@@ -850,3 +850,22 @@
 .academy-legal-form{display:flex;flex-direction:column;gap:12px;padding-block:30px}.academy-legal-form input,.academy-legal-form select,.academy-legal-form textarea{min-height:46px;width:100%;border:1px solid #ba93af60;border-radius:10px;padding:12px;background:#17121d;color:#f5eaf2;font:inherit}.academy-legal-form textarea{resize:vertical}.academy-legal-form label{font-size:14px}.academy-legal-form details{margin-block:12px}.academy-legal-form details p,.academy-legal-form-note{font-size:13px;line-height:1.9;color:#cdbdcc}.academy-legal-form details input{margin-top:12px}.academy-legal-form-note a{text-decoration:underline}.academy-legal-form .academy-button{align-self:flex-start}.academy-legal-receipt{display:grid;gap:18px;padding:30px;border:1px solid #bf9dad65;border-radius:15px;margin-block:30px}.academy-legal-receipt bdi{overflow-wrap:anywhere}.academy-legal-receipt .academy-button{justify-self:start}
 @media(max-width:600px){.academy-cancellation-access{flex-direction:column;gap:4px}.academy-legal-receipt{padding:22px}.academy-legal-form .academy-button{align-self:stretch;justify-content:center}}
 .academy-commercial-disclosure{margin-block:28px;padding:24px;border:1px solid #d894ad70;border-radius:14px;background:#34203245}.academy-commercial-disclosure h3{font-size:19px;line-height:1.5}.academy-commercial-disclosure p{font-size:14px;line-height:1.85;color:#dfcad8;margin-top:12px}.academy-commercial-disclosure--compact{padding:18px;margin-block:16px}.academy-seller-disclosure{padding-block:18px;border-block:1px solid var(--academy-line);margin-block:16px}.academy-seller-disclosure h3{font-size:16px}.academy-seller-disclosure p{font-size:13px;line-height:1.8;margin-top:7px;overflow-wrap:anywhere}.academy-seller-disclosure a{text-decoration:underline}.academy-seller-disclosure bdi{white-space:nowrap}
+
+.academy-venue-experience{background:radial-gradient(ellipse at 75% 50%,#713e5a20,transparent 65%),#15111b;border-block:1px solid #d49bb52a}
+.academy-venue-experience-grid{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);align-items:center;gap:clamp(30px,6vw,95px)}
+.academy-venue-experience-copy h3{display:flex;align-items:center;gap:10px;font-size:20px;margin-top:32px;color:#f4dbe9;line-height:1.5}
+.academy-venue-address{font-size:15px;color:#cebbcb;margin:8px 0 20px}
+.academy-venue-photos{position:relative;padding-bottom:132px;min-width:0}
+.academy-venue-photo{position:relative;overflow:hidden;border:1px solid #f1e4df40;border-radius:24px;background:#29202c;box-shadow:0 22px 60px #0005}
+.academy-venue-photo img{display:block;width:100%;height:auto;aspect-ratio:3/2;object-fit:cover}
+.academy-venue-photo img[hidden]{display:none}
+.academy-venue-photo-fallback{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;aspect-ratio:3/2;color:#ecd4e4;background:radial-gradient(ellipse at 50% 30%,#4c3049,#241c2b);font-size:13px;text-align:center;padding:15px;text-decoration:underline;text-underline-offset:4px}
+.academy-venue-photo--detail .academy-venue-photo-fallback{font-size:11px}
+.academy-venue-photo figcaption{padding:14px 19px;font-size:13px;color:#ead5e2;background:#201b25}
+.academy-venue-photo--main{width:92%;transform:rotate(-2deg);margin:0 0 0 auto}
+.academy-venue-photo--detail{position:absolute;left:0;bottom:64px;width:46%;transform:rotate(4deg);border-width:5px;border-color:#27202d;border-radius:19px;box-shadow:0 15px 45px #0008}
+.academy-venue-photo--detail figcaption{padding:9px 13px;font-size:12px}
+.academy-venue-photo-credit{position:absolute;bottom:0;right:0;max-width:100%;font-size:11px;line-height:1.8;color:#c4b4c1;margin:0}
+.academy-venue-photo-credit a{text-decoration:underline;text-underline-offset:3px}
+@media(max-width:900px){.academy-venue-experience-grid{grid-template-columns:1fr;gap:42px}.academy-venue-photos{width:100%;max-width:680px;margin-inline:auto}.academy-venue-experience-copy .academy-description{max-width:650px}}
+@media(max-width:480px){.academy-venue-photos{padding-bottom:125px}.academy-venue-photo{border-radius:17px}.academy-venue-photo--detail{width:48%;bottom:70px;border-width:3px;border-radius:14px}.academy-venue-photo--main{width:94%}.academy-venue-photo figcaption{padding:11px 13px;font-size:12px}.academy-venue-photo--detail figcaption{font-size:10px;padding:8px}.academy-venue-photo-credit{font-size:10px}.academy-venue-experience-copy h3{font-size:18px}}

@@ -10,6 +10,7 @@ import ownerSchedule from '../../shared/academy-owner-schedule.json';
 import { SeminarVisual } from '../components/academy/PremiumSeminarShowcase';
 import { CommercialDisclosure } from '../components/academy/CommercialDisclosure';
 import VenueNavigation from '../components/academy/VenueNavigation';
+import VenueExperience from '../components/academy/VenueExperience';
 
 export default function SeminarDetail() {
   const { slug } = useParams();
@@ -24,6 +25,7 @@ export default function SeminarDetail() {
     <section className="academy-product-section"><SectionHeading eyebrow="הכנה קצרה" title="מה כדאי להביא?" /><ul className="academy-check-list">{seminar.preparation.map(item => <li key={item}><Check size={18} aria-hidden="true" /><span>{item}</span></li>)}</ul><p className="academy-source-note">סוגי הכלים: {seminar.tools.join(' · ')}. הדרישות ועלויות המנויים הנפרדות מפורטות להלן ומוצגות שוב לפני התשלום.</p></section>
     <CommercialDisclosure seminarSlug={seminar.slug} />
     </div><aside className="academy-product-booking" id="booking" aria-label="מועדים והרשמה"><BookingPanel seminarSlug={seminar.slug} seminarTitle={seminar.title} /></aside></div>
+    <VenueExperience />
     {seminar.slug === 'ai-video-content' && <Examples videoOnly />}
     <Proof seminarSlug={seminar.slug} /><Founder compact />
     <section className="academy-section academy-faq-section"><div className="academy-container academy-faq-layout"><SectionHeading eyebrow="לפני שמחליטים" title="עוד כמה שאלות." /><FAQ items={[...seminar.faq, ...ACADEMY_FAQ.filter((_, index) => [0, 1, 2, 4, 5, 6, 7, 8].includes(index))]} /></div></section>
