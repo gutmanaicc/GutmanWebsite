@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ArrowUpLeft, Check, FileText, Layers, MessageSquare, Sparkles } from 'lucide-react';
+import { ArrowUpLeft, Check, Layers, Sparkles } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useMotionCapability } from '../../lib/motion/useMotionCapability';
 import { Link } from 'react-router-dom';
@@ -22,12 +22,14 @@ export function SeminarVisual({ seminar }: { seminar: Seminar }) {
     <figcaption>מתוך השיחה של רון עם ריקי. אפשר ללחוץ להגדלה.</figcaption>
     <div className="sr-only"><p>רון: ריקי, אני מוצף. יש לי שלוש הצעות מחיר לשלוח, סדנא לשבוע הבא ופוסט להעלות. במה להתחיל?</p><p>ריקי: חיים שלי, נתחיל מהצעות המחיר ללקוחות שכבר מחכים, כדי לקדם סגירה. אחר כך נקדם את ההכנה לסדנה. הפוסט יכול לחכות. שלח לי את הפרטים של ההצעה הראשונה ואכין לך טיוטה לאישור.</p></div>
   </figure>;
-  return <figure className={`academy-stage-visual academy-stage-visual--${seminar.slug === 'social-media-ai' ? 'social' : 'business'}`}>
-    <div className="academy-workspace-window"><div className="academy-workspace-bar"><span aria-hidden="true"><i /><i /><i /></span><p>{seminar.slug === 'social-media-ai' ? 'סביבת עבודה · לקוח אחד' : 'סביבת העבודה של העסק'}</p><Layers size={16} aria-hidden="true" /></div>
-      <div className="academy-workspace-main"><aside><span className="academy-workspace-brand"><Sparkles size={17} aria-hidden="true" /> הידע שלי</span>{['הקשר ומטרות', 'שפה והוראות', 'משימות חוזרות'].map((label, index) => <span key={label} className={index === 0 ? 'is-active' : ''}><FileText size={14} aria-hidden="true" />{label}</span>)}</aside>
-        <div className="academy-workspace-chat"><span className="academy-workspace-chip">הקשר לפני פרומפט</span><h4>{seminar.slug === 'social-media-ai' ? 'מתחילים ממה שמייחד את המותג.' : 'העסק שלכם, במילים שלכם.'}</h4><div className="academy-mock-question"><MessageSquare size={15} aria-hidden="true" /><p>{seminar.slug === 'social-media-ai' ? 'בואו נבנה רעיונות שמתאימים לקהל ולשפה שלנו.' : 'בואו נבנה טיוטה למשימה שחוזרת בכל שבוע.'}</p></div><div className="academy-mock-answer"><Sparkles size={17} aria-hidden="true" /><div><strong>{seminar.slug === 'social-media-ai' ? 'קהל. טון. מטרה.' : 'מידע. הוראות. תהליך.'}</strong><span /><span /><span /></div></div><div className="academy-mock-compose"><span>הצעד הבא מתחיל כאן...</span><ArrowUpLeft size={17} aria-hidden="true" /></div></div>
-      </div>
-    </div><div className="academy-workspace-note"><Check size={17} aria-hidden="true" /><span>{seminar.slug === 'social-media-ai' ? 'לקוח אחד. תהליך תוכן משלכם.' : 'משימה אחת. התחלה שעובדת.'}</span></div><figcaption>המחשה של מבנה העבודה, ולא צילום של מערכת או תוצר של משתתף.</figcaption>
+  if (seminar.slug !== 'social-media-ai') return null;
+  return <figure className="academy-stage-visual academy-stage-visual--social">
+    <a className="academy-workspace-window academy-social-workspace" href="/images/social-studio-dashboard.webp" target="_blank" rel="noopener noreferrer" aria-label="הגדלת מערכת הסושיאל שפיתח רון, בלשונית חדשה">
+      <div className="academy-workspace-bar"><span aria-hidden="true"><i /><i /><i /></span><p>סטודיו הסושיאל · לקוחות ותוכן</p><Layers size={16} aria-hidden="true" /></div>
+      <img src="/images/social-studio-dashboard.webp" width={1599} height={984} loading="lazy" decoding="async" draggable={false} alt="המחשה מעוצבת למערכת הסושיאל שפיתח רון: לקוחות, לוח תוכן, אישורים וסוכן AI לכל לקוח" />
+    </a>
+    <div className="academy-workspace-note"><Sparkles size={17} aria-hidden="true" /><span>כל לקוח. התוכן שלו. עובד AI משלו.</span></div>
+    <figcaption>על בסיס מערכת שרון בנה למנהלת סושיאל, בעיצוב מורחב להמחשה. לחצו להגדלה.</figcaption>
   </figure>;
 }
 
