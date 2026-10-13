@@ -7,6 +7,7 @@ const SeminarDetail = lazy(() => import('./pages/SeminarDetail'));
 const About = lazy(() => import('./pages/About'));
 const Reviews = lazy(() => import('./pages/Reviews'));
 const Privacy = lazy(() => import('./pages/Privacy'));
+const BookingTerms = lazy(() => import('./pages/BookingTerms'));
 const Accessibility = lazy(() => import('./pages/Accessibility'));
 const Checkout = lazy(() => import('./pages/Checkout'));
 const OrderConfirmation = lazy(() => import('./pages/OrderConfirmation'));
@@ -29,6 +30,7 @@ export default function App() {
     <Route path="/about" element={<About />} />
     <Route path="/reviews" element={<Reviews />} />
     <Route path="/privacy" element={<Privacy />} />
+    <Route path="/booking-terms" element={<BookingTerms />} />
     <Route path="/accessibility" element={<Accessibility />} />
     <Route path="/register" element={<Checkout />} />
     <Route path="/orders/:orderId" element={<OrderConfirmation />} />

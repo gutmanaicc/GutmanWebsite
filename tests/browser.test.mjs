@@ -98,7 +98,7 @@ test('browser hosted checkout redirects and returns pending until authenticated 
 });
 
 test('public pages render Hebrew RTL, no draft availability, responsive and accessible', async () => {
-  const routes=['/','/courses','/courses/social-media-ai','/courses/ai-video-content','/courses/ai-business-owners','/about','/reviews','/register','/courses/ai-fashion','/thank-you','/admin/academy'];
+  const routes=['/','/courses','/courses/social-media-ai','/courses/ai-video-content','/courses/ai-business-owners','/about','/reviews','/privacy','/booking-terms','/register','/courses/ai-fashion','/thank-you','/admin/academy'];
   for(const width of [375,768,1440]){
     const context=await browser.newContext({viewport:{width,height:900},reducedMotion:'reduce'});
     const page=await context.newPage();
@@ -121,6 +121,24 @@ test('public pages render Hebrew RTL, no draft availability, responsive and acce
     assert.deepEqual(errors,[],`browser errors ${width}`);
     await context.close();
   }
+});
+
+test('booking terms remain a visible draft until explicit approval and checkout links to the separate cancellation policy', async () => {
+  const context = await browser.newContext({ viewport: { width: 375, height: 812 } }); const page = await context.newPage();
+  let approved = false;
+  try {
+    await page.route('**/api/academy/catalog', async route => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ dates: [], commerce: { mode: 'disabled', ready: false, bookingTermsApproved: approved }, pricing: { launchPriceAgorot: 119000, regularPriceAgorot: 149000, currency: 'ILS' } }) }));
+    await page.goto(base + '/booking-terms');
+    await page.getByText('טיוטה לאישור בעל המכללה', { exact: true }).waitFor();
+    assert.match(await page.locator('meta[name=robots]').getAttribute('content'), /noindex/);
+    assert.ok((await page.locator('main').innerText()).includes('48 שעות'));
+    assert.ok((await page.locator('main').innerText()).includes('החזר מלא'));
+    approved = true; await page.reload();
+    await page.getByText('עודכן באוקטובר 2026', { exact: true }).waitFor();
+    assert.equal(await page.getByText('טיוטה לאישור בעל המכללה', { exact: true }).count(), 0);
+    const accessibility = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze(); assert.equal(accessibility.violations.length, 0);
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1));
+  } finally { await context.close(); }
 });
 
 test('mobile navigation supports keyboard, escape and route selection',async()=>{

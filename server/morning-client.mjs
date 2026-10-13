@@ -40,9 +40,9 @@ const header = (headers, name) => {
 
 export class MorningClient {
   #clientId; #clientSecret; #webhookSecret; #fetch; #clock; #timeout; #token; #tokenPromise; #endpoints;
-  #checkoutOrigins; #businessTaxId; #merchantVerified;
+  #checkoutOrigins; #businessTaxId; #merchantVerified; #paymentPluginId;
 
-  constructor({ clientId, clientSecret, webhookSecret, environment = 'production', checkoutOrigins = [], businessTaxId, merchantVerified = false, fetchImpl = globalThis.fetch, clock = Date.now, timeoutMs = 10_000 } = {}) {
+  constructor({ clientId, clientSecret, webhookSecret, environment = 'production', checkoutOrigins = [], businessTaxId, merchantVerified = false, paymentPluginId, fetchImpl = globalThis.fetch, clock = Date.now, timeoutMs = 10_000 } = {}) {
     if (!ENDPOINTS[environment]) fail('INVALID_ENVIRONMENT', 'Choose production or sandbox explicitly.');
     if (typeof fetchImpl !== 'function' || typeof clock !== 'function' || !Number.isSafeInteger(timeoutMs) || timeoutMs < 1) fail('INVALID_CONFIGURATION', 'A fetch implementation, clock and positive timeout are required.');
     if (!Array.isArray(checkoutOrigins)) fail('INVALID_CONFIGURATION', 'Configure verified checkout origins explicitly.');
@@ -54,13 +54,17 @@ export class MorningClient {
     this.#endpoints = ENDPOINTS[environment]; this.#clientId = clientId; this.#clientSecret = clientSecret;
     this.#webhookSecret = webhookSecret; this.#fetch = fetchImpl; this.#clock = clock; this.#timeout = timeoutMs;
     this.#businessTaxId = string(businessTaxId) ? businessTaxId.trim() : null; this.#merchantVerified = merchantVerified === true;
+    if (paymentPluginId !== undefined && !string(paymentPluginId)) fail('INVALID_CONFIGURATION', 'A verified payment plugin must have a nonempty ID.');
+    this.#paymentPluginId = paymentPluginId;
     this.environment = environment;
   }
 
   get configured() { return string(this.#clientId) && string(this.#clientSecret); }
   get checkoutOrigins() { return [...this.#checkoutOrigins]; }
-  get ready() { return this.configured && this.#merchantVerified && !!this.#businessTaxId && this.#checkoutOrigins.length > 0 && typeof this.#webhookSecret === 'string' && this.#webhookSecret.length >= 32; }
-  getReadiness() { return { environment: this.environment, configured: this.configured, merchantVerified: this.#merchantVerified, checkoutOriginsConfigured: this.#checkoutOrigins.length > 0, businessIdentityConfigured: !!this.#businessTaxId, webhookSecretConfigured: typeof this.#webhookSecret === 'string' && this.#webhookSecret.length >= 32, ready: this.ready }; }
+  // The notify callback only wakes an authenticated document lookup. It never
+  // trusts callback payment fields, so an optional HMAC secret is not a gate.
+  get ready() { return this.configured && this.#merchantVerified && !!this.#businessTaxId && this.#checkoutOrigins.length > 0; }
+  getReadiness() { return { environment: this.environment, configured: this.configured, merchantVerified: this.#merchantVerified, checkoutOriginsConfigured: this.#checkoutOrigins.length > 0, businessIdentityConfigured: !!this.#businessTaxId, paymentPluginConfigured: !!this.#paymentPluginId, webhookSecretConfigured: typeof this.#webhookSecret === 'string' && this.#webhookSecret.length >= 32, ready: this.ready }; }
 
   async #json(url, body, accessToken) {
     const controller = new AbortController();
@@ -106,7 +110,8 @@ export class MorningClient {
     for (const [key, value] of Object.entries({ successUrl, failureUrl, notifyUrl })) if (value !== undefined) body[key] = httpsUrl(value).href;
     if (custom !== undefined && typeof custom !== 'string') fail('INVALID_PAYMENT_FORM', 'Custom callback data must be a string.');
     body.custom = custom ?? reference;
-    if (pluginId !== undefined) { if (!string(pluginId)) fail('INVALID_PAYMENT_FORM', 'A configured plugin ID must be a string.'); body.pluginId = pluginId; }
+    const selectedPluginId = pluginId ?? this.#paymentPluginId;
+    if (selectedPluginId !== undefined) { if (!string(selectedPluginId)) fail('INVALID_PAYMENT_FORM', 'A configured plugin ID must be a string.'); body.pluginId = selectedPluginId; }
     const result = await this.#api('/payments/form', body);
     if (result.success !== true || result.errorCode !== 0 || !string(result.url)) fail('INVALID_PAYMENT_FORM_RESPONSE', 'The provider did not confirm creation of a payment form.');
     const checkout = httpsUrl(result.url);

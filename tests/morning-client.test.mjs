@@ -61,6 +61,17 @@ test('payment POST is not retried on unauthorized failure and provider diagnosti
   assert.equal(calls.filter(url => url.endsWith('/idp/v1/oauth/token')).length, 1);
 });
 
+test('a verified explicit clearing plugin is used when the business has no default plugin; callback authentication remains an authenticated lookup', async () => {
+  const pluginId = '41234567-89ab-4cde-8fab-0123456789ab'; let submitted;
+  const client = new MorningClient({ ...OPTIONS, webhookSecret: undefined, paymentPluginId: pluginId, fetchImpl: async (url, options) => {
+    if (url.endsWith('/idp/v1/oauth/token')) return auth();
+    submitted = JSON.parse(options.body); return json({ success: true, errorCode: 0, url: 'https://verified-checkout.example.test/pay/test' }, 201);
+  } });
+  assert.equal(client.ready, true); assert.equal(client.getReadiness().paymentPluginConfigured, true);
+  assert.equal(JSON.stringify(client.getReadiness()).includes(pluginId), false);
+  await client.createPaymentForm(INPUT); assert.equal(submitted.pluginId, pluginId); assert.equal(submitted.group, 100);
+});
+
 test('reconciliation searches exact reference and accepts only a matching receipt with verified merchant, exempt VAT and real positive payment total', async () => {
   let current = document(); const calls = [];
   const client = new MorningClient({ ...OPTIONS, fetchImpl: async (url, options) => {

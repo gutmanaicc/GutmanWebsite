@@ -3,6 +3,7 @@ import { AcademyLeadIntake, HubSpotFormAdapter, HubSpotWebhookAdapter } from './
 import { CommerceStore } from './commerce.mjs';
 import { createAcademyHandler } from './http.mjs';
 import { MorningClient } from './morning-client.mjs';
+import { loadVerifiedMorningMerchant } from './morning-merchant-state.mjs';
 import { MorningCheckoutAdapter } from './morning-checkout-adapter.mjs';
 import { HostedCheckout } from './hosted-checkout.mjs';
 import { createResendDeliveryAdapter } from './resend-delivery-adapter.mjs';
@@ -32,7 +33,9 @@ export function createSelfHostedRuntime(env = process.env, { fetchImpl = globalT
   if (publicOrigin && !origins.includes(publicOrigin)) origins.push(publicOrigin);
   if (origins.some(origin => { try { const url = new URL(origin); return url.protocol !== 'https:' || url.origin !== origin || !!url.username || !!url.password; } catch { return true; } })) throw new Error('Standalone origins must be exact HTTPS origins behind the reverse proxy.');
   const mode = env.ACADEMY_PAYMENT_MODE || 'disabled';
-  const client = new MorningClient({ clientId: env.MORNING_API_ID, clientSecret: env.MORNING_API_SECRET, webhookSecret: env.MORNING_WEBHOOK_SECRET, environment: env.MORNING_ENVIRONMENT || 'production', businessTaxId: env.MORNING_BUSINESS_TAX_ID, merchantVerified: env.MORNING_MERCHANT_VERIFIED === '1', checkoutOrigins: String(env.MORNING_CHECKOUT_ORIGINS ?? '').split(',').map(value => value.trim()).filter(Boolean), fetchImpl, clock });
+  const merchant = loadVerifiedMorningMerchant(join(dirname(path), 'morning-merchant.json'), { clientId: env.MORNING_API_ID, clock });
+  const explicitOrigins = String(env.MORNING_CHECKOUT_ORIGINS ?? '').split(',').map(value => value.trim()).filter(Boolean);
+  const client = new MorningClient({ clientId: env.MORNING_API_ID, clientSecret: env.MORNING_API_SECRET, webhookSecret: env.MORNING_WEBHOOK_SECRET, environment: env.MORNING_ENVIRONMENT || 'production', businessTaxId: env.MORNING_BUSINESS_TAX_ID || merchant?.businessTaxId, merchantVerified: env.MORNING_MERCHANT_VERIFIED === '1' || merchant?.verified === true, paymentPluginId: merchant?.paymentPluginId, checkoutOrigins: explicitOrigins.length ? explicitOrigins : merchant?.checkoutOrigins || [], fetchImpl, clock });
   let store;
   let leadIntake;
   const adapter = new MorningCheckoutAdapter({ client, getOrder: id => store.get('orders', id) });
