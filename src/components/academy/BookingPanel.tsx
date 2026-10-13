@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import LeadInterestForm from './LeadInterestForm';
 import SeminarPrice from './SeminarPrice';
+import VenueNavigation from './VenueNavigation';
 import { CalendarDays, ArrowLeft, MapPin } from 'lucide-react';
 import { ACADEMY_CONFIG, academyRequest, formatSeminarDate, trackAcademy, type Catalog } from '../../lib/academy';
 
@@ -29,7 +30,7 @@ export default function BookingPanel({ seminarSlug, seminarTitle }: { seminarSlu
         <input type="radio" name="seminar-date" value={item.id} disabled={item.remainingCapacity === 0 || item.status !== 'open_for_registration'} checked={selected === item.id} onChange={() => { setSelected(item.id); trackAcademy('select_seminar_date', { seminar_id: seminarSlug, date_id: item.id }); }} />
         <span><strong><CalendarDays size={17} aria-hidden />{formatSeminarDate(item.date)}</strong><span><bdi>{item.startTime}-{item.endTime}</bdi> · {item.remainingCapacity ? `${item.remainingCapacity} מקומות זמינים` : 'ההרשמה סגורה'}</span></span>
       </label>)}</fieldset>
-      {date && <p><MapPin size={16} aria-hidden /> {date.venue}</p>}
+      {date && <><p><MapPin size={16} aria-hidden /> {date.venue}</p><VenueNavigation venue={date.venue} /></>}
       {catalog.commerce.ready && selected ? <Link reloadDocument className="academy-button" to={`/register?date=${encodeURIComponent(selected)}&seminar=${encodeURIComponent(seminarSlug)}`} onClick={() => trackAcademy('begin_checkout', { seminar_id: seminarSlug, date_id: selected })}>הרשמה לסמינר <ArrowLeft size={18} aria-hidden /></Link> : <p className="academy-notice">{selected ? 'ההרשמה בתשלום תיפתח לאחר השלמת ההגדרות הנדרשות.' : 'בחרו מועד כדי להמשיך להרשמה.'}</p>}
     </> : <div className="academy-notice"><CalendarDays size={22} aria-hidden /><strong>עדיין אין מועד מאושר להרשמה</strong><p>כשהמועדים יאושרו, תוכלו לבחור כאן תאריך ולהירשם אונליין.</p></div>}
     {catalog?.leads?.ready && <LeadInterestForm seminarSlug={seminarSlug} requestedDate={date?.date} />}

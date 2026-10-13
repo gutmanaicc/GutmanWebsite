@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { lstatSync, readFileSync } from 'node:fs';
-import { seminarNames } from './message-templates.mjs';
+import { seminarNames } from './seminar-names.mjs';
 import policy from '../shared/approved-booking-policy.json' with { type: 'json' };
 import commercial from '../shared/commercial-disclosures.json' with { type: 'json' };
 import privacy from '../shared/privacy-notice.json' with { type: 'json' };

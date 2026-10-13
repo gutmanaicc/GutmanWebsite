@@ -33,11 +33,12 @@ export function jerusalemStart(date) {
 }
 
 export class CommerceStore {
-  constructor({ path = ':memory:', clock = Date.now, mode = 'disabled', development = false, simulationSecret, orderSecret, adapter, bookingTermsApproved = false, legalDocumentFactory, requiredDisclosureVersion, merchantDisclosureReady = true } = {}) {
+  constructor({ path = ':memory:', clock = Date.now, mode = 'disabled', development = false, simulationSecret, orderSecret, adapter, bookingTermsApproved = false, legalDocumentFactory, requiredDisclosureVersion, merchantDisclosureReady = true, publicOrigin = 'https://gutmanai.com' } = {}) {
     if (!['disabled','simulation','morning'].includes(mode)) throw new Error('Unsupported payment mode.');
     if(mode==='morning'&&(typeof orderSecret!=='string'||orderSecret.length<32))throw new Error('Morning checkout requires a separate orderSecret of at least 32 characters.');
     this.orderSecret=orderSecret??simulationSecret;
     this.clock = clock;
+    this.publicOrigin = publicOrigin;
     this.mode = mode;
     this.bookingTermsApproved = bookingTermsApproved;
     this.legalDocumentFactory = legalDocumentFactory;
@@ -395,7 +396,7 @@ export class CommerceStore {
       order.status='paid';order.paidAt=iso(this.clock());order.transactionId=event.transactionId;this.save('orders',order);
       const registration = {id:randomUUID(),orderId:order.id,dateId:date.id,seminarId:date.seminarId,customer:order.customer,status:'confirmed',totalAgorot:order.totalAgorot,couponCode:order.couponCode,transactionId:order.transactionId,createdAt:iso(this.clock()),simulation:order.simulation===true,provider:order.provider??'simulation'};
       this.db.prepare('INSERT INTO registrations(id,order_id,data) VALUES(?,?,?)').run(registration.id,order.id,JSON.stringify(registration));
-      for (const [kind,time] of [['confirmation',this.clock()],['preparation',this.clock()],['reminder',Math.max(this.clock(),jerusalemStart(date.date)-86_400_000)],['followup',jerusalemStart(date.date)+5*3_600_000+86_400_000]]) this.enqueue(kind,order,buildMessage(kind,order,date),time);
+      for (const [kind,time] of [['confirmation',this.clock()],['preparation',this.clock()],['reminder',Math.max(this.clock(),jerusalemStart(date.date)-86_400_000)],['followup',jerusalemStart(date.date)+5*3_600_000+86_400_000]]) this.enqueue(kind,order,buildMessage(kind,order,date,{publicOrigin:this.publicOrigin}),time);
       if(this.dateView(date).paidCount===config.minimumParticipants)this.enqueue('minimum_reached',order,{dateId:date.id,paidCount:config.minimumParticipants,simulation:order.simulation===true},this.clock(),`date:${date.id}:minimum-reached`);
       this.enqueue('crm_registration',order,{externalId:order.id,registration,marketingConsent:order.marketingConsent,simulation:order.simulation===true},this.clock());
       return {...this.orderResult(order),transactionId:order.transactionId};

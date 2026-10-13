@@ -286,6 +286,9 @@ test('client ribbon moves automatically through hover, pauses by keyboard, suppo
     const initial=await transform();await page.waitForTimeout(180);
     if(reducedMotion==='no-preference'){
       assert.notEqual(await transform(),initial,'automatic ribbon movement');
+      await page.evaluate(() => Object.defineProperty(document, 'hidden', { configurable: true, get: () => true }));
+      const embedded = await transform(); await page.waitForTimeout(180);
+      assert.notEqual(await transform(), embedded, 'native loop keeps moving when an embedded WebView reports hidden');
       const hoverBox=await ribbon.boundingBox();await page.mouse.move(hoverBox.x+100,hoverBox.y+40);const hovered=await transform();await page.waitForTimeout(180);assert.notEqual(await transform(),hovered,'hover does not stop automatic movement');
       await ribbon.focus();await page.keyboard.press('Space');
       const frozen=await transform();await page.waitForTimeout(180);assert.equal(await transform(),frozen,'explicit pause stops automatic movement');

@@ -795,6 +795,7 @@
 .academy-client-viewport.is-dragging{cursor:grabbing}
 .academy-client-viewport:focus-visible{outline:2px solid #f39bc7;outline-offset:-4px}
 .academy-client-belt{display:flex;width:max-content;will-change:transform}
+.academy-venue-navigation{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:9px 15px;border:1px solid #d798bd66;border-radius:999px;color:#f4d8e9;font-size:13px;text-decoration:none;background:#41213844}.academy-venue-navigation:hover{background:#60324e55;border-color:#eba9cc}.academy-venue-navigation:focus-visible{outline:2px solid #f4badb;outline-offset:4px}.academy-venue-navigation--hero{margin:0 0 12px}
 .academy-client-logos{display:flex;flex:none;align-items:center;list-style:none;margin:0;padding:0}
 .academy-client-logos>li{width:220px;height:92px;display:flex;align-items:center;justify-content:center;padding:10px 28px}
 .academy-client-logos img{display:block;width:100%;max-width:164px;height:68px;object-fit:contain;filter:brightness(0) invert(1);opacity:.84;pointer-events:none}

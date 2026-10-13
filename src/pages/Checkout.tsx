@@ -5,6 +5,7 @@ import { academyRequest, formatMoney, formatSeminarDate, hostedCheckoutUrl, trac
 import { getSeminar } from '../data/seminars';
 import SeminarPrice from '../components/academy/SeminarPrice';
 import { CommercialDisclosure, SellerDisclosure } from '../components/academy/CommercialDisclosure';
+import VenueNavigation from '../components/academy/VenueNavigation';
 import { useSeo } from '../lib/seo';
 
 export default function Checkout() {
@@ -92,7 +93,7 @@ export default function Checkout() {
         <button className="academy-button" type="submit" disabled={!ready || busy || quoteBusy || !termsAccepted}>{busy ? 'מכינים את ההזמנה…' : catalog?.commerce.mode === 'simulation' ? 'יצירת הזמנת בדיקה' : 'המשך לתשלום מאובטח'}<ArrowLeft size={18} aria-hidden /></button>
         {!ready && <p className="academy-notice">הרשמה בתשלום אינה זמינה כעת. המועד והסליקה חייבים להיות מאושרים לפני המשך.</p>}
       </form>
-      <aside className="academy-checkout-card" aria-label="סיכום הרשמה"><ShieldCheck size={28} aria-hidden /><h2>{seminar.title}</h2><dl><dt>מועד</dt><dd>{formatSeminarDate(date.date)}</dd><dt>שעות</dt><dd><bdi>{date.startTime}-{date.endTime}</bdi> · חמש שעות</dd><dt>מקום</dt><dd>{date.venue}</dd><dt>מנחה</dt><dd>רון גוטמן</dd></dl><SeminarPrice pricing={catalog?.pricing} />{quote?.discountAgorot ? <p>הנחת קופון: {formatMoney(quote.discountAgorot)}</p> : null}<div className="academy-checkout-total"><span>סך הכול</span><strong>{formatMoney(total)}</strong></div><p className="academy-muted">מחיר סופי למשתתף. אין תוספת מע״מ בהגדרת המחיר הנוכחית.</p><p className="academy-muted">פתיחת הסמינר מותנית ב־8 משתתפים בתשלום. הקבוצה מוגבלת ל־12.</p>{!catalog?.commerce.bookingTermsApproved && <p className="academy-muted">תנאי הביטול לפורמט החדש ממתינים לאישור. סליקה אמיתית תיפתח לאחר פרסומם.</p>}</aside>
+      <aside className="academy-checkout-card" aria-label="סיכום הרשמה"><ShieldCheck size={28} aria-hidden /><h2>{seminar.title}</h2><dl><dt>מועד</dt><dd>{formatSeminarDate(date.date)}</dd><dt>שעות</dt><dd><bdi>{date.startTime}-{date.endTime}</bdi> · חמש שעות</dd><dt>מקום</dt><dd>{date.venue}<br /><VenueNavigation venue={date.venue} /></dd><dt>מנחה</dt><dd>רון גוטמן</dd></dl><SeminarPrice pricing={catalog?.pricing} />{quote?.discountAgorot ? <p>הנחת קופון: {formatMoney(quote.discountAgorot)}</p> : null}<div className="academy-checkout-total"><span>סך הכול</span><strong>{formatMoney(total)}</strong></div><p className="academy-muted">מחיר סופי למשתתף. אין תוספת מע״מ בהגדרת המחיר הנוכחית.</p><p className="academy-muted">פתיחת הסמינר מותנית ב־8 משתתפים בתשלום. הקבוצה מוגבלת ל־12.</p>{!catalog?.commerce.bookingTermsApproved && <p className="academy-muted">תנאי הביטול לפורמט החדש ממתינים לאישור. סליקה אמיתית תיפתח לאחר פרסומם.</p>}</aside>
     </div>}
   </div>;
 }

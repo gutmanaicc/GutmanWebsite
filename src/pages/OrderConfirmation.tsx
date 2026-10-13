@@ -5,6 +5,7 @@ import { academyRequest, formatMoney, formatSeminarDate, hostedCheckoutUrl, type
 import { useSeo } from '../lib/seo';
 import { SITE } from '../data/site';
 import { getSeminar } from '../data/seminars';
+import VenueNavigation from '../components/academy/VenueNavigation';
 
 export default function OrderConfirmation() {
   const { orderId } = useParams();
@@ -81,6 +82,7 @@ export default function OrderConfirmation() {
       {!order && !error && <p role="status">בודקים את מצב ההזמנה בשרת…</p>}
       {order && <><dl>{order.customer && <><dt>שם</dt><dd>{order.customer.name}</dd></>}{seminar && <><dt>הסמינר</dt><dd>{seminar.title}</dd></>}{order.date && <><dt>מועד</dt><dd>{formatSeminarDate(order.date.date)} · <bdi>{order.date.startTime}-{order.date.endTime}</bdi></dd><dt>מקום</dt><dd>{order.date.venue}</dd></>}<dt>מספר הזמנה</dt><dd><bdi>{orderId}</bdi></dd><dt>סכום ההזמנה</dt><dd>{formatMoney(order.totalAgorot)}</dd><dt>מצב</dt><dd>{order.status === 'paid' ? 'התשלום אושר בשרת' : order.status === 'pending' || order.status === 'pending_payment' ? 'ממתינה לתשלום' : order.status === 'expired' ? 'ההזמנה פגה' : order.status === 'cancelled' ? 'בוטלה' : order.status === 'failed' ? 'התשלום נכשל' : order.status === 'refund_required' ? 'נדרשת בדיקת החזר, ההרשמה לא אושרה' : order.status === 'refunded' ? 'בוטלה ובוצע החזר בסימולציה' : 'מצב ההזמנה בבדיקה'}</dd></dl>
       {(order.status === 'pending' || order.status === 'pending_payment') && <p>המקום נשמר זמנית בלבד. הרשמה מאושרת רק לאחר אימות תשלום בשרת.</p>}
+      {order.date && <VenueNavigation venue={order.date.venue} />}
       {paymentUrl && <a className="academy-button" href={paymentUrl} referrerPolicy="no-referrer">להמשך התשלום המאובטח</a>}
       {order.documentAvailable && <div className="academy-confirmation-prep"><h2>עותק פרטי העסקה שלכם</h2><p>פרטי העסק, הסמינר והעלויות, ותנאי ההרשמה שהוצגו בזמן ההזמנה. אפשר לשמור את הקובץ ולפתוח או להדפיס אותו גם בהמשך.</p><button type="button" className="academy-text-button" onClick={downloadDocument} disabled={documentBusy}>{documentBusy ? 'מכינים את הקובץ…' : 'הורדת מסמך פרטי העסקה'}</button><p>המסמך אינו קבלה או אישור תשלום. <Link to="/cancel">למסירת הודעת ביטול</Link>.</p></div>}
       {!order.simulation && order.checkoutState === 'unknown' && <p role="status">יצירת קישור התשלום עדיין בבדיקה. כדי למנוע תשלום כפול, אל תפתחו הזמנה נוספת; פנו אלינו עם מספר ההזמנה.</p>}

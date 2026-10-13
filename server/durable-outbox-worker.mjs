@@ -22,7 +22,7 @@ export class DurableOutboxWorker {
     this.repository = repository; this.adapter = adapter; this.clock = clock;
   }
   get ready() { return this.adapter.ready === true; }
-  getReadiness() { return { ...this.adapter.getReadiness(), durableClaims: true, maxAttempts: MAX_ATTEMPTS, replayWindowHours: 24 }; }
+  getReadiness() { return { ...this.adapter.getReadiness(), durableClaims: true, maxAttempts: this.adapter.supportsIdempotentReplay === false ? 1 : MAX_ATTEMPTS, replayWindowHours: this.adapter.supportsIdempotentReplay === false ? 0 : 24 }; }
 
   async claim(id) {
     const leaseId = randomUUID();
@@ -33,6 +33,7 @@ export class DurableOutboxWorker {
         item.status = 'failed'; item.nextAttemptAt = null; item.lastError = reason; delete item.deliveryLeaseId;
         store.save('outbox', item); return { stopped: true, reviewRequired: true };
       };
+      if (this.adapter.supportsIdempotentReplay === false && item.deliveryFirstAttemptAt) return stop('EMAIL_NON_REPLAYABLE_DELIVERY');
       if (item.attempts >= MAX_ATTEMPTS) return stop('EMAIL_ATTEMPTS_EXHAUSTED');
       if (item.deliveryFirstAttemptAt && (!Number.isFinite(Date.parse(item.deliveryFirstAttemptAt)) || now - Date.parse(item.deliveryFirstAttemptAt) >= SAFE_REPLAY_MS)) return stop('EMAIL_IDEMPOTENCY_WINDOW_EXPIRED');
       if (item.attempts > 0 && (!item.deliveryFirstAttemptAt || !item.deliveryRequest || item.deliveryIdempotencyKey !== `academy-outbox-${item.id}`)) return stop('EMAIL_UNTRACKED_PRIOR_ATTEMPT');

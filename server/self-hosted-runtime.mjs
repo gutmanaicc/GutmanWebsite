@@ -9,6 +9,7 @@ import { MorningClient } from './morning-client.mjs';
 import { loadVerifiedMorningMerchant } from './morning-merchant-state.mjs';
 import { MorningCheckoutAdapter } from './morning-checkout-adapter.mjs';
 import { HostedCheckout } from './hosted-checkout.mjs';
+import { GmailMakeDeliveryAdapter } from './gmail-make-delivery-adapter.mjs';
 import { createResendDeliveryAdapter } from './resend-delivery-adapter.mjs';
 import { DurableOutboxWorker } from './durable-outbox-worker.mjs';
 
@@ -48,7 +49,7 @@ export function createSelfHostedRuntime(env = process.env, { fetchImpl = globalT
   let registrationIntake;
   let legalInbox;
   const adapter = new MorningCheckoutAdapter({ client, getOrder: id => store.get('orders', id), getDate: id => store.get('dates', id) });
-  store = new CommerceStore({ path, clock, mode, adapter, orderSecret: env.ACADEMY_ORDER_SECRET, bookingTermsApproved: env.ACADEMY_BOOKING_TERMS_APPROVED === '1', legalDocumentFactory: (order,date,at) => buildOrderLegalSnapshot(order,date,seller,at,{siteTermsApproved}), requiredDisclosureVersion: disclosureRequired ? legalDisclosure.version : undefined, merchantDisclosureReady: !disclosureRequired || !!seller });
+  store = new CommerceStore({ path, clock, mode, adapter, orderSecret: env.ACADEMY_ORDER_SECRET, publicOrigin, bookingTermsApproved: env.ACADEMY_BOOKING_TERMS_APPROVED === '1', legalDocumentFactory: (order,date,at) => buildOrderLegalSnapshot(order,date,seller,at,{siteTermsApproved}), requiredDisclosureVersion: disclosureRequired ? legalDisclosure.version : undefined, merchantDisclosureReady: !disclosureRequired || !!seller });
   try {
     store.seedDrafts();
     if (typeof env.ACADEMY_ORDER_SECRET === 'string' && env.ACADEMY_ORDER_SECRET.length >= 32) legalInbox = new LegalNoticeInbox({ path: join(dirname(path), 'academy-legal-notices.sqlite'), secret: env.ACADEMY_ORDER_SECRET, clock });
@@ -61,7 +62,9 @@ export function createSelfHostedRuntime(env = process.env, { fetchImpl = globalT
     }
     const repository = new SelfHostedRepository(store);
     const checkout = new HostedCheckout({ store, adapter, publicOrigin });
-    const deliveryAdapter = createResendDeliveryAdapter(env, { fetchImpl });
+    const deliveryAdapter = env.ACADEMY_EMAIL_PROVIDER === 'gmail-make'
+      ? new GmailMakeDeliveryAdapter({ webhookUrl: env.ACADEMY_EMAIL_MAKE_WEBHOOK_URL, sender: env.ACADEMY_EMAIL_SENDER, enabled: env.ACADEMY_EMAIL_DELIVERY_ENABLED === '1', senderVerified: env.ACADEMY_EMAIL_SENDER_VERIFIED === '1', fetchImpl })
+      : createResendDeliveryAdapter(env, { fetchImpl });
     const deliveryWorker = new DurableOutboxWorker({ repository, adapter: deliveryAdapter, clock });
     const crmWorker = new HubSpotRegistrationWorker({ store, intake: registrationIntake });
     const handler = createAcademyHandler({ store, checkout, deliveryWorker, leadIntake, legalInbox, legalDisclosure, publicOrigin, adminToken: env.ACADEMY_ADMIN_TOKEN, allowedOrigins: origins });
