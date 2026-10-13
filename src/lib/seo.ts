@@ -12,7 +12,7 @@ type SeoProps = {
 // Approval alone must never make a preview hostname indexable.
 const PUBLIC_PATHS = new Set([
   "/", "/courses", "/courses/social-media-ai", "/courses/ai-video-content",
-  "/courses/ai-business-owners", "/about", "/reviews", "/privacy", "/accessibility",
+  "/courses/ai-business-owners", "/about", "/reviews", "/privacy", "/accessibility", "/terms", "/booking-terms",
 ]);
 
 export function isIndexablePath(path: string, origin: string, noindex = false) {

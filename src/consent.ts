@@ -1,22 +1,16 @@
-export const CONSENT_KEY = "cookie-consent-v1";
-
-/**
- * דגל ההסכמה המשותף לכל כלי המדידה באתר.
- *
- * המדידה פועלת בברירת מחדל, ונכבית למי שמבקש.
- *
- * קודם הפיקסל נטען רק אחרי לחיצה על "אישור", כך שכל מי שהתעלם
- * מהבאנר - והם הרוב - לא נספר בכלל, והנתונים בקמפיינים היו חלקיים.
- * עכשיו הכלים עולים מיד, הבאנר הוא הודעת יידוע, ומי שלוחץ "לכבות
- * מדידה" מכבה אותם מאותו רגע ובכל הביקורים הבאים.
- *
- * הדגל ישב קודם בתוך pixel.ts, אבל הוא לא של מטא: הוא של המבקר. משעה
- * ש-Clarity נשען עליו גם הוא, מקומו במודול משלו ולא בתוך אחד הכלים.
- */
-export function hasDeclined(): boolean {
+export const CONSENT_KEY = 'cookie-consent-v2';
+export const COOKIE_PREFERENCES_EVENT = 'gutman:cookie-preferences';
+export function cookieChoice(): 'accepted' | 'declined' | null {
   try {
-    return localStorage.getItem(CONSENT_KEY) === "declined";
-  } catch {
-    return false;
-  }
+    const record = JSON.parse(localStorage.getItem(CONSENT_KEY) || 'null');
+    return record?.version === 2 && ['accepted', 'declined'].includes(record.choice) ? record.choice : null;
+  } catch { return null; }
+}
+export function hasAnalyticsConsent() { return cookieChoice() === 'accepted'; }
+export function hasDeclined() { return cookieChoice() === 'declined'; }
+export function analyticsPathAllowed(path: string) {
+  return !/^\/(register|orders|thank-you|cancel|privacy-requests|admin|booking-terms|privacy|terms|legal-review)(\/|$)/.test(path);
+}
+export function canUseAnalytics() {
+  return typeof window !== 'undefined' && hasAnalyticsConsent() && analyticsPathAllowed(window.location.pathname);
 }

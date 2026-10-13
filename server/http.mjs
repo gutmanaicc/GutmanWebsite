@@ -2,6 +2,7 @@ import { createServer } from 'node:http';
 import { timingSafeEqual } from 'node:crypto';
 import { CommerceError, config } from './commerce.mjs';
 import { DurableCommerceError } from './durable-commerce.mjs';
+import { renderOrderDocument } from './legal-documents.mjs';
 
 const bearer = req => /^Bearer (.+)$/.exec(String(req.headers.authorization ?? ''))?.[1] ?? '';
 function tokenMatches(value,expected) {if(!expected||Buffer.byteLength(value)!==Buffer.byteLength(expected))return false;return timingSafeEqual(Buffer.from(value),Buffer.from(expected));}
@@ -30,7 +31,7 @@ async function body(req) {
   catch {throw new CommerceError('INVALID_JSON','הבקשה אינה תקינה.');}
 }
 
-export function createAcademyHandler({store,checkout,deliveryWorker,leadIntake,adminToken,allowedOrigins=['http://localhost:5173','http://127.0.0.1:5173','http://localhost:5174','http://127.0.0.1:5174','http://localhost:4173','http://127.0.0.1:4173']}={}) {
+export function createAcademyHandler({store,checkout,deliveryWorker,leadIntake,legalInbox,legalDisclosure,publicOrigin,adminToken,allowedOrigins=['http://localhost:5173','http://127.0.0.1:5173','http://localhost:5174','http://127.0.0.1:5174','http://localhost:4173','http://127.0.0.1:4173']}={}) {
   if(adminToken && adminToken.length<32)throw new Error('Admin token must contain at least 32 characters.');
   const allowed = new Set(allowedOrigins);
   const limits=new Map();
@@ -58,7 +59,20 @@ export function createAcademyHandler({store,checkout,deliveryWorker,leadIntake,a
       const admin=path.startsWith('/api/academy/admin/');
       if(admin&&!tokenMatches(bearer(req),adminToken)){rateLimit(req,'admin-auth',20);throw new CommerceError('UNAUTHORIZED','נדרש אימות מנהל.',401);}
       if(req.method!=='GET')rateLimit(req,'mutations');
-      if(req.method==='GET'&&path==='/api/academy/catalog'){send(res,200,{dates:await store.dates(),commerce:{...store.commerce,...(store.mode==='morning'?{ready:Boolean(checkout?.ready)}:{})},pricing:config,leads:{ready:Boolean(leadIntake?.ready)}});return;}
+      if(req.method==='GET'&&path==='/api/academy/catalog'){send(res,200,{dates:await store.dates(),commerce:{...store.commerce,...(store.mode==='morning'?{ready:Boolean(checkout?.ready)}:{})},pricing:config,leads:{ready:Boolean(leadIntake?.ready)},legalNotices:{ready:Boolean(legalInbox?.ready)},...(legalDisclosure?{legal:legalDisclosure}:{})});return;}
+      if(req.method==='GET'&&path==='/api/academy/legal-disclosure'){
+        if(!legalDisclosure)throw new CommerceError('LEGAL_DISCLOSURE_UNAVAILABLE','פרטי העסק אינם זמינים כרגע.',503);
+        send(res,200,legalDisclosure);return;
+      }
+      const documentMatch=path.match(/^\/api\/academy\/orders\/([^/]+)\/document$/);
+      if(req.method==='GET'&&documentMatch){
+        await store.authorizedOrder(documentMatch[1],bearer(req));
+        const order=await store.get('orders',documentMatch[1]);
+        if(!order?.legalSnapshot)throw new CommerceError('DOCUMENT_UNAVAILABLE','לא נשמר מסמך תנאים בזמן יצירת הזמנה זו. אפשר לפנות לעסק לקבלת פרטים.',404);
+        const html=renderOrderDocument(order.legalSnapshot,{origin:publicOrigin});
+        res.once('finish',()=>{if(typeof store.markDocumentServed==='function')Promise.resolve().then(()=>store.markDocumentServed(order.id)).catch(()=>{});});
+        res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Content-Disposition':'attachment; filename="gutman-order.html"','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"});res.end(html);return;
+      }
       const orderMatch=path.match(/^\/api\/academy\/orders\/([^/]+)$/);
       if(req.method==='GET'&&orderMatch){send(res,200,await store.authorizedOrder(orderMatch[1],bearer(req)));return;}
       const notifyMatch=path.match(/^\/api\/academy\/payments\/morning\/notify\/([^/]+)$/);
@@ -70,12 +84,18 @@ export function createAcademyHandler({store,checkout,deliveryWorker,leadIntake,a
         await checkout.refresh(notifyMatch[1]);send(res,200,{received:true});return;
       }
       if(req.method==='GET'&&admin){
+        if(path==='/api/academy/admin/legal-notices'){send(res,200,{notices:legalInbox?.list()??[]});return;}
         if(path==='/api/academy/admin/delivery-readiness'){send(res,200,deliveryWorker?.getReadiness()??{ready:false,durableClaims:false});return;}
         const routes={summary:async()=>await store.summary(),dates:async()=>({dates:await store.dates(true)}),coupons:async()=>({coupons:await store.coupons()}),registrations:async()=>({registrations:await store.all('registrations')}),orders:async()=>({orders:(await store.summary()).orders}),revenue:async()=>await store.revenue(),outbox:async()=>({outbox:await store.all('outbox')})};
         const endpoint=path.slice('/api/academy/admin/'.length);if(routes[endpoint]){send(res,200,await routes[endpoint]());return;}
       }
       if(['POST','PATCH'].includes(req.method)){
         const {data,raw}=await body(req);
+        if(req.method==='POST'&&path==='/api/academy/legal-notices'){
+          rateLimit(req,'legal-notice',15);
+          if(!legalInbox?.ready)throw new CommerceError('LEGAL_NOTICES_UNAVAILABLE','הטופס אינו זמין כרגע. אפשר למסור הודעה באימייל או בטלפון.',503);
+          send(res,200,legalInbox.receive(data,req.headers['idempotency-key']));return;
+        }
         if(req.method==='POST'&&path==='/api/academy/leads'){rateLimit(req,'lead-intake',10);if(!leadIntake?.ready)throw new CommerceError('LEADS_UNAVAILABLE','קליטת הפניות אינה זמינה כרגע.',503);send(res,200,await leadIntake.submit(data,req.headers['idempotency-key']));return;}
         if(req.method==='POST'&&path==='/api/academy/quote'){const {couponId,...publicQuote}=await store.quote(data);send(res,200,publicQuote);return;}
         if(req.method==='POST'&&path==='/api/academy/orders'){
@@ -103,6 +123,11 @@ export function createAcademyHandler({store,checkout,deliveryWorker,leadIntake,a
           send(res,200,await store.processSignedEvent(raw,req.headers));return;
         }
         if(admin){
+          const noticeMatch=path.match(/^\/api\/academy\/admin\/legal-notices\/([^/]+)$/);
+          if(noticeMatch&&req.method==='PATCH'){
+            if(!legalInbox?.ready)throw new CommerceError('LEGAL_NOTICES_UNAVAILABLE','תיבת הפניות אינה זמינה.',503);
+            send(res,200,legalInbox.setStatus(noticeMatch[1],data.status));return;
+          }
           if(req.method==='POST'&&path==='/api/academy/admin/outbox/drain'){
             if(!deliveryWorker?.ready)throw new CommerceError('DELIVERY_UNAVAILABLE','שליחת הודעות השירות עדיין אינה זמינה.',503);
             const limit=data.limit??20;

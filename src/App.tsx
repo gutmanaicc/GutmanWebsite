@@ -7,7 +7,9 @@ const SeminarDetail = lazy(() => import('./pages/SeminarDetail'));
 const About = lazy(() => import('./pages/About'));
 const Reviews = lazy(() => import('./pages/Reviews'));
 const Privacy = lazy(() => import('./pages/Privacy'));
+const SiteTerms = lazy(() => import('./pages/SiteTerms'));
 const BookingTerms = lazy(() => import('./pages/BookingTerms'));
+const LegalNotice = lazy(() => import('./pages/LegalNotice'));
 const Accessibility = lazy(() => import('./pages/Accessibility'));
 const Checkout = lazy(() => import('./pages/Checkout'));
 const OrderConfirmation = lazy(() => import('./pages/OrderConfirmation'));
@@ -30,7 +32,10 @@ export default function App() {
     <Route path="/about" element={<About />} />
     <Route path="/reviews" element={<Reviews />} />
     <Route path="/privacy" element={<Privacy />} />
+    <Route path="/terms" element={<SiteTerms />} />
     <Route path="/booking-terms" element={<BookingTerms />} />
+    <Route path="/cancel" element={<LegalNotice key="cancel" />} />
+    <Route path="/privacy-requests" element={<LegalNotice key="privacy" />} />
     <Route path="/accessibility" element={<Accessibility />} />
     <Route path="/register" element={<Checkout />} />
     <Route path="/orders/:orderId" element={<OrderConfirmation />} />

@@ -11,6 +11,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { CommerceStore } from '../server/commerce.mjs';
 import { createAcademyServer } from '../server/http.mjs';
 import { HostedCheckout } from '../server/hosted-checkout.mjs';
+import { LegalNoticeInbox } from '../server/legal-notices.mjs';
 
 let browser, vite, server, store;
 const base = 'http://127.0.0.1:5183';
@@ -34,6 +35,63 @@ after(async () => {
   if(server) await new Promise(resolve=>server.close(resolve));
   if(store) store.close();
   writeFileSync('artifacts/browser-verification.json',JSON.stringify(results,null,2));
+});
+
+test('public cancellation receives a durable receipt without an account or mandatory reason; privacy route resets the request type', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'legal-browser-'));
+  const inbox = new LegalNoticeInbox({ path: join(dir, 'legal.sqlite'), secret: randomBytes(32).toString('hex') });
+  const legalServer = createAcademyServer({ store, legalInbox: inbox, allowedOrigins: [base] });
+  await new Promise(resolve => legalServer.listen(0, '127.0.0.1', resolve));
+  const origin = `http://127.0.0.1:${legalServer.address().port}`;
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const page = await context.newPage();
+  try {
+    await page.route('**/api/academy/legal-notices', async route => {
+      const req = route.request();
+      const response = await fetch(origin + '/api/academy/legal-notices', { method: req.method(), headers: req.headers(), body: req.postData() });
+      await route.fulfill({ status: response.status, contentType: 'application/json', body: await response.text() });
+    });
+    const before = store.all('orders').length;
+    await page.goto(base + '/cancel');
+    await page.getByLabel('שם מלא', { exact: true }).fill('בדיקת ביטול בדפדפן');
+    await page.getByRole('button', { name: 'מסירת הודעת ביטול', exact: true }).click();
+    await page.getByRole('heading', { name: 'ההודעה התקבלה.', exact: true }).waitFor();
+    assert.equal(inbox.list().length, 1); assert.equal(inbox.list()[0].type, 'cancellation');
+    assert.equal(store.all('orders').length, before);
+    const downloadPromise = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'שמירת אישור קבלת ההודעה' }).click();
+    assert.match((await downloadPromise).suggestedFilename(), /^gutman-notice-/);
+    await page.getByRole('link', { name: 'פניות פרטיות', exact: true }).click();
+    await page.getByLabel('נושא הפנייה').waitFor();
+    assert.equal(await page.getByLabel('נושא הפנייה').inputValue(), 'privacy_access');
+    await page.getByLabel('נושא הפנייה').selectOption('marketing_withdrawal');
+    await page.getByLabel('שם מלא', { exact: true }).fill('בדיקת הסרה');
+    await page.getByRole('button', { name: 'שליחת פנייה', exact: true }).click();
+    await page.getByRole('heading', { name: 'ההודעה התקבלה.', exact: true }).waitFor();
+    assert.equal(inbox.list().filter(x => x.type === 'marketing_withdrawal').length, 1);
+  } finally { await context.close(); await new Promise(resolve => legalServer.close(resolve)); inbox.close(); rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('tracking requires explicit v2 consent and safe paths; preview never sends optional analytics even with consent', async () => {
+  const context = await browser.newContext(); const page = await context.newPage(); const tracking = [];
+  page.on('request', req => { if (/facebook|google-analytics|googletagmanager|clarity\.ms/.test(req.url())) tracking.push(req.url()); });
+  try {
+    await page.goto(base + '/privacy');
+    const choices = await page.evaluate(async () => {
+      const consent = await import('/src/consent.ts');
+      localStorage.clear(); localStorage.setItem('cookie-consent-v1', 'accepted');
+      const legacy = consent.hasAnalyticsConsent();
+      localStorage.setItem(consent.CONSENT_KEY, JSON.stringify({ version: 2, choice: 'declined' }));
+      const declined = consent.canUseAnalytics();
+      localStorage.setItem(consent.CONSENT_KEY, JSON.stringify({ version: 2, choice: 'accepted' }));
+      return { legacy, declined, sensitive: consent.canUseAnalytics(), safePath: consent.analyticsPathAllowed('/courses'), protectedPaths: ['/register', '/orders/test', '/cancel', '/privacy-requests', '/admin/academy'].map(path => consent.analyticsPathAllowed(path)) };
+    });
+    assert.equal(choices.legacy, false); assert.equal(choices.declined, false); assert.equal(choices.sensitive, false); assert.equal(choices.safePath, true); assert.ok(choices.protectedPaths.every(x => !x));
+    await page.getByRole('button', { name: 'העדפות עוגיות', exact: true }).click();
+    await page.getByRole('button', { name: 'ללא מדידה אופציונלית', exact: true }).click();
+    assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('cookie-consent-v2')).choice), 'declined');
+    await page.goto(base + '/courses'); await page.locator('h1').waitFor(); assert.deepEqual(tracking, []);
+  } finally { await context.close(); }
 });
 
 test('browser hosted checkout redirects and returns pending until authenticated provider lookup confirms it', async () => {
@@ -98,7 +156,7 @@ test('browser hosted checkout redirects and returns pending until authenticated 
 });
 
 test('public pages render Hebrew RTL, no draft availability, responsive and accessible', async () => {
-  const routes=['/','/courses','/courses/social-media-ai','/courses/ai-video-content','/courses/ai-business-owners','/about','/reviews','/privacy','/booking-terms','/register','/courses/ai-fashion','/thank-you','/admin/academy'];
+  const routes=['/','/courses','/courses/social-media-ai','/courses/ai-video-content','/courses/ai-business-owners','/about','/reviews','/privacy','/booking-terms','/terms','/cancel','/privacy-requests','/register','/courses/ai-fashion','/thank-you','/admin/academy'];
   for(const width of [375,768,1440]){
     const context=await browser.newContext({viewport:{width,height:900},reducedMotion:'reduce'});
     const page=await context.newPage();

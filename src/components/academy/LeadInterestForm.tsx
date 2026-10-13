@@ -31,13 +31,13 @@ export default function LeadInterestForm({ seminarSlug, requestedDate }: { semin
   return <div className="academy-interest-form">
     {received ? <div role="status" className="academy-interest-success"><Check size={24} aria-hidden="true" /><h3>הפנייה שלכם נקלטה.</h3><p>נחזור אליכם עם פרטים על הסמינר. הפנייה אינה הרשמה ואינה שומרת מקום.</p></div> : <>
       <h3>רוצים פרטים לפני שמחליטים?</h3><p>השאירו פרטים ושאלה, ונחזור אליכם.</p>
-      <form onSubmit={submit}>
+      <form data-clarity-mask="true" onSubmit={submit}>
         <label htmlFor={`${prefix}-name`}>שם מלא</label><input id={`${prefix}-name`} autoComplete="name" required minLength={2} maxLength={100} value={fullName} onChange={e => setFullName(e.target.value)} disabled={busy} />
         <label htmlFor={`${prefix}-email`}>אימייל</label><input id={`${prefix}-email`} type="email" dir="ltr" autoComplete="email" required maxLength={254} value={email} onChange={e => setEmail(e.target.value)} disabled={busy} />
         <label htmlFor={`${prefix}-phone`}>טלפון</label><input id={`${prefix}-phone`} type="tel" dir="ltr" autoComplete="tel" required pattern="[+0-9 ()-]{8,25}" maxLength={25} value={phone} onChange={e => setPhone(e.target.value)} disabled={busy} />
         <label htmlFor={`${prefix}-note`}>מה תרצו לדעת? <span>(לא חובה)</span></label><textarea id={`${prefix}-note`} rows={3} maxLength={1000} value={note} onChange={e => setNote(e.target.value)} disabled={busy} />
         <label className="academy-checkbox"><input type="checkbox" checked={marketingConsent} onChange={e => setMarketingConsent(e.target.checked)} disabled={busy} /><span>אשמח לקבל עדכונים מהמכללה. לא חובה לצורך הפנייה.</span></label>
-        <p className="academy-interest-privacy">הפרטים ישמשו למענה לפנייה בהתאם ל<Link to="/privacy">מדיניות הפרטיות</Link>.</p>
+        <p className="academy-interest-privacy">הפרטים ישמשו למענה לפנייה בהתאם ל<Link reloadDocument to="/privacy">מדיניות הפרטיות</Link>.</p>
         {error && <div role="alert" className="academy-interest-error"><p>{error}</p><a href={`mailto:${SITE.contact.email}`}>אפשר לפנות אלינו באימייל</a></div>}
         <button className="academy-button" type="submit" disabled={busy}>{busy ? 'שולחים את הפנייה…' : 'חזרו אליי עם פרטים'}<ArrowLeft size={18} aria-hidden="true" /></button>
       </form>

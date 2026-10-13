@@ -1,3 +1,4 @@
+import { canUseAnalytics } from '../consent';
 import { LEAD_TRACKS } from "../data/courses";
 import { track, trackStandard } from "../pixel";
 
@@ -138,6 +139,7 @@ function utmFromUrl(): Record<string, string> {
  * כתובת בלי UTM לא מוחקת, כי היא בדרך כלל ניווט פנימי.
  */
 export function captureUtm() {
+  if (!canUseAnalytics()) return;
   try {
     const fromUrl = utmFromUrl();
     if (Object.keys(fromUrl).length > 0) {
@@ -149,6 +151,7 @@ export function captureUtm() {
 }
 
 export function collectUtm(): Record<string, string> {
+  if (!canUseAnalytics()) return {};
   const fromUrl = utmFromUrl();
   if (Object.keys(fromUrl).length > 0) return fromUrl;
 

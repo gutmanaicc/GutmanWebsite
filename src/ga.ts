@@ -1,4 +1,4 @@
-import { hasDeclined } from "./consent";
+import { canUseAnalytics } from "./consent";
 
 const GA_ID = "G-HDBJY296MJ";
 
@@ -15,7 +15,7 @@ declare global {
 /**
  * Google Analytics 4.
  *
- * נטען באותו מודל של הפיקסל ו-Clarity ודרך אותו דגל הסכמה. מי שכיבה
+ * נטען באותו מודל של הפיקסל ו-Clarity ודרך אותו דגל הסכמה. מי שלא אישר
  * מדידה לא מקבל אותו כלל, גם בביקורים הבאים.
  *
  * אין כאן מעקב ידני אחרי מעבר בין עמודים, בכוונה. GA4 מזהה ניווטי
@@ -23,7 +23,7 @@ declare global {
  * סופרת כל מעבר עמוד ב-SPA פעמיים.
  */
 export function loadGa() {
-  if (typeof window === "undefined" || window.gtag || hasDeclined()) return;
+  if (typeof window === "undefined" || window.gtag || !canUseAnalytics()) return;
 
   /*
    * dataLayer ופונקציית הדחיפה נשמרים כפי שהם בסניפט הרשמי, על

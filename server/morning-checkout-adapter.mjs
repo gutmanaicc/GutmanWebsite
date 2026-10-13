@@ -1,5 +1,6 @@
 import { MorningClient } from './morning-client.mjs';
 import { seminarNames } from './message-templates.mjs';
+import { accountingDocumentRemarks } from './legal-documents.mjs';
 
 const referenceFor = id => `Gutman Academy | ${id}`;
 
@@ -14,7 +15,8 @@ export class MorningCheckoutAdapter {
     const order = await this.getOrder(input.orderId);
     const date = order && typeof this.getDate === 'function' ? await this.getDate(order.dateId) : null;
     const incomeDescription = date ? `${seminarNames[date.seminarId] ?? date.seminarId} | ${date.date}` : reference;
-    const remarks = date ? `${incomeDescription} | ${date.startTime}-${date.endTime} | ${date.venue}. קיום הסמינר מותנה במינימום 8 משתתפים בתשלום.` : undefined;
+    const origin = new URL(input.returnUrl).origin;
+    const remarks = order?.legalSnapshot?.sellerComplete ? accountingDocumentRemarks(order.legalSnapshot, origin) : date ? `${incomeDescription} | ${date.startTime}-${date.endTime} | ${date.venue}. קיום הסמינר מותנה במינימום 8 משתתפים בתשלום.` : undefined;
     const { url } = await this.client.createPaymentForm({ reference, incomeDescription, remarks, amountAgorot: input.amountAgorot, customer: input.customer, successUrl: input.returnUrl, failureUrl: input.returnUrl, notifyUrl: input.notifyUrl, maxPayments: 1, custom: input.orderId });
     return { providerLinkId: reference, checkoutUrl: url, expiresAt: input.expiresAt,
       // This is OUR seat deadline. Morning has no documented form expiry; late payment requires review/refund.

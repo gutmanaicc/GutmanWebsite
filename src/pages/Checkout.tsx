@@ -4,6 +4,7 @@ import { ArrowLeft, ShieldCheck } from 'lucide-react';
 import { academyRequest, formatMoney, formatSeminarDate, hostedCheckoutUrl, trackAcademy, type Catalog, type Order, type Quote } from '../lib/academy';
 import { getSeminar } from '../data/seminars';
 import SeminarPrice from '../components/academy/SeminarPrice';
+import { CommercialDisclosure, SellerDisclosure } from '../components/academy/CommercialDisclosure';
 import { useSeo } from '../lib/seo';
 
 export default function Checkout() {
@@ -52,7 +53,7 @@ export default function Checkout() {
     try {
       const order = await academyRequest<Order>('/orders', {
         method: 'POST', headers: { 'Idempotency-Key': keyRef.current },
-        body: JSON.stringify({ dateId, customer: { name: name.trim(), email: email.trim(), phone: phone.trim() }, couponCode: appliedCoupon || undefined, termsAccepted, marketingConsent, installments: 1 }),
+        body: JSON.stringify({ dateId, customer: { name: name.trim(), email: email.trim(), phone: phone.trim() }, couponCode: appliedCoupon || undefined, termsAccepted, marketingConsent, installments: 1, disclosureVersion: catalog?.legal?.version }),
       });
       const accessToken = order.accessToken || order.orderAccessToken;
       if (!accessToken) throw new Error('לא התקבל אישור גישה להזמנה. ההרשמה לא אושרה.');
@@ -67,7 +68,7 @@ export default function Checkout() {
     } catch (err) { setError((err as Error).message); }
     finally { submittingRef.current = false; setBusy(false); }
   };
-  return <div className="academy-checkout">
+  return <div className="academy-checkout" data-clarity-mask="true">
     <Link to="/courses" className="academy-kicker">← לכל הסמינרים</Link>
     <h1>עוד רגע, מתחילים.</h1>
     <p className="academy-muted">ממלאים פרטים וממשיכים לתשלום מאובטח. פרטי האשראי מוזנים אצל חברת הסליקה.</p>
@@ -83,7 +84,10 @@ export default function Checkout() {
         <label htmlFor="checkout-phone">טלפון</label><input id="checkout-phone" type="tel" dir="ltr" autoComplete="tel" required pattern="[+0-9 ()-]{8,20}" maxLength={20} value={phone} onChange={event => setPhone(event.target.value)} disabled={busy || !ready} />
         <details><summary>יש לכם קוד קופון?</summary><label htmlFor="checkout-coupon">קוד קופון</label><div className="academy-coupon"><input id="checkout-coupon" dir="ltr" maxLength={40} value={couponInput} onChange={event => setCouponInput(event.target.value)} disabled={busy || !ready} /><button type="button" disabled={!ready || busy || quoteBusy} onClick={applyCoupon}>{quoteBusy ? 'בודקים…' : 'החלת קופון'}</button></div>{appliedCoupon && <p role="status">הקופון הוחל. ההנחה: {formatMoney(quote?.discountAgorot || 0)}.</p>}</details>
         <p className="academy-muted">תשלום אחד. אפשרות לתשלומים נוספים תוצג רק לאחר אישור חברת הסליקה.</p>
-        <label className="academy-checkbox"><input type="checkbox" required checked={termsAccepted} onChange={event => setTermsAccepted(event.target.checked)} disabled={busy || !ready} /><span>{catalog?.commerce.mode === 'simulation' ? 'הבנתי שזו בדיקה ללא חיוב וללא הרשמה אמיתית.' : <>קראתי ואישרתי את <Link to="/booking-terms" target="_blank" rel="noopener">תנאי ההרשמה והביטול</Link> ואת <Link to="/privacy" target="_blank" rel="noopener">מדיניות הפרטיות</Link>.</>}</span></label>
+        <SellerDisclosure disclosure={catalog?.legal} />
+        <CommercialDisclosure seminarSlug={seminar.slug} compact />
+        <p className="academy-muted">ביטול עד 48 שעות לפני הסמינר מזכה בהחזר מלא. זכויות הביטול לפי הדין נשמרות גם לאחר מכן. אפשר למסור <Link to="/cancel">הודעת ביטול באתר</Link>.</p>
+        <label className="academy-checkbox"><input type="checkbox" required checked={termsAccepted} onChange={event => setTermsAccepted(event.target.checked)} disabled={busy || !ready} /><span>{catalog?.commerce.mode === 'simulation' ? 'הבנתי שזו בדיקה ללא חיוב וללא הרשמה אמיתית.' : <>קראתי ואישרתי את <Link to="/booking-terms" target="_blank" rel="noopener">תנאי ההרשמה והביטול</Link>{catalog?.legal?.siteTermsApproved && <> ואת <Link to="/terms" target="_blank" rel="noopener">תקנון האתר</Link></>}, הוצגו לי פרטי העסק והעלויות הנפרדות של כלי AI, וידוע לי על <Link to="/privacy" target="_blank" rel="noopener">מדיניות הפרטיות</Link>. אין באישור ויתור על זכויות לפי הדין.</>}</span></label>
         <label className="academy-checkbox"><input type="checkbox" checked={marketingConsent} onChange={event => setMarketingConsent(event.target.checked)} disabled={busy || !ready} /><span>אשמח לקבל עדכונים מהאקדמיה באימייל. לא חובה לצורך הרשמה.</span></label>
         <button className="academy-button" type="submit" disabled={!ready || busy || quoteBusy || !termsAccepted}>{busy ? 'מכינים את ההזמנה…' : catalog?.commerce.mode === 'simulation' ? 'יצירת הזמנת בדיקה' : 'המשך לתשלום מאובטח'}<ArrowLeft size={18} aria-hidden /></button>
         {!ready && <p className="academy-notice">הרשמה בתשלום אינה זמינה כעת. המועד והסליקה חייבים להיות מאושרים לפני המשך.</p>}

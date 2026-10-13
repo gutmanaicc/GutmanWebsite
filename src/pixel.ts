@@ -1,4 +1,4 @@
-import { hasDeclined } from "./consent";
+import { canUseAnalytics } from "./consent";
 
 const PIXEL_ID = "1392343815914070";
 
@@ -10,7 +10,7 @@ declare global {
 }
 
 export function loadPixel() {
-  if (typeof window === "undefined" || window.fbq || hasDeclined()) return;
+  if (typeof window === "undefined" || window.fbq || !canUseAnalytics()) return;
 
   const n: any = (window.fbq = function (...args: unknown[]) {
     n.callMethod ? n.callMethod(...args) : n.queue.push(args);
@@ -47,12 +47,12 @@ export function grantTracking() {
 
 /** אירוע מותאם אישית */
 export function track(event: string, params?: Record<string, unknown>) {
-  if (hasDeclined()) return;
+  if (!canUseAnalytics()) return;
   window.fbq?.("trackCustom", event, params);
 }
 
 /** אירוע סטנדרטי של מטא (Lead, ViewContent וכדומה), שמנוע האופטימיזציה מזהה */
 export function trackStandard(event: string, params?: Record<string, unknown>) {
-  if (hasDeclined()) return;
+  if (!canUseAnalytics()) return;
   window.fbq?.("track", event, params);
 }

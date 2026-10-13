@@ -33,13 +33,16 @@ export function jerusalemStart(date) {
 }
 
 export class CommerceStore {
-  constructor({ path = ':memory:', clock = Date.now, mode = 'disabled', development = false, simulationSecret, orderSecret, adapter, bookingTermsApproved = false } = {}) {
+  constructor({ path = ':memory:', clock = Date.now, mode = 'disabled', development = false, simulationSecret, orderSecret, adapter, bookingTermsApproved = false, legalDocumentFactory, requiredDisclosureVersion, merchantDisclosureReady = true } = {}) {
     if (!['disabled','simulation','morning'].includes(mode)) throw new Error('Unsupported payment mode.');
     if(mode==='morning'&&(typeof orderSecret!=='string'||orderSecret.length<32))throw new Error('Morning checkout requires a separate orderSecret of at least 32 characters.');
     this.orderSecret=orderSecret??simulationSecret;
     this.clock = clock;
     this.mode = mode;
     this.bookingTermsApproved = bookingTermsApproved;
+    this.legalDocumentFactory = legalDocumentFactory;
+    this.requiredDisclosureVersion = requiredDisclosureVersion;
+    this.merchantDisclosureReady = merchantDisclosureReady;
     this.adapter = mode === 'simulation' ? new SimulationAdapter({secret: simulationSecret, development}) : mode==='morning' ? (adapter??new MorningGrowAdapter()) : null;
     if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true, mode: 0o700 });
     this.db = new DatabaseSync(path);
@@ -55,7 +58,7 @@ export class CommerceStore {
     `);
   }
   close() { this.db.close(); }
-  get commerce() { return { mode: this.mode, ready: this.bookingTermsApproved && ((this.mode==='simulation'&&!!this.adapter)||(this.mode==='morning'&&this.adapter?.ready===true)), bookingTermsApproved: this.bookingTermsApproved }; }
+  get commerce() { return { mode: this.mode, ready: this.bookingTermsApproved && this.merchantDisclosureReady && ((this.mode==='simulation'&&!!this.adapter)||(this.mode==='morning'&&this.adapter?.ready===true)), bookingTermsApproved: this.bookingTermsApproved }; }
   transaction(fn) {
     this.db.exec('BEGIN IMMEDIATE');
     try { const result = fn(); this.db.exec('COMMIT'); return result; }
@@ -240,11 +243,16 @@ export class CommerceStore {
         // Stable scoped token is keyed by secret, never derivable from public order IDs.
         return this.orderResult(order,this.accessToken(order.id,key));
       }
+      if(this.requiredDisclosureVersion && body.disclosureVersion !== this.requiredDisclosureVersion) fail('DISCLOSURE_CHANGED','יש לרענן את מסך ההרשמה ולקרוא את פרטי העסק והעלויות המעודכנים לפני המשך.',409);
       const date = this.purchasableDate(canonical.dateId);
       if (this.dateView(date).remainingCapacity <= 0) fail('FULLY_BOOKED','כל המקומות במועד זה תפוסים או שמורים.',409);
       const price = this.quote(canonical);
       const id = randomUUID();const accessToken = this.accessToken(id,key);
       const order = {...canonical,...price,id,status:'pending',createdAt:iso(this.clock()),holdExpiresAt:iso(Math.min(this.clock()+config.holdMinutes*60_000,jerusalemStart(date.date))),simulation:this.mode==='simulation',provider:this.mode,checkoutUrl:null,checkoutState:this.mode==='morning'?'not_created':'not_required',transactionId:null,termsVersion:this.mode==='simulation'?'preview-owner-approval-required':'owner-approved-booking-terms'};
+      if(typeof this.legalDocumentFactory==='function') {
+        order.legalSnapshot=this.legalDocumentFactory(order,date,order.createdAt);
+        order.termsVersion=order.legalSnapshot.policy.version;
+      }
       this.db.prepare('INSERT INTO orders(id,idempotency_key,request_hash,access_hash,data) VALUES(?,?,?,?,?)').run(id,key,requestHash,digest(accessToken),JSON.stringify(order));
       return this.orderResult(order,accessToken);
     });
@@ -256,7 +264,10 @@ export class CommerceStore {
     if (!row || typeof token !== 'string' || !timingSafeEqual(Buffer.from(row.access_hash,'hex'),Buffer.from(digest(token),'hex'))) fail('UNAUTHORIZED','אין הרשאה לצפות בהזמנה.',401);
     const order = JSON.parse(row.data);
     if(order.status==='pending'&&Date.parse(order.holdExpiresAt)<=this.clock())order.status='expired';
-    return {...this.orderResult(order),transactionId:order.transactionId,customer:order.customer,dateId:order.dateId,discountAgorot:order.discountAgorot,date:this.publicDate(this.get('dates',order.dateId)),preparation:'הביאו מחשב נייד, מטען וגישה לחשבונות הכלים. דרישות מדויקות יפורסמו לאחר אישור צוות ההדרכה.'};
+    return {...this.orderResult(order),transactionId:order.transactionId,customer:order.customer,dateId:order.dateId,discountAgorot:order.discountAgorot,date:this.publicDate(this.get('dates',order.dateId)),documentAvailable:!!order.legalSnapshot,preparation:'הביאו מחשב נייד, מטען וגישה לחשבונות הכלים. דרישות מדויקות יפורסמו לאחר אישור צוות ההדרכה.'};
+  }
+  markDocumentServed(id) {
+    return this.transaction(()=>{const order=this.get('orders',id);if(order?.legalSnapshot&&!order.documentFirstServedAt){order.documentFirstServedAt=iso(this.clock());this.save('orders',order);}return {recorded:!!order?.documentFirstServedAt};});
   }
   simulationPay(id,token,outcome='succeeded') {
     if (this.mode!=='simulation'||!this.commerce.ready || !this.adapter) fail('PAYMENT_UNAVAILABLE','הדגמת תשלום אינה פעילה.',503);

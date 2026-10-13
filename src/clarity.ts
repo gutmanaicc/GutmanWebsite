@@ -1,4 +1,4 @@
-import { hasDeclined } from "./consent";
+import { canUseAnalytics } from "./consent";
 
 const CLARITY_ID = "y8w96aifrd";
 
@@ -11,11 +11,11 @@ declare global {
 /**
  * Microsoft Clarity: מפות חום והקלטות מסך.
  *
- * נטען באותו מודל של הפיקסל ודרך אותו דגל הסכמה. מי שכיבה מדידה לא
+ * נטען באותו מודל של הפיקסל ודרך אותו דגל הסכמה. מי שלא אישר מדידה לא
  * מקבל אותו כלל, גם בביקורים הבאים, ולכן הבדיקה כאן ולא בקומפוננטה.
  */
 export function loadClarity() {
-  if (typeof window === "undefined" || window.clarity || hasDeclined()) return;
+  if (typeof window === "undefined" || window.clarity || !canUseAnalytics()) return;
 
   /*
    * תור הפקודות נשמר כפי שהוא בסניפט הרשמי של מיקרוסופט, על ה-arguments

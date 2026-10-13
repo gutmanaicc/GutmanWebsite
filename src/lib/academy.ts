@@ -1,5 +1,5 @@
 import config from '../../shared/commerce-config.json';
-import { hasDeclined } from '../consent';
+import { canUseAnalytics } from '../consent';
 
 export const ACADEMY_CONFIG = {
   activePrice: config.activePrice,
@@ -20,6 +20,7 @@ export type SeminarDate = {
   approvalStatus: string; published: boolean; minimumEnrollmentMet: boolean;
 };
 export type Catalog = {
+  legal?: LegalDisclosure;
   leads?: { ready: boolean };
   dates: SeminarDate[];
   commerce: { mode: 'disabled' | 'simulation' | 'morning'; ready: boolean; bookingTermsApproved?: boolean };
@@ -27,10 +28,16 @@ export type Catalog = {
 };
 export type Quote = { subtotalAgorot: number; discountAgorot: number; totalAgorot: number; currency: string };
 export type Order = {
+  documentAvailable?: boolean;
   orderId: string; status: string; totalAgorot: number; currency: string;
   holdExpiresAt: string; simulation: boolean; checkoutUrl: string | null;
   checkoutState?: 'not_created' | 'not_required' | 'creating' | 'ready' | 'unknown' | 'failed'; checkoutExpiresAt?: string | null;
   accessToken?: string; orderAccessToken?: string; transactionId?: string; date?: SeminarDate; customer?: { name: string; email: string; phone: string }; preparation?: string;
+};
+export type LegalDisclosure = {
+  siteTermsApproved?: boolean; siteTermsVersion?: string;
+  version: string; policyVersion: string; policySha256: string; commercialSha256: string; sellerComplete: boolean;
+  seller: { businessName: string; registrationNumber: string; postalAddress: string; taxStatus: string; email: string; phone: string } | null;
 };
 export function hostedCheckoutUrl(value: string | null | undefined): string | null {
   if (!value) return null;
@@ -60,6 +67,6 @@ export const formatSeminarDate = (date: string) => new Intl.DateTimeFormat('he-I
 
 /* רק מזהי תוכן מגיעים למדידה; כתובות אימייל וקודי קופון נשארים בשרת. */
 export function trackAcademy(event: string, values: Record<string, string | number> = {}) {
-  if (import.meta.env.VITE_ACADEMY_PRODUCTION_APPROVED !== '1' || hasDeclined()) return;
+  if (import.meta.env.VITE_ACADEMY_PRODUCTION_APPROVED !== '1' || !canUseAnalytics()) return;
   window.gtag?.('event', event, values);
 }
