@@ -15,3 +15,7 @@ The owner supplied the edited first-cohort testimonial MP4. A private Drive sour
 The client ribbon runs slowly without hover interruption, supports dragging, keyboard arrows and Space pause, and respects reduced-motion accessibility settings. Unrequested arrows/helper text were removed. The experience heading and seminar sentence are centered. Section fades use a shared IntersectionObserver, animate opacity/transform, and stop under reduced motion. Seminar hero facts show the owner's venue and street address.
 
 Browser checks cover scrolling, pointer/keyboard interaction, one-line brand text, venue display and no horizontal overflow at 320,360,375,390,393,412,430,768 and1440px. Public pages also passed accessibility checks. These are Chromium mobile emulation and desktop checks, not physical iOS/Android devices. A WebKit download was blocked by the execution environment's network policy; native Safari verification was unavailable.
+
+## Deployed verification
+
+Runtime source `08740f18879fac282dafd1b09ebcee6dd66a8510` is healthy on Hostinger. The public HTTPS assertion job passed: `commerce.ready=true`, approved terms, exactly six approved/open dates with correct seminar/venue/hours/capacity, six ILS1,190 quotes, CRM readiness, the new visual bundles and edited video source checksum, H264/AAC duration and ranged playback. The check created no order or charge. All87 server tests passed; temporary builder, approval and verification jobs were removed without affecting persistent volumes or other apps.

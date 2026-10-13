@@ -1,5 +1,7 @@
 # Morning account and checkout verification
 
+**Release update, 2026-10-13:** the owner approved these terms and opening purchases. Morning checkout is active for the six exact October dates. See `academy-launch-approval.md`; the pending-approval paragraphs below record the earlier verification stage.
+
 The owner saved `MORNING_API_ID` and `MORNING_API_SECRET` on the academy Hostinger project. Authentication succeeded against the official production token endpoint. The merchant's legal identity, single-business ownership and VAT-exempt classification were verified inside the owner's VPS; identities, tokens and raw account payloads were not exported.
 
 ## Actual payment configuration
