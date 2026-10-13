@@ -12,10 +12,10 @@ export default function ClientLogos() {
   const width = useRef(0);
   const animation = useRef<Animation | null>(null);
   const pointer = useRef<{ id: number; x: number } | null>(null);
-  const controls = useRef({ still, paused, visible: true });
+  const controls = useRef({ still, paused });
   controls.current.still = still; controls.current.paused = paused;
   const syncPlayback = useCallback(() => {
-    if (controls.current.still || controls.current.paused || !controls.current.visible || pointer.current) animation.current?.pause();
+    if (controls.current.still || controls.current.paused || pointer.current) animation.current?.pause();
     else animation.current?.play();
   }, []);
   const position = useCallback(() => {
@@ -46,11 +46,11 @@ export default function ClientLogos() {
     };
     measure();
     const resize = new ResizeObserver(measure); resize.observe(list);
-    const intersection = new IntersectionObserver(([entry]) => {
-      controls.current.visible = entry.isIntersecting; syncPlayback();
-    }, { rootMargin: '160px 0px' });
-    intersection.observe(region);
-    return () => { resize.disconnect(); intersection.disconnect(); animation.current?.cancel(); animation.current = null; };
+    // Keep the compositor loop independent of WebView intersection reporting.
+    // The browser naturally suspends background tabs; accessibility and dragging
+    // remain the only explicit pause controls.
+    window.addEventListener('pageshow', syncPlayback);
+    return () => { resize.disconnect(); window.removeEventListener('pageshow', syncPlayback); animation.current?.cancel(); animation.current = null; };
   }, [position, syncPlayback]);
   useEffect(syncPlayback, [still, paused, syncPlayback]);
   const release = (event: PointerEvent<HTMLDivElement>) => {

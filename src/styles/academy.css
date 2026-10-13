@@ -558,7 +558,7 @@
   .academy-method-grid article { padding:20px 74px 20px 10px; }
   .academy-method-number { font-size:49px; top:25px; }
   .academy-method-grid h3 { font-size:21px; }
-  .academy-premium-stage { position:relative; top:auto!important; padding:25px 33px 40px; min-height:0; border-radius:23px; }
+  .academy-premium-stage { position:sticky; padding:25px 33px 40px; min-height:0; border-radius:23px; }
   .academy-stage-layout { grid-template-columns:1fr; gap:40px; padding-top:30px; }
   .academy-stage-copy h3 { font-size:54px; max-width:500px; }
   .academy-stage-description { max-width:570px; }
@@ -869,3 +869,21 @@
 .academy-venue-photo-credit a{text-decoration:underline;text-underline-offset:3px}
 @media(max-width:900px){.academy-venue-experience-grid{grid-template-columns:1fr;gap:42px}.academy-venue-photos{width:100%;max-width:680px;margin-inline:auto}.academy-venue-experience-copy .academy-description{max-width:650px}}
 @media(max-width:480px){.academy-venue-photos{padding-bottom:125px}.academy-venue-photo{border-radius:17px}.academy-venue-photo--detail{width:48%;bottom:70px;border-width:3px;border-radius:14px}.academy-venue-photo--main{width:94%}.academy-venue-photo figcaption{padding:11px 13px;font-size:12px}.academy-venue-photo--detail figcaption{font-size:10px;padding:8px}.academy-venue-photo-credit{font-size:10px}.academy-venue-experience-copy h3{font-size:18px}}
+
+/* Breathing room around location links and continuous mobile card stacking. */
+.academy-booking-venue{display:flex;flex-direction:column;align-items:flex-start;gap:16px;margin-block:24px}
+.academy-booking-venue p{margin:0;display:flex;align-items:flex-start;gap:8px;line-height:1.7}
+.academy-booking-venue+.academy-button{margin-top:0}
+.academy-venue-experience .academy-venue-address{margin-block:12px 28px}
+.academy-venue-experience .academy-venue-navigation{margin-top:6px}
+.academy-scroll-fade{transition:opacity .7s ease;transform:none}
+.academy-premium-stack{isolation:isolate}
+@media(max-width:800px){.academy-premium-stage{position:sticky;top:var(--academy-card-top,90px);min-height:0}.academy-premium-stack{padding-bottom:30px;gap:32px}}
+@media(max-width:650px){.academy-cinematic-promise>span{display:block}.academy-cinematic-promise{max-width:none}}
+@media(prefers-reduced-motion:reduce){.academy-premium-stage{position:relative!important;top:auto!important}}
+.a11y-reduce-motion .academy-premium-stage{position:relative!important;top:auto!important}
+
+.academy-cinematic-scene.is-animated>img{animation:academy-scene-breathe 10s ease-in-out infinite alternate;will-change:opacity}
+@keyframes academy-scene-breathe{from{opacity:.92}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){.academy-cinematic-scene.is-animated>img{animation:none;will-change:auto}}
+.a11y-reduce-motion .academy-cinematic-scene.is-animated>img{animation:none;will-change:auto}

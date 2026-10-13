@@ -13,10 +13,25 @@ export default function BookingPanel({ seminarSlug, seminarTitle }: { seminarSlu
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     let active = true;
+    let loading = false;
     setCatalog(null); setError(''); setSelected('');
-    academyRequest<Catalog>('/catalog').then(result => { if (active) setCatalog(result); })
-      .catch(err => { if (active) setError(err.message); });
-    return () => { active = false; };
+    const refresh = async (initial = false) => {
+      if (loading || (!initial && document.visibilityState === 'hidden')) return;
+      loading = true;
+      try {
+        const result = await academyRequest<Catalog>('/catalog');
+        if (!active) return;
+        setCatalog(result); setError('');
+        setSelected(current => result.dates.some(date => date.id === current && date.seminarId === seminarSlug && date.remainingCapacity > 0 && date.status === 'open_for_registration') ? current : '');
+      } catch (err) { if (active && initial) setError(err instanceof Error ? err.message : 'לא הצלחנו לבדוק מועדים.'); }
+      finally { loading = false; }
+    };
+    void refresh(true);
+    const onFocus = () => { void refresh(); };
+    const timer = window.setInterval(onFocus, 20000);
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onFocus);
+    return () => { active = false; window.clearInterval(timer); window.removeEventListener('focus', onFocus); document.removeEventListener('visibilitychange', onFocus); };
   }, [seminarSlug, attempt]);
   const dates = catalog?.dates.filter(date => date.seminarId === seminarSlug) || [];
   const date = dates.find(item => item.id === selected);
@@ -30,7 +45,7 @@ export default function BookingPanel({ seminarSlug, seminarTitle }: { seminarSlu
         <input type="radio" name="seminar-date" value={item.id} disabled={item.remainingCapacity === 0 || item.status !== 'open_for_registration'} checked={selected === item.id} onChange={() => { setSelected(item.id); trackAcademy('select_seminar_date', { seminar_id: seminarSlug, date_id: item.id }); }} />
         <span><strong><CalendarDays size={17} aria-hidden />{formatSeminarDate(item.date)}</strong><span><bdi>{item.startTime}-{item.endTime}</bdi> · {item.remainingCapacity ? `${item.remainingCapacity} מקומות זמינים` : 'ההרשמה סגורה'}</span></span>
       </label>)}</fieldset>
-      {date && <><p><MapPin size={16} aria-hidden /> {date.venue}</p><VenueNavigation venue={date.venue} /></>}
+      {date && <div className="academy-booking-venue"><p><MapPin size={16} aria-hidden /> {date.venue}</p><VenueNavigation venue={date.venue} /></div>}
       {catalog.commerce.ready && selected ? <Link reloadDocument className="academy-button" to={`/register?date=${encodeURIComponent(selected)}&seminar=${encodeURIComponent(seminarSlug)}`} onClick={() => trackAcademy('begin_checkout', { seminar_id: seminarSlug, date_id: selected, value: (catalog.pricing.activePrice === 'regular' ? catalog.pricing.regularPriceAgorot : catalog.pricing.launchPriceAgorot) / 100 })}>הרשמה לסמינר <ArrowLeft size={18} aria-hidden /></Link> : <p className="academy-notice">{selected ? 'ההרשמה בתשלום תיפתח לאחר השלמת ההגדרות הנדרשות.' : 'בחרו מועד כדי להמשיך להרשמה.'}</p>}
     </> : <div className="academy-notice"><CalendarDays size={22} aria-hidden /><strong>עדיין אין מועד מאושר להרשמה</strong><p>כשהמועדים יאושרו, תוכלו לבחור כאן תאריך ולהירשם אונליין.</p></div>}
     {catalog?.leads?.ready && <LeadInterestForm seminarSlug={seminarSlug} requestedDate={date?.date} />}

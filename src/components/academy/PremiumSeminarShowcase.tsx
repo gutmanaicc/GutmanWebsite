@@ -35,10 +35,24 @@ export function SeminarVisual({ seminar }: { seminar: Seminar }) {
 
 function SeminarStage({ seminar, index, date }: { seminar: Seminar; index: number; date?: SeminarDate }) {
   const ref = useRef<HTMLElement>(null);
+  const [stickyTop, setStickyTop] = useState(118 + index * 12);
   const reduced = useMotionCapability() === 'static';
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'start start'] });
   const visualY = useTransform(scrollYProgress, [0, 1], [35, 0]);
-  return <article ref={ref} className={`academy-premium-stage academy-premium-stage--${index + 1}`} style={{ top: `${118 + index * 12}px` }}>
+  useEffect(() => {
+    const card = ref.current;
+    if (!card) return;
+    const measure = () => {
+      const header = window.innerWidth <= 650 ? 90 : 108;
+      // A tall mobile card scrolls fully before sticking, so its content and
+      // registration button remain reachable while the next card covers it.
+      setStickyTop(Math.min(header, window.innerHeight - card.offsetHeight - 24) + index * 10);
+    };
+    const observer = new ResizeObserver(measure); observer.observe(card);
+    window.addEventListener('resize', measure); measure();
+    return () => { observer.disconnect(); window.removeEventListener('resize', measure); };
+  }, [index]);
+  return <article ref={ref} className={`academy-premium-stage academy-premium-stage--${index + 1}`} style={{ top: `${stickyTop}px`, zIndex: index + 1 }}>
     <div className="academy-stage-meta"><span className="academy-stage-number">0{index + 1}</span><span>{seminar.accentLabel}</span><span>{ACADEMY_CONFIG.durationHours} שעות · פרונטלי · קבוצה קטנה</span><ArrowUpLeft size={23} aria-hidden="true" /></div>
     <div className="academy-stage-layout"><div className="academy-stage-copy"><h3><Link to={`/courses/${seminar.slug}`}>{seminar.title}</Link></h3><p className="academy-stage-tagline">{seminar.tagline}</p><p className="academy-stage-description">{seminar.description}</p><div className="academy-stage-tags">{seminar.example.steps.slice(0, 3).map(step => <span key={step}>{step}</span>)}</div><p className="academy-stage-date">{date ? `המועד הקרוב: ${formatSeminarDate(date.date)}` : 'מועדים חדשים יפורסמו לאחר אישורם'}</p><div className="academy-stage-actions"><Link to={`/courses/${seminar.slug}`} className="academy-button">לפרטים ולהרשמה <ArrowUpLeft size={20} aria-hidden="true" /></Link><SeminarPrice compact /></div></div><motion.div className="academy-stage-media" style={reduced ? undefined : { y: visualY }}><SeminarVisual seminar={seminar} /></motion.div></div>
   </article>;

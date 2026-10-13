@@ -32,7 +32,7 @@ function WorkVideo({ work }: { work: (typeof STUDENT_WORKS)[number] }) {
 export function Examples({ videoOnly = false }: { videoOnly?: boolean }) {
   const examples = [STUDENT_WORKS[4], STUDENT_WORKS[6], STUDENT_WORKS[8]];
   return <section className="academy-section academy-examples"><div className="academy-container">
-    <div className="academy-heading-row"><SectionHeading eyebrow="מהרעיון למסך" title={"כשמתחילים ליצור,\nרואים את האפשרויות."} description="סרטונים שנוצרו במסלולי וידאו קודמים באקדמיה. תוצרים אמיתיים, עם סגנונות ורעיונות שונים." /><p className="academy-source-note">הדוגמאות הן ממסלולים קודמים, ואינן מבטיחות תוצאה זהה בסמינר של חמש שעות.</p></div>
+    <div className="academy-heading-row"><SectionHeading eyebrow="מהרעיון למסך" title={"כשמתחילים ליצור,\nרואים את האפשרויות."} description="סרטונים שנוצרו במסלולי וידאו קודמים באקדמיה. תוצרים אמיתיים, עם סגנונות ורעיונות שונים." /></div>
     <div className="academy-work-grid">{examples.map(work => <WorkVideo key={work.id} work={work} />)}</div>
     {!videoOnly && <div className="academy-example-links"><p>היצירה מתחילה גם מחוץ למסך.</p><Link to="/courses/social-media-ai">סביבת עבודה לתוכן <ArrowLeft size={17} aria-hidden="true" /></Link><Link to="/courses/ai-business-owners">תהליך עבודה לעסק <ArrowLeft size={17} aria-hidden="true" /></Link></div>}
   </div></section>;
@@ -40,7 +40,7 @@ export function Examples({ videoOnly = false }: { videoOnly?: boolean }) {
 
 export function Proof({ seminarSlug }: { seminarSlug?: string }) {
   const testimonials = seminarSlug ? getTestimonialsForCourse(seminarSlug, 2) : [TESTIMONIALS[3], TESTIMONIALS[5], TESTIMONIALS[7]];
-  return <section className="academy-section academy-proof" id="testimonials"><div className="academy-container"><div className="academy-heading-row"><SectionHeading eyebrow="מהמשתתפים שלנו" title={"הכי טוב לשמוע\nממי שכבר היה כאן."} /><p className="academy-source-note">עדויות מקוריות מסדנאות ומסלולים קודמים של האקדמיה. אינן עדויות על הסמינרים החדשים.</p></div>
+  return <section className="academy-section academy-proof" id="testimonials"><div className="academy-container"><div className="academy-heading-row"><SectionHeading eyebrow="מהמשתתפים שלנו" title={"הכי טוב לשמוע\nממי שכבר היה כאן."} /><p className="academy-source-note">עדויות מקוריות מסדנאות ומסלולים קודמים של האקדמיה.</p></div>
     <div className={`academy-proof-grid ${testimonials.length === 2 ? 'academy-proof-grid--two' : ''}`}>{testimonials.map(item => <figure key={item.id}><span className="academy-quote-mark" aria-hidden="true">״</span><blockquote><h3>{item.quote}</h3><p>{item.text}</p></blockquote><figcaption><span>{item.author || 'משתתף/ת באקדמיה'}<small>סדנה או מסלול קודם</small></span><a href={item.image} target="_blank" rel="noreferrer">הודעת המקור <ArrowUpLeft size={15} aria-hidden="true" /></a></figcaption></figure>)}</div>
     <div className="academy-proof-more"><Link className="academy-button academy-button--outline" to="/reviews">לכל ההמלצות <ArrowLeft size={19} aria-hidden="true" /></Link></div>
   </div></section>;

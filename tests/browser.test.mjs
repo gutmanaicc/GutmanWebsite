@@ -37,6 +37,36 @@ after(async () => {
   writeFileSync('artifacts/browser-verification.json',JSON.stringify(results,null,2));
 });
 
+test('date availability refreshes on return and clears a selection when the seminar fills', async () => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const page = await context.newPage();
+  let remaining = 3;
+  let calls = 0;
+  await page.route('**/api/academy/catalog', route => {
+    calls++;
+    return route.fulfill({ json: {
+      dates: [{ id: 'availability-review', seminarId: 'social-media-ai', date: '2026-10-22', startTime: '15:00', endTime: '20:00', venue: 'הטרמינל לעיצוב, אהוד קינמון 32, בת ים', remainingCapacity: remaining, status: remaining ? 'open_for_registration' : 'fully_booked' }],
+      pricing: { launchPriceAgorot: 119000, regularPriceAgorot: 149000, currency: 'ILS' },
+      commerce: { mode: 'morning', ready: true }, leads: { ready: false },
+    } });
+  });
+  try {
+    await page.goto(base + '/courses/social-media-ai', { waitUntil: 'domcontentloaded' });
+    const choice = page.locator('.academy-dates input');
+    await choice.check();
+    remaining = 2;
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+    await page.getByText('2 מקומות זמינים', { exact: false }).waitFor();
+    assert.equal(await choice.isChecked(), true, 'available selected date is retained');
+    remaining = 0;
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+    await page.waitForFunction(() => document.querySelector('.academy-dates input')?.disabled);
+    assert.equal(await choice.isChecked(), false, 'sold-out selection is cleared');
+    assert.equal(await page.locator('.academy-booking').getByRole('link', { name: /^הרשמה לסמינר/ }).count(), 0);
+    assert.ok(calls >= 3);
+  } finally { await context.close(); }
+});
+
 test('public cancellation receives a durable receipt without an account or mandatory reason; privacy route resets the request type', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'legal-browser-'));
   const inbox = new LegalNoticeInbox({ path: join(dir, 'legal.sqlite'), secret: randomBytes(32).toString('hex') });
