@@ -81,6 +81,14 @@ export function createAcademyHandler({store,checkout,deliveryWorker,leadIntake,a
         if(req.method==='POST'&&path==='/api/academy/orders'){
           if(store.mode==='morning'&&!checkout?.ready)throw new CommerceError('PAYMENT_UNAVAILABLE','החיבור לסליקה עדיין אינו זמין.',503);
           const created=await store.createOrder(data,req.headers['idempotency-key']);
+          if(leadIntake?.ready){
+            const order=await store.get('orders',created.orderId);
+            if(order?.status==='pending'){
+              const date=await store.get('dates',order.dateId);
+              try { await leadIntake.submit({fullName:order.customer.name,email:order.customer.email,phone:order.customer.phone,seminarId:date.seminarId,requestedDate:date.date,marketingConsent:order.marketingConsent===true,note:`פתיחת הרשמה באתר. התשלום טרם אושר. מספר הזמנה: ${order.id}`},`checkout-${order.id}`); }
+              catch { /* Private intake retains uncertain sends; checkout must not retry CRM or fabricate acceptance. */ }
+            }
+          }
           send(res,201,store.mode==='morning'?await checkout.start(created):created);return;
         }
         const reconcileMatch=path.match(/^\/api\/academy\/orders\/([^/]+)\/reconcile$/);

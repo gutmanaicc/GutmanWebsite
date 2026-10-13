@@ -1,16 +1,21 @@
 import { MorningClient } from './morning-client.mjs';
+import { seminarNames } from './message-templates.mjs';
 
 const referenceFor = id => `Gutman Academy | ${id}`;
 
 /** Morning returns a form URL, not a link ID or expiry. Our unique document reference correlates receipts. */
 export class MorningCheckoutAdapter {
-  constructor({ client = new MorningClient(), getOrder } = {}) { this.client = client; this.getOrder = getOrder; }
+  constructor({ client = new MorningClient(), getOrder, getDate } = {}) { this.client = client; this.getOrder = getOrder; this.getDate = getDate; }
   get ready() { return this.client.ready && typeof this.getOrder === 'function'; }
   get checkoutOrigins() { return this.client.checkoutOrigins; }
   getReadiness() { return this.client.getReadiness(); }
   async createCheckout(input) {
     const reference = referenceFor(input.orderId);
-    const { url } = await this.client.createPaymentForm({ reference, amountAgorot: input.amountAgorot, customer: input.customer, successUrl: input.returnUrl, failureUrl: input.returnUrl, notifyUrl: input.notifyUrl, maxPayments: 1, custom: input.orderId });
+    const order = await this.getOrder(input.orderId);
+    const date = order && typeof this.getDate === 'function' ? await this.getDate(order.dateId) : null;
+    const incomeDescription = date ? `${seminarNames[date.seminarId] ?? date.seminarId} | ${date.date}` : reference;
+    const remarks = date ? `${incomeDescription} | ${date.startTime}-${date.endTime} | ${date.venue}. קיום הסמינר מותנה במינימום 8 משתתפים בתשלום.` : undefined;
+    const { url } = await this.client.createPaymentForm({ reference, incomeDescription, remarks, amountAgorot: input.amountAgorot, customer: input.customer, successUrl: input.returnUrl, failureUrl: input.returnUrl, notifyUrl: input.notifyUrl, maxPayments: 1, custom: input.orderId });
     return { providerLinkId: reference, checkoutUrl: url, expiresAt: input.expiresAt,
       // This is OUR seat deadline. Morning has no documented form expiry; late payment requires review/refund.
       expiryEnforced: false };

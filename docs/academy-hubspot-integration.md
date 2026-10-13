@@ -39,7 +39,7 @@ The flow updates or creates a contact by email and does not swap the primary ema
 
 Make connection 11661816 is verified healthy and used by the CRM modules. Its `/integrations/v1/me` response confirmed portal 149533496. The credential-request status remained `incomplete` despite this working connection, so the actual connection, account response and successful operations were used to verify access. Read-only account-verification scenario 6607608 is inactive after verification.
 
-`HUBSPOT_LEAD_TRANSPORT=make`, `HUBSPOT_MAKE_WEBHOOK_URL`, `HUBSPOT_PORTAL_ID` and `HUBSPOT_LEADS_ENABLED=1` select the relay. These settings are active on Hostinger project `gutman-academy-preview`, using runtime image `gutman-academy-preview:61668df1e0fa`. The catalog reports `leads.ready=true`, which shows the enquiry form on all three seminar pages. No Composio OAuth credential is exported. Privacy copy identifies Make as the transfer service.
+`HUBSPOT_LEAD_TRANSPORT=make`, `HUBSPOT_MAKE_WEBHOOK_URL`, `HUBSPOT_PORTAL_ID` and `HUBSPOT_LEADS_ENABLED=1` select the relay. These settings are active on Hostinger project `gutman-academy-preview`. The catalog reports `leads.ready=true`, which shows the enquiry form on all three seminar pages. No Composio OAuth credential is exported. Privacy copy identifies Make as the transfer service.
 
 ## Original Forms scope limitation
 
@@ -57,4 +57,12 @@ Live checks verified the Make relay and then the public HTTPS website â†’ API â†
 
 HubSpot rejects `.invalid` email domains, so the live CRM test used a plus-address alias of the owner's account after confirming it was not an existing contact. The initial rejected domain created no contact. A later read-back failure was investigated and the saved contact verified before a new controlled test was sent; no uncertain request was automatically replayed. Temporary VPS checks were removed without touching the live application image or persistent data/media volumes.
 
-Morning credentials and merchant verification remain unavailable; HubSpot access does not authenticate Morning. No live checkout links, charges or CRM migration from Fireberry were performed.
+Morning authentication, merchant verification and uncharged checkout links are now verified; see `academy-morning-live-verification.md`. No charge or CRM migration from Fireberry was performed.
+
+## Checkout and confirmed registrations
+
+An eligible pending checkout saves the buyer's contact through the same Make relay using a durable `checkout-<orderId>` key. Invalid terms or unavailable dates cannot submit buyer data. This contact is a new enquiry, not proof of payment. An uncertain CRM send does not prevent opening the existing checkout link or trigger an automatic CRM retry.
+
+The registration worker consumes only `crm_registration` outbox rows backed by a real, confirmed, non-simulated registration and a matching Morning-paid order. A separate private intake file, `/data/academy-crm-registration.sqlite`, records the claim before forwarding. Its server-controlled adapter sets `gutman_lead_stage=registered`; public lead fields cannot set this stage. Service runs reconcile pending payments and drain confirmed CRM updates every minute after legal approval. A stored acceptance survives failed outbox finalization and restart without another external send. Uncertain delivery stops for operator review. This worker sends no email and creates no deal or payment.
+
+Mocked end-to-end checks cover receipt verification before CRM status, pending checkout capture, CRM outages, public stage injection, simulation/legal gates, persistent acceptance and uncertain-send recovery. No live paid status was fabricated in HubSpot for these tests.

@@ -11,12 +11,13 @@ try {
   server = await createSelfHostedServer({ runtime, apiHandlers, staticDirectory: fileURLToPath(new URL('../dist/', import.meta.url)), preview: process.env.ACADEMY_PREVIEW !== '0' });
 } catch (error) { runtime.close(); throw error; }
 server.listen(port, process.env.ACADEMY_HOST || '0.0.0.0', () => console.log(`Gutman standalone Node24 website on port ${port}; payment mode ${runtime.store.mode}, provider ready ${runtime.checkout.ready}; preview ${process.env.ACADEMY_PREVIEW !== '0'}.`));
-// No autonomous outbound sending. The owner-protected drain endpoint controls
-// approved email delivery; reconciliation is server-authenticated and read-only at provider.
+// The owner-protected drain endpoint controls approved email delivery.
+// Reconciliation reads authenticated provider receipts; CRM sync consumes only
+// the confirmed registration outbox, with durable keys before network calls.
 let busy = false;
 const interval = setInterval(async () => {
   if (busy) return; busy = true;
-  try { runtime.store.expireHolds(); await runtime.checkout.refreshPending(); } catch { /* No participant or provider diagnostic logging. */ }
+  try { runtime.store.expireHolds(); await runtime.checkout.refreshPending(); await runtime.crmWorker.drain(); } catch { /* No participant or provider diagnostic logging. */ }
   finally { busy = false; }
 }, 60_000); interval.unref();
 let closing = false;

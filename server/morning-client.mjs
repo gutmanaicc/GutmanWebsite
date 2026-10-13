@@ -98,7 +98,7 @@ export class MorningClient {
 
   async #api(path, body) { return this.#json(`${this.#endpoints.api}${path}`, body, await this.#accessToken()); }
 
-  async createPaymentForm({ reference, amountAgorot, customer, successUrl, failureUrl, notifyUrl, maxPayments = 1, custom, pluginId } = {}) {
+  async createPaymentForm({ reference, incomeDescription, remarks, amountAgorot, customer, successUrl, failureUrl, notifyUrl, maxPayments = 1, custom, pluginId } = {}) {
     if (!this.ready) fail('MERCHANT_NOT_VERIFIED', 'Merchant verification and all required server-side settings must be completed before creating payment forms.');
     if (!string(reference) || !string(customer?.name)) fail('INVALID_PAYMENT_FORM', 'An exact order reference and customer name are required.');
     if (!Number.isSafeInteger(maxPayments) || maxPayments < 1 || maxPayments > 6) fail('INVALID_PAYMENT_FORM', 'Payment count must be between one and six, subject to verified merchant support.');
@@ -106,7 +106,9 @@ export class MorningClient {
     const client = { name: customer.name, country: 'IL', add: false };
     if (customer.email !== undefined) { if (!string(customer.email)) fail('INVALID_PAYMENT_FORM', 'A valid customer email value is required.'); client.emails = [customer.email]; }
     if (customer.phone !== undefined) { if (!string(customer.phone)) fail('INVALID_PAYMENT_FORM', 'A valid customer phone value is required.'); client.phone = customer.phone; client.mobile = customer.phone; }
-    const body = { description: reference, type: 400, amount: total, currency: 'ILS', vatType: 1, lang: 'he', client, maxPayments, group: 100, income: [{ description: reference, quantity: 1, price: total, currency: 'ILS', vatType: 2 }] };
+    if (incomeDescription !== undefined && (!string(incomeDescription) || incomeDescription.length > 500)) fail('INVALID_PAYMENT_FORM', 'The seminar description is invalid.');
+    if (remarks !== undefined && (typeof remarks !== 'string' || remarks.length > 2000)) fail('INVALID_PAYMENT_FORM', 'The seminar details are invalid.');
+    const body = { description: reference, type: 400, amount: total, currency: 'ILS', vatType: 1, lang: 'he', client, maxPayments, group: 100, income: [{ description: incomeDescription ?? reference, quantity: 1, price: total, currency: 'ILS', vatType: 2 }], ...(remarks !== undefined ? { remarks } : {}) };
     for (const [key, value] of Object.entries({ successUrl, failureUrl, notifyUrl })) if (value !== undefined) body[key] = httpsUrl(value).href;
     if (custom !== undefined && typeof custom !== 'string') fail('INVALID_PAYMENT_FORM', 'Custom callback data must be a string.');
     body.custom = custom ?? reference;

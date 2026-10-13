@@ -1,5 +1,6 @@
 import { dirname, isAbsolute, join } from 'node:path';
 import { AcademyLeadIntake, HubSpotFormAdapter, HubSpotWebhookAdapter } from './hubspot-leads.mjs';
+import { HubSpotRegistrationWorker } from './hubspot-registration-worker.mjs';
 import { CommerceStore } from './commerce.mjs';
 import { createAcademyHandler } from './http.mjs';
 import { MorningClient } from './morning-client.mjs';
@@ -38,7 +39,8 @@ export function createSelfHostedRuntime(env = process.env, { fetchImpl = globalT
   const client = new MorningClient({ clientId: env.MORNING_API_ID, clientSecret: env.MORNING_API_SECRET, webhookSecret: env.MORNING_WEBHOOK_SECRET, environment: env.MORNING_ENVIRONMENT || 'production', businessTaxId: env.MORNING_BUSINESS_TAX_ID || merchant?.businessTaxId, merchantVerified: env.MORNING_MERCHANT_VERIFIED === '1' || merchant?.verified === true, paymentPluginId: merchant?.paymentPluginId, checkoutOrigins: explicitOrigins.length ? explicitOrigins : merchant?.checkoutOrigins || [], fetchImpl, clock });
   let store;
   let leadIntake;
-  const adapter = new MorningCheckoutAdapter({ client, getOrder: id => store.get('orders', id) });
+  let registrationIntake;
+  const adapter = new MorningCheckoutAdapter({ client, getOrder: id => store.get('orders', id), getDate: id => store.get('dates', id) });
   store = new CommerceStore({ path, clock, mode, adapter, orderSecret: env.ACADEMY_ORDER_SECRET, bookingTermsApproved: env.ACADEMY_BOOKING_TERMS_APPROVED === '1' });
   try {
     store.seedDrafts();
@@ -47,12 +49,14 @@ export function createSelfHostedRuntime(env = process.env, { fetchImpl = globalT
         ? new HubSpotWebhookAdapter({ portalId: env.HUBSPOT_PORTAL_ID, webhookUrl: env.HUBSPOT_MAKE_WEBHOOK_URL, fetchImpl })
         : new HubSpotFormAdapter({ portalId: env.HUBSPOT_PORTAL_ID, formId: env.HUBSPOT_FORM_ID, publicOrigin, fetchImpl });
       leadIntake = new AcademyLeadIntake({ path: env.ACADEMY_LEADS_DB_PATH || join(dirname(path), 'academy-leads.sqlite'), adapter: leadAdapter, clock });
+      if (env.HUBSPOT_LEAD_TRANSPORT === 'make') registrationIntake = new AcademyLeadIntake({ path: join(dirname(path), 'academy-crm-registration.sqlite'), adapter: new HubSpotWebhookAdapter({ portalId: env.HUBSPOT_PORTAL_ID, webhookUrl: env.HUBSPOT_MAKE_WEBHOOK_URL, stage: 'registered', fetchImpl }), clock });
     }
     const repository = new SelfHostedRepository(store);
     const checkout = new HostedCheckout({ store, adapter, publicOrigin });
     const deliveryAdapter = createResendDeliveryAdapter(env, { fetchImpl });
     const deliveryWorker = new DurableOutboxWorker({ repository, adapter: deliveryAdapter, clock });
+    const crmWorker = new HubSpotRegistrationWorker({ store, intake: registrationIntake });
     const handler = createAcademyHandler({ store, checkout, deliveryWorker, leadIntake, adminToken: env.ACADEMY_ADMIN_TOKEN, allowedOrigins: origins });
-    return { store, client, checkout, repository, deliveryWorker, leadIntake, handler, allowedOrigins: origins, close: () => { leadIntake?.close(); store.close(); } };
-  } catch (error) { leadIntake?.close(); store.close(); throw error; }
+    return { store, client, checkout, repository, deliveryWorker, leadIntake, crmWorker, handler, allowedOrigins: origins, close: () => { registrationIntake?.close(); leadIntake?.close(); store.close(); } };
+  } catch (error) { registrationIntake?.close(); leadIntake?.close(); store.close(); throw error; }
 }

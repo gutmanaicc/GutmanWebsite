@@ -21,24 +21,25 @@ export function normalizeAcademyLead(input) {
   return { fullName, email, phone, seminarId: input.seminarId, requestedDate, note: input.note === undefined ? '' : text(input.note, 1000), marketingConsent: input.marketingConsent === true };
 }
 
-function contactProperties(lead) {
+function contactProperties(lead, stage = 'new') {
   const [firstname, ...rest] = lead.fullName.split(' ');
-  return { firstname, lastname: rest.join(' '), email: lead.email, phone: lead.phone, gutman_seminar: lead.seminarId, gutman_requested_date: lead.requestedDate, gutman_lead_stage: 'new', gutman_lead_source: 'website', gutman_marketing_consent: lead.marketingConsent ? 'yes' : 'no', gutman_note: lead.note };
+  return { firstname, lastname: rest.join(' '), email: lead.email, phone: lead.phone, gutman_seminar: lead.seminarId, gutman_requested_date: lead.requestedDate, gutman_lead_stage: stage, gutman_lead_source: 'website', gutman_marketing_consent: lead.marketingConsent ? 'yes' : 'no', gutman_note: lead.note };
 }
 
 /** Server-only Make relay. Its responder runs after HubSpot saves the contact. */
 export class HubSpotWebhookAdapter {
-  constructor({ webhookUrl, portalId, fetchImpl = globalThis.fetch, timeoutMs = 15000 } = {}) {
+  constructor({ webhookUrl, portalId, stage = 'new', fetchImpl = globalThis.fetch, timeoutMs = 15000 } = {}) {
     const url = new URL(webhookUrl);
     if (url.protocol !== 'https:' || !/^hook\.(us[12]|eu[12])\.make\.com$/.test(url.hostname) || url.port || url.username || url.password || url.search || url.hash || !/^\/[a-z0-9]{16,128}$/.test(url.pathname)) throw new Error('A private Make HTTPS webhook is required.');
     if (!/^\d{1,15}$/.test(portalId || '') || !Number.isSafeInteger(timeoutMs) || timeoutMs < 1) throw new Error('A verified HubSpot portal and bounded timeout are required.');
-    this.url = url.href; this.portalId = portalId; this.fetch = fetchImpl; this.timeoutMs = timeoutMs;
+    if (!['new', 'registered'].includes(stage)) throw new Error('An explicit server-controlled CRM stage is required.');
+    this.url = url.href; this.portalId = portalId; this.fetch = fetchImpl; this.timeoutMs = timeoutMs; this.stage = stage;
   }
   async submit(lead, createdAt, leadId) {
     if (!/^[0-9a-f-]{36}$/i.test(leadId || '')) throw new Error('A persistent enquiry reference is required.');
     const controller = new AbortController(); const timer = setTimeout(() => controller.abort(), this.timeoutMs);
     try {
-      const response = await this.fetch(this.url, { method: 'POST', redirect: 'error', signal: controller.signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId, submittedAt: createdAt, ...contactProperties(lead) }) });
+      const response = await this.fetch(this.url, { method: 'POST', redirect: 'error', signal: controller.signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ leadId, submittedAt: createdAt, ...contactProperties(lead, this.stage) }) });
       if (response.redirected) throw new Error('Uncertain relay response');
       if (!response.ok) { const error = new Error('Relay rejected submission'); error.knownFailure = [400, 401, 403, 404, 413, 429].includes(response.status); throw error; }
       const result = await response.json();
